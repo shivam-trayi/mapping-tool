@@ -1,6 +1,6 @@
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
-import { ChevronRight, MoreHorizontal } from "lucide-react"
+import { ChevronRight, MoreHorizontal, Home } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 
@@ -104,6 +104,19 @@ const BreadcrumbEllipsis = ({
 )
 BreadcrumbEllipsis.displayName = "BreadcrumbElipssis"
 
+const BreadcrumbHome = ({
+  className,
+  ...props
+}: React.ComponentProps<"span">) => (
+  <span
+    className={cn("flex items-center", className)}
+    {...props}
+  >
+    <Home className="h-4 w-4" />
+  </span>
+)
+BreadcrumbHome.displayName = "BreadcrumbHome"
+
 export {
   Breadcrumb,
   BreadcrumbList,
@@ -112,4 +125,5 @@ export {
   BreadcrumbPage,
   BreadcrumbSeparator,
   BreadcrumbEllipsis,
+  BreadcrumbHome,
 }
