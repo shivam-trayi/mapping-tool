@@ -1,0 +1,61 @@
+@import url('../../blocks/variables/Variable.scss');
+@import '../../mixins.scss';
+
+.modal-header {
+	padding: 5px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	display: inline-block;
+
+	.modal-title {
+		margin: 0;
+		font-size: 1.25rem;
+		font-weight: bold;
+	}
+	.toast-popupcontent {
+		display: flex;
+		flex-direction: row;
+		gap: 1px;
+	}
+	.popup-heading {
+		@include bp('tablet') {
+			font-size: 12px;
+		}
+		@include bp('mobile') {
+			font-size: 12px;
+		}
+	}
+
+	.popup-description {
+		font-weight: lighter;
+		font-size: 14px;
+		margin: 0;
+		margin-right: 16px;
+		@include bp('tablet') {
+			font-size: 12px;
+		}
+		@include bp('mobile') {
+			font-size: 12px;
+		}
+	}
+
+	.close {
+		border: none;
+		background: none;
+		cursor: pointer;
+		font-size: 1.5rem;
+		color: var(--background-level-2-color);
+		padding: 0;
+		transition: color 0.3s ease;
+
+		&:hover {
+			color: var(--border-level-hover-color);
+		}
+	}
+}
+
+.cros-btn {
+	width: 12px;
+	cursor: pointer;
+}
