@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Edit, Search, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Plus, Edit, Search, ToggleLeft, ToggleRight, Save, X, List, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { Qualification, Question,ViewType } from '../../types/qualicationTypes';
@@ -56,6 +56,7 @@ export const EditView: React.FC<EditViewProps> = ({
                 Update Qualifications
             </h2>
             <Button onClick={() => setCurrentView('list')} variant="default">
+                <List className="w-4 h-4 mr-2" />
                 Qualification list
             </Button>
         </div>
@@ -95,9 +96,11 @@ export const EditView: React.FC<EditViewProps> = ({
 
             <div className="flex space-x-3 mt-8">
                 <Button onClick={handleSaveQualification} disabled={isSaving}>
+                    <Save className="w-4 h-4 mr-2" />
                     {isSaving ? 'Updating...' : 'Update'}
                 </Button>
                 <Button onClick={() => setCurrentView('list')} variant="outline" disabled={isSaving}>
+                    <X className="w-4 h-4 mr-2" />
                     Cancel
                 </Button>
             </div>
@@ -131,11 +134,14 @@ export const EditView: React.FC<EditViewProps> = ({
                     <Button onClick={() => {
                         setSelectedQualification(editingQualification);
                         setCurrentView('addQuestion');
-                    }}>
+                    }} className="gradient-primary text-white hover:shadow-glow transition-all duration-300">
                         <Plus className="w-4 h-4 mr-2" />
                         Add Question
                     </Button>
-                    <Button variant="outline">Question List</Button>
+                    <Button variant="outline">
+                        <HelpCircle className="w-4 h-4 mr-2" />
+                        Question List
+                    </Button>
                 </div>
             </div>
 
@@ -191,14 +197,19 @@ export const EditView: React.FC<EditViewProps> = ({
                                     {question.language}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button onClick={() => handleEditQuestion(question)} className="text-blue-600 hover:text-blue-900">
+                                    <button 
+                                        onClick={() => handleEditQuestion(question)} 
+                                        className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                        title="Edit question"
+                                    >
                                         <Edit className="w-4 h-4" />
                                     </button>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap">
                                     <button
                                         onClick={() => handleToggleQuestionActive(question.id)}
-                                        className="flex items-center"
+                                        className="flex items-center p-1 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                        title={question.active ? 'Deactivate question' : 'Activate question'}
                                     >
                                         {question.active ? (
                                             <ToggleRight className="w-6 h-6 text-green-500" />

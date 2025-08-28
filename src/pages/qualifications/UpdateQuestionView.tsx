@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Edit, ToggleRight } from 'lucide-react';
+import { Edit, ToggleRight, Save, X, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { Question } from '../../types/qualicationTypes';
@@ -59,6 +59,7 @@ export const UpdateQuestionView: React.FC<UpdateQuestionViewProps> = ({
                 Update Question
             </h2>
             <Button onClick={() => setCurrentView('edit')} variant="default">
+                <List className="w-4 h-4 mr-2" />
                 Qualification list
             </Button>
         </div>
@@ -130,10 +131,16 @@ export const UpdateQuestionView: React.FC<UpdateQuestionViewProps> = ({
                 </div>
             )}
             <div className="mt-8 flex justify-end space-x-3">
-                <Button onClick={handleUpdateQuestion} disabled={!updateQuestionForm.text?.trim() || isSaving}>
+                <Button 
+                    onClick={handleUpdateQuestion} 
+                    disabled={!updateQuestionForm.text?.trim() || isSaving}
+                    className="gradient-primary text-white hover:shadow-glow transition-all duration-300"
+                >
+                    <Save className="w-4 h-4 mr-2" />
                     {isSaving ? 'Updating...' : 'Update Question'}
                 </Button>
                 <Button onClick={() => setCurrentView('edit')} variant="outline" disabled={isSaving}>
+                    <X className="w-4 h-4 mr-2" />
                     Cancel
                 </Button>
             </div>
@@ -181,12 +188,18 @@ export const UpdateQuestionView: React.FC<UpdateQuestionViewProps> = ({
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">{option}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{editingQuestion.language}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button className="text-blue-600 hover:text-blue-900">
+                                    <button 
+                                        className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                                        title="Edit option"
+                                    >
                                         <Edit className="w-4 h-4" />
                                     </button>
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button className="flex items-center">
+                                    <button 
+                                        className="flex items-center p-1 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                        title="Toggle option status"
+                                    >
                                         <ToggleRight className="w-6 h-6 text-green-500" />
                                     </button>
                                 </td>

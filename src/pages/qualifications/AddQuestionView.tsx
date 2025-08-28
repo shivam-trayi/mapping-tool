@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Save, X, List } from 'lucide-react';
 
 import type { Question,ViewType } from '../../types/qualicationTypes';
 import { Button } from '@/components/ui/button';
@@ -42,6 +43,7 @@ export const AddQuestionView: React.FC<AddQuestionViewProps> = ({
         Add Question
       </h2>
       <Button onClick={() => setCurrentView('edit')} variant="default">
+        <List className="w-4 h-4 mr-2" />
         Qualification list
       </Button>
     </div>
@@ -118,10 +120,16 @@ export const AddQuestionView: React.FC<AddQuestionViewProps> = ({
       )}
       
       <div className="mt-8 flex justify-end space-x-3">
-        <Button onClick={handleAddQuestion} disabled={!newQuestion.text?.trim() || isSaving}>
+        <Button 
+          onClick={handleAddQuestion} 
+          disabled={!newQuestion.text?.trim() || isSaving}
+          className="gradient-primary text-white hover:shadow-glow transition-all duration-300"
+        >
+          <Save className="w-4 h-4 mr-2" />
           {isSaving ? 'Adding...' : 'Add Question'}
         </Button>
         <Button onClick={() => setCurrentView('edit')} variant="outline" disabled={isSaving}>
+          <X className="w-4 h-4 mr-2" />
           Cancel
         </Button>
       </div>

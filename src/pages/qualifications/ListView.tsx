@@ -1,7 +1,19 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Plus, Edit, Search, Filter, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Plus, Edit, Search, Filter, ToggleLeft, ToggleRight, Settings, Map, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { 
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+  PaginationFirst,
+  PaginationLast,
+  PaginationEllipsis,
+} from '@/components/ui/pagination';
+import { usePagination } from '@/hooks/usePagination';
 import { cn } from '@/lib/utils';
 import type { Qualification, ViewType } from '../../types/qualicationTypes';
 
@@ -16,6 +28,7 @@ interface ListViewProps {
   isLoadingTable: boolean;
   resolvedTheme: 'light' | 'dark';
 }
+
 export const ListView: React.FC<ListViewProps> = ({
   filteredQualifications,
   searchTerm,
@@ -27,6 +40,26 @@ export const ListView: React.FC<ListViewProps> = ({
   isLoadingTable,
   resolvedTheme
 }) => (
+  const {
+    currentPage,
+    totalPages,
+    paginatedData,
+    goToPage,
+    goToNextPage,
+    goToPreviousPage,
+    goToFirstPage,
+    goToLastPage,
+    canGoNext,
+    canGoPrevious,
+    startIndex,
+    endIndex,
+    totalItems,
+  } = usePagination({
+    data: filteredQualifications,
+    itemsPerPage: 10,
+  });
+
+  return (
   <motion.div 
     key="list-view"
     initial={{ opacity: 0 }}
@@ -60,9 +93,11 @@ export const ListView: React.FC<ListViewProps> = ({
       </div>
       <div className="flex space-x-3">
         <Button onClick={() => setCurrentView('demoMapping')} variant="outline">
+          <Target className="w-4 h-4 mr-2" />
           Demo Priority Mapping
         </Button>
         <Button onClick={() => setCurrentView('mapping')} variant="outline">
+          <Map className="w-4 h-4 mr-2" />
           Qualifications Mapping
         </Button>
         <Button onClick={handleCreateQualification}>
@@ -70,6 +105,19 @@ export const ListView: React.FC<ListViewProps> = ({
           <span>Create Qualifications</span>
         </Button>
       </div>
+    </div>
+
+    {/* Results Summary */}
+    <div className={cn(
+      "flex items-center justify-between mb-4 text-sm transition-colors",
+      resolvedTheme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+    )}>
+      <span>
+        Showing {startIndex} to {endIndex} of {totalItems} qualifications
+      </span>
+      <span>
+        Page {currentPage} of {totalPages}
+      </span>
     </div>
 
     <div className={cn(
@@ -112,7 +160,7 @@ export const ListView: React.FC<ListViewProps> = ({
               </td>
             </tr>
           ) : filteredQualifications.length > 0 ? (
-            filteredQualifications.map((qualification) => (
+            paginatedData.map((qualification) => (
               <tr key={qualification.id} className={cn(
                 "transition-colors",
                 resolvedTheme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
@@ -150,7 +198,8 @@ export const ListView: React.FC<ListViewProps> = ({
                   <div className="flex items-center space-x-2">
                     <button
                       onClick={() => handleEditQualification(qualification)}
-                      className="text-blue-600 hover:text-blue-900"
+                      className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                      title="Edit qualification"
                     >
                       <Edit className="w-4 h-4" />
                     </button>
@@ -167,6 +216,69 @@ export const ListView: React.FC<ListViewProps> = ({
           )}
         </tbody>
       </table>
+      
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className={cn(
+          "px-6 py-4 border-t transition-colors",
+          resolvedTheme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+        )}>
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationFirst 
+                  onClick={goToFirstPage}
+                  className={!canGoPrevious ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={goToPreviousPage}
+                  className={!canGoPrevious ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+              
+              {/* Page Numbers */}
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                const pageNumber = Math.max(1, Math.min(currentPage - 2 + i, totalPages - 4 + i));
+                if (pageNumber > totalPages) return null;
+                
+                return (
+                  <PaginationItem key={pageNumber}>
+                    <PaginationLink
+                      onClick={() => goToPage(pageNumber)}
+                      isActive={currentPage === pageNumber}
+                      className="cursor-pointer"
+                    >
+                      {pageNumber}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
+              
+              {totalPages > 5 && currentPage < totalPages - 2 && (
+                <PaginationItem>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              )}
+              
+              <PaginationItem>
+                <PaginationNext 
+                  onClick={goToNextPage}
+                  className={!canGoNext ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+              <PaginationItem>
+                <PaginationLast 
+                  onClick={goToLastPage}
+                  className={!canGoNext ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
     </div>
   </motion.div>
-);
+  );
+};

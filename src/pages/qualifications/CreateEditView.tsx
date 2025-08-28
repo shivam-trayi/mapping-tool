@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Save, X, List } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -46,6 +47,7 @@ export const CreateEditView: React.FC<CreateEditViewProps> = ({
         Create Qualifications
       </h2>
       <Button onClick={() => setCurrentView('list')} variant="default">
+        <List className="w-4 h-4 mr-2" />
         Qualification list
       </Button>
     </div>
@@ -83,8 +85,9 @@ export const CreateEditView: React.FC<CreateEditViewProps> = ({
         <Button
           onClick={handleSaveQualification}
           disabled={!qualificationForm.name.trim() || isSaving}
-          className="flex items-center space-x-2 bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex items-center space-x-2 gradient-primary text-white px-8 py-3 rounded-lg hover:shadow-glow disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
         >
+          <Save className="w-4 h-4" />
           <span>{isSaving ? 'Creating...' : 'Create'}</span>
         </Button>
       </div>
