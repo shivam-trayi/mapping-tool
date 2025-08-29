@@ -34,4 +34,6 @@ export type ViewType =
   | 'questionMapping'
   | 'updateQuestion'
   | 'demoMapping'
-  | 'questions';
+  | 'questions'
+  | 'addOption'
+  | 'updateOption';
