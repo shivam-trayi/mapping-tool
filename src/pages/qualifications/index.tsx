@@ -16,6 +16,13 @@ import { Dashboard } from '../dashboard/Dashboard';
 import { MessageBox } from '@/components/ui/MessageBox';
 import { useTheme } from '@/hooks/useTheme';
 
+// Add missing function
+const getPriorityColor = (priority: number) => {
+  if (priority <= 2) return 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100';
+  if (priority <= 4) return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100';
+  return 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100';
+};
+
 // Helper to generate unique ids
 const uid = (p = "q") => `${p}_${Math.random().toString(36).slice(2, 9)}`;
 
@@ -332,7 +339,8 @@ const QualificationsDashboard: React.FC = () => {
         handleUpdateExternalId,
         handleToggleMapping,
         filteredQualifications,
-        uid
+        uid,
+        getPriorityColor
     };
 
     return (

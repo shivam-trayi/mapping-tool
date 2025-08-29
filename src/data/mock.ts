@@ -1,0 +1,22 @@
+export const countries = [
+  { code: 'US', name: 'United States' },
+  { code: 'CA', name: 'Canada' },
+  { code: 'UK', name: 'United Kingdom' },
+  { code: 'AU', name: 'Australia' },
+  { code: 'DE', name: 'Germany' },
+  { code: 'FR', name: 'France' },
+  { code: 'ES', name: 'Spain' },
+  { code: 'IT', name: 'Italy' },
+  { code: 'NL', name: 'Netherlands' },
+  { code: 'SE', name: 'Sweden' },
+  { code: 'NO', name: 'Norway' },
+  { code: 'DK', name: 'Denmark' },
+  { code: 'FI', name: 'Finland' },
+  { code: 'JP', name: 'Japan' },
+  { code: 'KR', name: 'South Korea' },
+  { code: 'CN', name: 'China' },
+  { code: 'IN', name: 'India' },
+  { code: 'BR', name: 'Brazil' },
+  { code: 'MX', name: 'Mexico' },
+  { code: 'AR', name: 'Argentina' }
+];
