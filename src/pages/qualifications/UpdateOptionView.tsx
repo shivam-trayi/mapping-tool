@@ -1,39 +1,19 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ViewType } from "@/types/qualicationTypes";
 
-interface Option {
-  id: string;
-  text: string;
-}
-
-interface UpdateOptionViewProps {
-  setCurrentView: React.Dispatch<React.SetStateAction<ViewType>>;
-  editingOption?: Option | null;
-}
-
-export const UpdateOptionView: React.FC<UpdateOptionViewProps> = ({
-  setCurrentView,
-  editingOption,
-}) => {
-  const [option, setOption] = useState(editingOption?.text || "");
+const UpdateOptionView: React.FC = () => {
+  const { id } = useParams();
+  const [option, setOption] = useState(`Option ${id}`); // mock data
+  const navigate = useNavigate();
 
   const handleUpdate = () => {
-    // TODO: update option API call ya state update
-    console.log("Option updated:", option);
-    setCurrentView("edit");
+    console.log("Updated option:", id, option);
   };
 
   return (
-    <motion.div
-      key="updateOption"
-      initial={{ opacity: 0, y: 15 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -15 }}
-      className="p-6"
-    >
+    <div className="p-6">
       <h2 className="text-xl font-bold mb-4">Update Option</h2>
       <Input
         placeholder="Enter option text"
@@ -45,10 +25,12 @@ export const UpdateOptionView: React.FC<UpdateOptionViewProps> = ({
         <Button onClick={handleUpdate} className="gradient-primary text-white">
           Update
         </Button>
-        <Button variant="outline" onClick={() => setCurrentView("edit")}>
+        <Button variant="outline" onClick={() => navigate("/options")}>
           Cancel
         </Button>
       </div>
-    </motion.div>
+    </div>
   );
 };
+
+export default UpdateOptionView;

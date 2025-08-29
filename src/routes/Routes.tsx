@@ -7,6 +7,8 @@ import { PublicRoute } from "./PublicRoute";
 import { Loadable } from "./Loadable";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
 import QualificationsDashboard from "@/pages/qualifications";
+import AddOptionView from "@/pages/qualifications/AddOptionView";
+import UpdateOptionView from "@/pages/qualifications/UpdateOptionView";
 
 const Login = Loadable(lazy(() => import("../pages/auth/Login")));
 const Signup = Loadable(lazy(() => import("../pages/auth/Signup")));
@@ -58,6 +60,23 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ) 
       },
+      { 
+        path: "/add-qualification-query", 
+        element: (
+          <ProtectedRoute>
+            <AddOptionView />
+          </ProtectedRoute>
+        ) 
+      },
+      { 
+        path: "/update-qualification-query/:id", 
+        element: (
+          <ProtectedRoute>
+            <UpdateOptionView />
+          </ProtectedRoute>
+        ) 
+      },
+      
     ],
   },
   { path: "*", element: <NotFound /> },

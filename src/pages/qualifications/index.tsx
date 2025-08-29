@@ -15,8 +15,8 @@ import { Dashboard } from '../dashboard/Dashboard';
 import { MessageBox } from '@/components/ui/MessageBox';
 import { useTheme } from '@/hooks/useTheme';
 import MappingReviewModal from './MappingReviewModal';
-import { AddOptionView } from './AddOptionView';
-import { UpdateOptionView } from './UpdateOptionView';
+// import { AddOptionView } from './AddOptionView';
+// import { UpdateOptionView } from './UpdateOptionView';
 
 // Helper to generate unique ids
 const uid = (p = "q") => `${p}_${Math.random().toString(36).slice(2, 9)}`;
@@ -353,8 +353,8 @@ const QualificationsDashboard: React.FC = () => {
                     {currentView === 'mapping' && <QualificationsMappingView {...commonProps} />}
                     {currentView === 'demoMapping' && <DemoPriorityMappingView {...commonProps} />}
                     {currentView === 'questionMapping' && <QuestionMappingView {...commonProps} />}
-                    {currentView === 'addOption' && <AddOptionView {...commonProps} />}
-                    {currentView === 'updateOption' && <UpdateOptionView {...commonProps} />}
+                    {/* {currentView === 'addOption' && <AddOptionView {...commonProps} />}
+                    {currentView === 'updateOption' && <UpdateOptionView {...commonProps} />} */}
                 </AnimatePresence>
             </main>
 
