@@ -3,9 +3,8 @@ import { motion } from 'framer-motion';
 import { Plus, Edit, Search, ToggleLeft, ToggleRight, Save, X, List, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { Qualification, Question,ViewType } from '../../types/qualicationTypes';
+import type { Qualification, Question, ViewType } from '../../types/qualicationTypes';
 
-// qualification form structure
 interface QualificationForm {
     name: string;
     isTest: boolean;
@@ -25,7 +24,6 @@ interface EditViewProps {
     isLoadingTable: boolean;
     resolvedTheme: 'light' | 'dark';
 }
-
 
 export const EditView: React.FC<EditViewProps> = ({
     setCurrentView,
@@ -48,6 +46,7 @@ export const EditView: React.FC<EditViewProps> = ({
         transition={{ duration: 0.3 }}
         className="p-6"
     >
+        {/* Header */}
         <div className="flex justify-between items-center mb-6">
             <h2 className={cn(
                 "text-2xl font-bold transition-colors",
@@ -61,6 +60,7 @@ export const EditView: React.FC<EditViewProps> = ({
             </Button>
         </div>
 
+        {/* Qualification Form */}
         <div className={cn(
             "rounded-2xl shadow-lg p-8 mb-6 transition-colors",
             resolvedTheme === 'dark'
@@ -80,7 +80,6 @@ export const EditView: React.FC<EditViewProps> = ({
                         placeholder="Enter qualification name"
                     />
                 </div>
-
                 <div className="flex justify-end">
                     <label className="flex items-center space-x-2 cursor-pointer">
                         <input
@@ -93,7 +92,6 @@ export const EditView: React.FC<EditViewProps> = ({
                     </label>
                 </div>
             </div>
-
             <div className="flex space-x-3 mt-8">
                 <Button onClick={handleSaveQualification} disabled={isSaving}>
                     <Save className="w-4 h-4 mr-2" />
@@ -106,6 +104,7 @@ export const EditView: React.FC<EditViewProps> = ({
             </div>
         </div>
 
+        {/* Questions Table */}
         <div className={cn(
             "rounded-2xl shadow-lg overflow-hidden transition-colors",
             resolvedTheme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
@@ -151,21 +150,11 @@ export const EditView: React.FC<EditViewProps> = ({
                     resolvedTheme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'
                 )}>
                     <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-200">
-                            S.No
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-200">
-                            Question
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-200">
-                            Language
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-200">
-                            Update/Edit
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-200">
-                            Active/Inactive
-                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-200">S.No</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-200">Question</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-200">Language</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-200">Update/Edit</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-200">Active/Inactive</th>
                     </tr>
                 </thead>
                 <tbody className={cn(
@@ -173,32 +162,23 @@ export const EditView: React.FC<EditViewProps> = ({
                     resolvedTheme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'
                 )}>
                     {isLoadingTable ? (
-                        <tr>
-                            <td colSpan={5} className="p-6 text-center text-gray-500">
-                                Loading...
-                            </td>
-                        </tr>
-                    ) : editingQualification?.questions.length > 0 ? (
-                        editingQualification?.questions.map((question, idx) => (
+                        <tr><td colSpan={5} className="p-6 text-center text-gray-500">Loading...</td></tr>
+                    ) : editingQualification?.questions.length ? (
+                        editingQualification.questions.map((question, idx) => (
                             <tr key={question.id} className={cn(
                                 "transition-colors",
                                 resolvedTheme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
                             )}>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm">{idx + 1}</td>
                                 <td className="px-6 py-4">
-                                    <div className={cn(
-                                        "text-sm max-w-xs truncate",
-                                        resolvedTheme === 'dark' ? 'text-gray-100' : 'text-gray-900'
-                                    )}>
+                                    <div className={cn("text-sm max-w-xs truncate", resolvedTheme === 'dark' ? 'text-gray-100' : 'text-gray-900')}>
                                         {question.text}
                                     </div>
                                 </td>
-                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                                    {question.language}
-                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{question.language}</td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <button 
-                                        onClick={() => handleEditQuestion(question)} 
+                                    <button
+                                        onClick={() => handleEditQuestion(question)}
                                         className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
                                         title="Edit question"
                                     >
@@ -211,21 +191,13 @@ export const EditView: React.FC<EditViewProps> = ({
                                         className="flex items-center p-1 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                         title={question.active ? 'Deactivate question' : 'Activate question'}
                                     >
-                                        {question.active ? (
-                                            <ToggleRight className="w-6 h-6 text-green-500" />
-                                        ) : (
-                                            <ToggleLeft className="w-6 h-6 text-gray-400" />
-                                        )}
+                                        {question.active ? <ToggleRight className="w-6 h-6 text-green-500" /> : <ToggleLeft className="w-6 h-6 text-gray-400" />}
                                     </button>
                                 </td>
                             </tr>
                         ))
                     ) : (
-                        <tr>
-                            <td colSpan={5} className="p-6 text-center text-gray-500">
-                                No questions found.
-                            </td>
-                        </tr>
+                        <tr><td colSpan={5} className="p-6 text-center text-gray-500">No questions found.</td></tr>
                     )}
                 </tbody>
             </table>

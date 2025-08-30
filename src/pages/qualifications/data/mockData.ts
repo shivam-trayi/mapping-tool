@@ -13,7 +13,14 @@ export const mockQualifications: Qualification[] = [
         language: 'English-US',
         type: 'Radio',
         active: true,
-        options: ['Hispanic or Latino', 'White', 'Black or African American', 'Asian', 'Native American', 'Other']
+        options: [
+          { text: 'Hispanic or Latino', language: 'English-US', active: true },
+          { text: 'White', language: 'English-US', active: true },
+          { text: 'Black or African American', language: 'English-US', active: false },
+          { text: 'Asian', language: 'English-US', active: true },
+          { text: 'Native American', language: 'English-US', active: true },
+          { text: 'Other', language: 'English-US', active: true }
+        ]
       },
       {
         id: 'q2',
@@ -21,7 +28,14 @@ export const mockQualifications: Qualification[] = [
         language: 'Spanish',
         type: 'Radio',
         active: true,
-        options: ['Hispano o Latino', 'Blanco', 'Negro o Afroamericano', 'Asiático', 'Nativo Americano', 'Otro']
+        options: [
+          { text: 'Hispano o Latino', language: 'Spanish', active: true },
+          { text: 'Blanco', language: 'Spanish', active: true },
+          { text: 'Negro o Afroamericano', language: 'Spanish', active: true },
+          { text: 'Asiático', language: 'Spanish', active: false },
+          { text: 'Nativo Americano', language: 'Spanish', active: true },
+          { text: 'Otro', language: 'Spanish', active: true }
+        ]
       }
     ]
   },
@@ -37,7 +51,7 @@ export const mockQualifications: Qualification[] = [
         language: 'English-US',
         type: 'Text',
         active: true,
-        options: []
+        options: [] // ✅ still fine
       }
     ]
   },
@@ -53,7 +67,13 @@ export const mockQualifications: Qualification[] = [
         language: 'English-US',
         type: 'Radio',
         active: true,
-        options: ['Daily', 'Weekly', 'Bi-weekly', 'Monthly', 'Rarely']
+        options: [
+          { text: 'Daily', language: 'English-US', active: true },
+          { text: 'Weekly', language: 'English-US', active: true },
+          { text: 'Bi-weekly', language: 'English-US', active: false },
+          { text: 'Monthly', language: 'English-US', active: true },
+          { text: 'Rarely', language: 'English-US', active: true }
+        ]
       },
       {
         id: 'q5',
@@ -61,13 +81,21 @@ export const mockQualifications: Qualification[] = [
         language: 'English-US',
         type: 'Checkbox',
         active: true,
-        options: ['Walmart', 'Target', 'Kroger', 'Safeway', 'Whole Foods', 'Local stores']
+        options: [
+          { text: 'Walmart', language: 'English-US', active: true },
+          { text: 'Target', language: 'English-US', active: true },
+          { text: 'Kroger', language: 'English-US', active: true },
+          { text: 'Safeway', language: 'English-US', active: false },
+          { text: 'Whole Foods', language: 'English-US', active: true },
+          { text: 'Local stores', language: 'English-US', active: true }
+        ]
       }
     ]
   }
 ];
 
-export const mockMappings: MappingEntry[] = [
+
+export const mockMappings = [
   { qualificationId: '1', questionId: 'q1', mapped: true, externalId: 'ETH_001' },
   { qualificationId: '1', questionId: 'q2', mapped: true, externalId: 'ETH_002' },
   { qualificationId: '2', questionId: 'q3', mapped: false, externalId: '' },

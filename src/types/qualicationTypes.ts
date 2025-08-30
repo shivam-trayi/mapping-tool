@@ -4,7 +4,7 @@ export interface Question {
   language: string;
   type: 'Radio' | 'Checkbox' | 'Text';
   active: boolean;
-  options: string[];
+  options: Option[]; // <-- change from string[] to Option[]
 }
 
 export interface Qualification {
@@ -21,6 +21,13 @@ export interface MappingEntry {
   mapped: boolean;
   externalId: string;
 }
+
+export interface Option {
+  text: string;
+  language: string;
+  active: boolean;
+}
+
 
 export type Theme = 'light' | 'dark' | 'system';
 

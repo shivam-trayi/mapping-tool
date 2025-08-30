@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-import type { Question,ViewType } from '../../types/qualicationTypes';
+import type { Question, ViewType } from '../../types/qualicationTypes';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -26,12 +26,12 @@ export const AddQuestionView: React.FC<AddQuestionViewProps> = ({
   isSaving,
   resolvedTheme
 }) => (
-  <motion.div 
+  <motion.div
     key="add-question-view"
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
     exit={{ opacity: 0 }}
-    transition={{ duration: 0.3 }} 
+    transition={{ duration: 0.3 }}
     className="p-6"
   >
     <div className="flex justify-between items-center mb-6">
@@ -48,8 +48,8 @@ export const AddQuestionView: React.FC<AddQuestionViewProps> = ({
 
     <div className={cn(
       "rounded-2xl shadow-lg p-8 transition-colors",
-      resolvedTheme === 'dark' 
-        ? 'bg-gray-800 text-gray-100 border border-gray-700' 
+      resolvedTheme === 'dark'
+        ? 'bg-gray-800 text-gray-100 border border-gray-700'
         : 'bg-white text-gray-900 border border-gray-200'
     )}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -65,7 +65,7 @@ export const AddQuestionView: React.FC<AddQuestionViewProps> = ({
             placeholder="Enter your question"
           />
         </div>
-        
+
         <div className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
@@ -81,7 +81,7 @@ export const AddQuestionView: React.FC<AddQuestionViewProps> = ({
               ))}
             </select>
           </div>
-          
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
               Question Type*
@@ -98,7 +98,7 @@ export const AddQuestionView: React.FC<AddQuestionViewProps> = ({
           </div>
         </div>
       </div>
-      
+
       {(newQuestion.type === 'Radio' || newQuestion.type === 'Checkbox') && (
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
@@ -106,17 +106,27 @@ export const AddQuestionView: React.FC<AddQuestionViewProps> = ({
           </label>
           <input
             type="text"
-            value={newQuestion.options?.join(';') || ''}
-            onChange={(e) => setNewQuestion({ 
-              ...newQuestion, 
-              options: e.target.value.split(';').map(opt => opt.trim()).filter(opt => opt) 
-            })}
+            value={newQuestion.options?.map(o => o.text).join(';') || ''}
+            onChange={(e) =>
+              setNewQuestion({
+                ...newQuestion,
+                options: e.target.value
+                  .split(';')
+                  .map(opt => ({
+                    text: opt.trim(),
+                    active: true,
+                    language: newQuestion.language || 'English-US'
+                  }))
+                  .filter(opt => opt.text)
+              })
+            }
             className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100"
             placeholder="Option 1; Option 2; Option 3"
           />
         </div>
       )}
-      
+
+
       <div className="mt-8 flex justify-end space-x-3">
         <Button onClick={handleAddQuestion} disabled={!newQuestion.text?.trim() || isSaving}>
           {isSaving ? 'Adding...' : 'Add Question'}

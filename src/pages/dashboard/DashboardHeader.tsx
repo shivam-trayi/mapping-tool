@@ -11,7 +11,7 @@ interface HeaderProps {
   toggleTheme: () => void;
 }
 
-export const Dashboard: React.FC<HeaderProps> = ({
+export const DashboardHeader: React.FC<HeaderProps> = ({
   resolvedTheme,
   toggleTheme,
 }) => {

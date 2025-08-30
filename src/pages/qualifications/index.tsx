@@ -10,13 +10,13 @@ import { DemoPriorityMappingView } from './DemoPriorityMappingView';
 import { QualificationsMappingView } from './QualificationsMappingView';
 import { QuestionMappingView } from './QuestionMappingView';
 import { mockQualifications, mockMappings } from './data/mockData';
-import type { Qualification, Question, MappingEntry, ViewType } from '../../types/qualicationTypes';
-import { Dashboard } from '../dashboard/Dashboard';
+import type { Qualification, Question, MappingEntry, ViewType, Option } from '../../types/qualicationTypes';
+import { DashboardHeader } from '../dashboard/DashboardHeader';
 import { MessageBox } from '@/components/ui/MessageBox';
 import { useTheme } from '@/hooks/useTheme';
 import MappingReviewModal from './MappingReviewModal';
-// import { AddOptionView } from './AddOptionView';
-// import { UpdateOptionView } from './UpdateOptionView';
+import { AddOptionView } from './AddOptionView';
+import { UpdateOptionView } from './UpdateOptionView';
 
 // Helper to generate unique ids
 const uid = (p = "q") => `${p}_${Math.random().toString(36).slice(2, 9)}`;
@@ -35,6 +35,11 @@ const QualificationsDashboard: React.FC = () => {
         type: 'Radio',
         active: true,
         options: []
+    });
+    const [currentOption, setCurrentOption] = useState({
+        text: '',
+        language: 'English-US',
+        active: true,
     });
     const [isGenerating, setIsGenerating] = useState(false);
     const [message, setMessage] = useState("");
@@ -143,6 +148,26 @@ const QualificationsDashboard: React.FC = () => {
         }, 1000);
     };
 
+    const handleSaveOption = () => {
+        setIsSaving(true);
+        setTimeout(() => {
+            if (!editingQualification || !currentOption.text) return;
+
+            const updatedQuestions = editingQualification.questions.map(q =>
+                q.id === editingQuestion.id ? { ...q, ...updateQuestionForm, active: q.active } : q
+            );
+            const updatedQualification = { ...editingQualification, questions: updatedQuestions };
+
+            setQualifications(qualifications.map(q =>
+                q.id === editingQualification.id ? updatedQualification : q
+            ));
+            setEditingQualification(updatedQualification);
+            setMessage("Question updated successfully!");
+            setCurrentView('edit');
+            setIsSaving(false);
+        }, 1000);
+    };
+
     const handleToggleActive = (id: string) => {
         setQualifications(qualifications.map(q =>
             q.id === id ? { ...q, active: !q.active } : q
@@ -203,55 +228,6 @@ const QualificationsDashboard: React.FC = () => {
             q.id === editingQualification.id ? updatedQualification : q
         ));
         setEditingQualification(updatedQualification);
-    };
-
-    const handleGenerateQuestions = async () => {
-        if (!editingQualification?.name) {
-            setMessage("Please select a qualification to generate questions for.");
-            return;
-        }
-        setIsGenerating(true);
-
-        // Simulate API call for question generation
-        setTimeout(() => {
-            const generatedQuestions = [
-                {
-                    text: `What is your experience with ${editingQualification.name}?`,
-                    language: 'English-US',
-                    type: 'Radio' as const,
-                    options: ['Beginner', 'Intermediate', 'Advanced', 'Expert']
-                },
-                {
-                    text: `How often do you use ${editingQualification.name}?`,
-                    language: 'English-US',
-                    type: 'Radio' as const,
-                    options: ['Daily', 'Weekly', 'Monthly', 'Rarely']
-                }
-            ];
-
-            const newQuestions = generatedQuestions.map(q => ({
-                id: uid("ques"),
-                ...q,
-                active: true,
-                options: q.options || []
-            }));
-
-            const updatedQualification = {
-                ...editingQualification,
-                questions: [...(editingQualification.questions || []), ...newQuestions]
-            };
-
-            setQualifications(s =>
-                s.map(q =>
-                    q.id === editingQualification.id
-                        ? updatedQualification
-                        : q
-                )
-            );
-            setEditingQualification(updatedQualification);
-            setMessage("Questions generated and added successfully.");
-            setIsGenerating(false);
-        }, 2000);
     };
 
     const handleUpdateExternalId = (qualificationId: string, questionId: string, externalId: string) => {
@@ -330,17 +306,19 @@ const QualificationsDashboard: React.FC = () => {
         handleViewQuestions,
         handleAddQuestion,
         handleToggleQuestionActive,
-        handleGenerateQuestions,
         handleUpdateExternalId,
         handleToggleMapping,
         filteredQualifications,
-        uid
+        uid,
+        handleSaveOption,
+        currentOption,
+        setCurrentOption,
     };
 
     return (
         <div className={`min-h-screen antialiased transition-colors ${resolvedTheme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-gray-100 text-gray-900'
             }`}>
-            <Dashboard {...commonProps} />
+            <DashboardHeader {...commonProps} />
             <Navigation {...commonProps} />
 
             <main className="max-w-7xl mx-auto">
@@ -353,8 +331,8 @@ const QualificationsDashboard: React.FC = () => {
                     {currentView === 'mapping' && <QualificationsMappingView {...commonProps} />}
                     {currentView === 'demoMapping' && <DemoPriorityMappingView {...commonProps} />}
                     {currentView === 'questionMapping' && <QuestionMappingView {...commonProps} />}
-                    {/* {currentView === 'addOption' && <AddOptionView {...commonProps} />}
-                    {currentView === 'updateOption' && <UpdateOptionView {...commonProps} />} */}
+                    {currentView === 'addOption' && <AddOptionView {...commonProps} />}
+                    {currentView === 'updateOption' && <UpdateOptionView {...commonProps} />}
                 </AnimatePresence>
             </main>
 

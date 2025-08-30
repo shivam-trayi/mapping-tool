@@ -1,13 +1,11 @@
-// src/routes/PublicRoute.tsx
-import React from "react";
 import { Navigate } from "react-router-dom";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
-export const PublicRoute: React.FC<{ children: JSX.Element }> = ({ children }) => {
+export const PublicRoute = ({ children }: { children: JSX.Element }) => {
   const { user } = useAuth();
 
-  // ✅ If logged in, prevent access to login/signup
   if (user) {
+    // 🔥 If already logged in → redirect to dashboard
     return <Navigate to="/dashboard" replace />;
   }
 
