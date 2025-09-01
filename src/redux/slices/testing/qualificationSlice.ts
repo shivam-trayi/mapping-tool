@@ -1,13 +1,22 @@
 // src/redux/qualification/qualificationSlice.ts
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { getQualifications } from "@/service/qualifications/qualification.service";
 import { Qualification } from "@/types/qualicationTypes";
 
-// Slice state type
+// Pagination type
+interface Pagination {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+}
+
+// Slice state
 interface QualificationState {
     items: Qualification[];
     loading: boolean;
     error: string | null;
+    pagination: Pagination | null;
 }
 
 // Initial state
@@ -15,27 +24,38 @@ const initialState: QualificationState = {
     items: [],
     loading: false,
     error: null,
+    pagination: null,
 };
 
+// Parameters for fetching
+interface FetchQualificationsParams {
+    page: number;
+    limit: number;
+}
+
+// Response type from API
+interface FetchQualificationsResponse {
+    data: Qualification[];
+    pagination: Pagination;
+}
+
+// Async thunk
 export const fetchQualifications = createAsyncThunk<
-    Qualification[],
-    void,
+    FetchQualificationsResponse,
+    FetchQualificationsParams,
     { rejectValue: string }
 >(
     "qualifications/fetchAll",
-    async (_, { rejectWithValue }) => {
+    async ({ page, limit }, { rejectWithValue }) => {
         try {
-            const response = await getQualifications();
-            if (response && Array.isArray(response.data)) {
-                return response.data as Qualification[];
-            }
+            console.log("📦 Fetching page:", page, "limit:", limit);
+            const response = await getQualifications({ page, limit });
 
-            if (response && Array.isArray(response)) {
-                return response as Qualification[];
-            }
-
-            if (response?.data?.data && Array.isArray(response.data.data)) {
-                return response.data.data as Qualification[];
+            if (response?.data && Array.isArray(response.data.data)) {
+                return {
+                    data: response.data.data as Qualification[],
+                    pagination: response.data.pagination as Pagination,
+                };
             }
 
             throw new Error("Invalid response structure");
@@ -44,7 +64,6 @@ export const fetchQualifications = createAsyncThunk<
         }
     }
 );
-
 
 // Slice
 const qualificationSlice = createSlice({
@@ -57,10 +76,14 @@ const qualificationSlice = createSlice({
                 state.loading = true;
                 state.error = null;
             })
-            .addCase(fetchQualifications.fulfilled, (state, action) => {
-                state.items = action.payload;
-                state.loading = false;
-            })
+            .addCase(
+                fetchQualifications.fulfilled,
+                (state, action: PayloadAction<FetchQualificationsResponse>) => {
+                    state.items = action.payload.data;
+                    state.pagination = action.payload.pagination;
+                    state.loading = false;
+                }
+            )
             .addCase(fetchQualifications.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload ?? "Unknown error";
