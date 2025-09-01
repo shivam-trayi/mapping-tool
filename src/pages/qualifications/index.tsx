@@ -9,26 +9,36 @@ import { UpdateQuestionView } from './UpdateQuestionView';
 import { DemoPriorityMappingView } from './DemoPriorityMappingView';
 import { QualificationsMappingView } from './QualificationsMappingView';
 import { QuestionMappingView } from './QuestionMappingView';
-import { mockQualifications, mockMappings } from './data/mockData';
-import type { Qualification, Question, MappingEntry, ViewType, Option } from '../../types/qualicationTypes';
+import { useDispatch, useSelector } from "react-redux";
+import type { Qualification, Question, MappingEntry, ViewType } from '../../types/qualicationTypes';
 import { DashboardHeader } from '../dashboard/DashboardHeader';
 import { MessageBox } from '@/components/ui/MessageBox';
 import { useTheme } from '@/hooks/useTheme';
 import MappingReviewModal from './MappingReviewModal';
 import { AddOptionView } from './AddOptionView';
 import { UpdateOptionView } from './UpdateOptionView';
+import { fetchQualifications } from '@/redux/slices/testing/qualificationSlice';
 
-// Helper to generate unique ids
+// Helper for unique ids
 const uid = (p = "q") => `${p}_${Math.random().toString(36).slice(2, 9)}`;
 
 const QualificationsDashboard: React.FC = () => {
+    const dispatch = useDispatch();
+    const { items, loading, error, pagination } = useSelector((state: any) => state.qualifications);
+
+
+    const [qualifications, setQualifications] = useState<Qualification[]>([]);
     const [currentView, setCurrentView] = useState<ViewType>('list');
-    const [qualifications, setQualifications] = useState<Qualification[]>(mockQualifications);
-    const [mappings, setMappings] = useState<MappingEntry[]>(mockMappings);
+    const [mappings, setMappings] = useState<MappingEntry[]>([]);
     const [selectedQualification, setSelectedQualification] = useState<Qualification | null>(null);
     const [editingQualification, setEditingQualification] = useState<Qualification | null>(null);
     const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [currentPage, setCurrentPage] = useState(1); // Pagination
+    const [pageSize] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
+
+
     const [newQuestion, setNewQuestion] = useState<Partial<Question>>({
         text: '',
         language: 'English-US',
@@ -48,7 +58,7 @@ const QualificationsDashboard: React.FC = () => {
     const [isLoadingTable, setIsLoadingTable] = useState(false);
     const { resolvedTheme, toggleTheme } = useTheme();
 
-    // Form state for create/edit qualification
+    // Form state
     const [qualificationForm, setQualificationForm] = useState({
         name: '',
         isTest: false,
@@ -65,6 +75,23 @@ const QualificationsDashboard: React.FC = () => {
     const languages = ['English-US', 'Spanish', 'French', 'German', 'Italian'];
     const questionTypes: Question['type'][] = ['Radio', 'Checkbox', 'Text'];
 
+    // 🚀 Fetch qualifications from API
+    useEffect(() => {
+        dispatch(fetchQualifications({ page: currentPage, limit: pageSize }) as any);
+    }, [dispatch, currentPage, pageSize]);
+
+
+    // Update local state when Redux data changes
+    // Update local state when Redux data changes
+    useEffect(() => {
+        if (items && items.length) setQualifications(items);
+        if (pagination?.totalPages) setTotalPages(pagination.totalPages);
+        setCurrentPage(pagination?.page || 1);
+        setIsLoadingTable(loading);
+    }, [items, pagination, loading]);
+
+
+    // Reset forms
     const resetForm = () => {
         setQualificationForm({ name: '', isTest: false, active: true });
         setNewQuestion({
@@ -76,6 +103,7 @@ const QualificationsDashboard: React.FC = () => {
         });
     };
 
+    // CRUD handlers
     const handleCreateQualification = () => {
         setCurrentView('create');
         resetForm();
@@ -91,16 +119,18 @@ const QualificationsDashboard: React.FC = () => {
         setCurrentView('edit');
     };
 
-    const handleEditQuestion = (question: Question) => {
+    const handleEditQuestion = (question: Question, qualification: Qualification) => {
         setEditingQuestion(question);
+        setEditingQualification(qualification);
         setUpdateQuestionForm({
             text: question.text,
             language: question.language,
             type: question.type,
-            options: question.options,
+            options: question.options || [],
         });
         setCurrentView('updateQuestion');
     };
+
 
     const handleSaveQualification = () => {
         setIsSaving(true);
@@ -132,12 +162,10 @@ const QualificationsDashboard: React.FC = () => {
         setIsSaving(true);
         setTimeout(() => {
             if (!editingQualification || !editingQuestion) return;
-
             const updatedQuestions = editingQualification.questions.map(q =>
                 q.id === editingQuestion.id ? { ...q, ...updateQuestionForm, active: q.active } : q
             );
             const updatedQualification = { ...editingQualification, questions: updatedQuestions };
-
             setQualifications(qualifications.map(q =>
                 q.id === editingQualification.id ? updatedQualification : q
             ));
@@ -148,21 +176,28 @@ const QualificationsDashboard: React.FC = () => {
         }, 1000);
     };
 
-    const handleSaveOption = () => {
+    const handleAddQuestion = () => {
         setIsSaving(true);
         setTimeout(() => {
-            if (!editingQualification || !currentOption.text) return;
-
-            const updatedQuestions = editingQualification.questions.map(q =>
-                q.id === editingQuestion.id ? { ...q, ...updateQuestionForm, active: q.active } : q
-            );
-            const updatedQualification = { ...editingQualification, questions: updatedQuestions };
-
+            if (!editingQualification || !newQuestion.text) return;
+            const question: Question = {
+                id: uid('ques'),
+                text: newQuestion.text!,
+                language: newQuestion.language!,
+                type: newQuestion.type!,
+                active: newQuestion.active!,
+                options: newQuestion.type === 'Text' ? [] : (newQuestion.options || [])
+            };
+            const updatedQualification = {
+                ...editingQualification,
+                questions: [...editingQualification.questions, question]
+            };
             setQualifications(qualifications.map(q =>
                 q.id === editingQualification.id ? updatedQualification : q
             ));
             setEditingQualification(updatedQualification);
-            setMessage("Question updated successfully!");
+            resetForm();
+            setMessage("Question added successfully!");
             setCurrentView('edit');
             setIsSaving(false);
         }, 1000);
@@ -174,128 +209,35 @@ const QualificationsDashboard: React.FC = () => {
         ));
     };
 
-    const handleViewQuestions = (qualification: Qualification) => {
-        setSelectedQualification(qualification);
-        setCurrentView('questions');
-    };
-
-    const handleAddQuestion = () => {
-        setIsSaving(true);
-        setTimeout(() => {
-            if (!editingQualification || !newQuestion.text) return;
-
-            const question: Question = {
-                id: uid('ques'),
-                text: newQuestion.text!,
-                language: newQuestion.language!,
-                type: newQuestion.type!,
-                active: newQuestion.active!,
-                options: newQuestion.type === 'Text' ? [] : (newQuestion.options || [])
-            };
-
-            const updatedQualification = {
-                ...editingQualification,
-                questions: [...editingQualification.questions, question]
-            };
-
-            setQualifications(qualifications.map(q =>
-                q.id === editingQualification.id ? updatedQualification : q
-            ));
-            setEditingQualification(updatedQualification);
-
-            setNewQuestion({
-                text: '',
-                language: 'English-US',
-                type: 'Radio',
-                active: true,
-                options: []
-            });
-            setMessage("Question added successfully!");
-            setCurrentView('edit');
-            setIsSaving(false);
-        }, 1000);
-    };
-
-    const handleToggleQuestionActive = (questionId: string) => {
-        if (!editingQualification) return;
-        const updatedQualification = {
-            ...editingQualification,
-            questions: editingQualification.questions.map(q =>
-                q.id === questionId ? { ...q, active: !q.active } : q
-            )
-        };
-        setQualifications(qualifications.map(q =>
-            q.id === editingQualification.id ? updatedQualification : q
-        ));
-        setEditingQualification(updatedQualification);
-    };
-
-    const handleUpdateExternalId = (qualificationId: string, questionId: string, externalId: string) => {
-        setMappings(mappings.map(m =>
-            m.qualificationId === qualificationId && m.questionId === questionId
-                ? { ...m, externalId }
-                : m
-        ));
-    };
-
-    const handleToggleMapping = (qualificationId: string, questionId: string) => {
-        setMappings(mappings.map(m =>
-            m.qualificationId === qualificationId && m.questionId === questionId
-                ? { ...m, mapped: !m.mapped }
-                : m
-        ));
-    };
-
     const filteredQualifications = useMemo(() => {
         return qualifications.filter(q =>
             q.name.toLowerCase().includes(searchTerm.toLowerCase())
         );
     }, [qualifications, searchTerm]);
 
-    // Handle loading state for table on view change
+    // Loading animation for table
     useEffect(() => {
-        setIsLoadingTable(true);
-        const timer = setTimeout(() => {
-            setIsLoadingTable(false);
-        }, 500);
-        return () => clearTimeout(timer);
-    }, [currentView]);
+        setIsLoadingTable(loading);
+    }, [loading]);
 
     const commonProps = {
-        currentView,
-        setCurrentView,
-        qualifications,
-        setQualifications,
-        mappings,
-        setMappings,
-        selectedQualification,
-        setSelectedQualification,
-        editingQualification,
-        setEditingQualification,
-        editingQuestion,
-        setEditingQuestion,
-        searchTerm,
-        setSearchTerm,
-        newQuestion,
-        setNewQuestion,
-        isGenerating,
-        setIsGenerating,
-        message,
-        setMessage,
-        showMappingReviewModal,
-        setShowMappingReviewModal,
-        isSaving,
-        setIsSaving,
-        isLoadingTable,
-        setIsLoadingTable,
-        resolvedTheme,
-        toggleTheme,
-        qualificationForm,
-        setQualificationForm,
-        updateQuestionForm,
-        setUpdateQuestionForm,
-        languages,
-        questionTypes,
+        currentView, setCurrentView,
+        qualifications, setQualifications,
+        mappings, setMappings,
+        selectedQualification, setSelectedQualification,
+        editingQualification, setEditingQualification,
+        editingQuestion, setEditingQuestion,
+        searchTerm, setSearchTerm,
+        newQuestion, setNewQuestion,
+        isGenerating, setIsGenerating,
+        message, setMessage,
+        showMappingReviewModal, setShowMappingReviewModal,
+        isSaving, setIsSaving,
+        isLoadingTable, setIsLoadingTable,
+        resolvedTheme, toggleTheme,
+        qualificationForm, setQualificationForm,
+        updateQuestionForm, setUpdateQuestionForm,
+        languages, questionTypes,
         resetForm,
         handleCreateQualification,
         handleEditQualification,
@@ -303,24 +245,21 @@ const QualificationsDashboard: React.FC = () => {
         handleSaveQualification,
         handleUpdateQuestion,
         handleToggleActive,
-        handleViewQuestions,
         handleAddQuestion,
-        handleToggleQuestionActive,
-        handleUpdateExternalId,
-        handleToggleMapping,
         filteredQualifications,
         uid,
-        handleSaveOption,
-        currentOption,
-        setCurrentOption,
+        currentOption, setCurrentOption,
+        currentPage,
+        setCurrentPage,
+        totalPages,
     };
 
     return (
-        <div className={`min-h-screen antialiased transition-colors ${resolvedTheme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-gray-100 text-gray-900'
-            }`}>
+        <div className={`min-h-screen antialiased transition-colors ${resolvedTheme === 'dark'
+            ? 'bg-gray-900 text-gray-100'
+            : 'bg-gray-100 text-gray-900'}`}>
             <DashboardHeader {...commonProps} />
             <Navigation {...commonProps} />
-
             <main className="max-w-7xl mx-auto">
                 <AnimatePresence mode="wait">
                     {currentView === 'list' && <ListView {...commonProps} />}
@@ -335,13 +274,11 @@ const QualificationsDashboard: React.FC = () => {
                     {currentView === 'updateOption' && <UpdateOptionView {...commonProps} />}
                 </AnimatePresence>
             </main>
-
             <MessageBox
                 message={message}
                 onClose={() => setMessage("")}
                 resolvedTheme={resolvedTheme}
             />
-
             <MappingReviewModal
                 isOpen={showMappingReviewModal}
                 onClose={() => setShowMappingReviewModal(false)}
