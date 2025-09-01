@@ -1,6 +1,15 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Edit, ToggleRight, ToggleLeft, Save, X, List, Plus } from "lucide-react";
+import {
+  Edit,
+  ToggleRight,
+  ToggleLeft,
+  Save,
+  X,
+  List,
+  Plus,
+  Search,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Question, ViewType } from "../../types/qualicationTypes";
@@ -39,7 +48,18 @@ export const UpdateQuestionView: React.FC<UpdateQuestionViewProps> = ({
   resolvedTheme,
 }) => {
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 5; // options per page
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const pageSize = 5;
+
+  // Debounce search input
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+      setCurrentPage(1);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
 
   const handleToggleOption = (index: number) => {
     if (!updateQuestionForm.options) return;
@@ -48,22 +68,25 @@ export const UpdateQuestionView: React.FC<UpdateQuestionViewProps> = ({
       ...updatedOptions[index],
       active: !updatedOptions[index].active,
     };
-    setUpdateQuestionForm({
-      ...updateQuestionForm,
-      options: updatedOptions,
-    });
+    setUpdateQuestionForm({ ...updateQuestionForm, options: updatedOptions });
   };
 
-  const paginatedOptions = useMemo(() => {
+  // Filter options based on search
+  const filteredOptions = useMemo(() => {
     if (!updateQuestionForm.options) return [];
+    return updateQuestionForm.options.filter((o) =>
+      o.text.toLowerCase().includes(debouncedSearch.toLowerCase())
+    );
+  }, [updateQuestionForm.options, debouncedSearch]);
+
+  const paginatedOptions = useMemo(() => {
     const start = (currentPage - 1) * pageSize;
-    return updateQuestionForm.options.slice(start, start + pageSize);
-  }, [updateQuestionForm.options, currentPage]);
+    return filteredOptions.slice(start, start + pageSize);
+  }, [filteredOptions, currentPage]);
 
   const totalPages = useMemo(() => {
-    if (!updateQuestionForm.options) return 1;
-    return Math.ceil(updateQuestionForm.options.length / pageSize);
-  }, [updateQuestionForm.options]);
+    return Math.ceil(filteredOptions.length / pageSize) || 1;
+  }, [filteredOptions]);
 
   return (
     <motion.div
@@ -100,25 +123,36 @@ export const UpdateQuestionView: React.FC<UpdateQuestionViewProps> = ({
         )}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          {/* Question Text */}
           <div>
             <label className="block text-sm font-medium mb-2">Question*</label>
             <textarea
               value={updateQuestionForm.text || ""}
               onChange={(e) =>
-                setUpdateQuestionForm({ ...updateQuestionForm, text: e.target.value })
+                setUpdateQuestionForm({
+                  ...updateQuestionForm,
+                  text: e.target.value,
+                })
               }
               className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100"
               rows={3}
               placeholder="Enter your question"
             />
           </div>
+
+          {/* Language & Type */}
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium mb-2">Question Language*</label>
+              <label className="block text-sm font-medium mb-2">
+                Question Language*
+              </label>
               <select
                 value={updateQuestionForm.language || "English-US"}
                 onChange={(e) =>
-                  setUpdateQuestionForm({ ...updateQuestionForm, language: e.target.value })
+                  setUpdateQuestionForm({
+                    ...updateQuestionForm,
+                    language: e.target.value,
+                  })
                 }
                 className="w-full px-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100"
               >
@@ -129,6 +163,7 @@ export const UpdateQuestionView: React.FC<UpdateQuestionViewProps> = ({
                 ))}
               </select>
             </div>
+
             <div>
               <label className="block text-sm font-medium mb-2">Question Type*</label>
               <select
@@ -152,7 +187,8 @@ export const UpdateQuestionView: React.FC<UpdateQuestionViewProps> = ({
         </div>
 
         {/* Options Input */}
-        {(updateQuestionForm.type === "Radio" || updateQuestionForm.type === "Checkbox") && (
+        {(updateQuestionForm.type === "Radio" ||
+          updateQuestionForm.type === "Checkbox") && (
           <div className="mb-6">
             <label className="block text-sm font-medium mb-2">
               Options (semicolon separated)
@@ -196,7 +232,7 @@ export const UpdateQuestionView: React.FC<UpdateQuestionViewProps> = ({
         </div>
       </div>
 
-      {/* Option Table */}
+      {/* Option Table + Search */}
       <div
         className={cn(
           "rounded-2xl shadow-lg overflow-hidden mt-6 transition-colors",
@@ -212,69 +248,51 @@ export const UpdateQuestionView: React.FC<UpdateQuestionViewProps> = ({
           )}
         >
           <h3 className="text-xl font-bold">Option list</h3>
-          <Button
-            onClick={() => setCurrentView("addOption")}
-            className="gradient-primary text-white hover:shadow-glow transition-all duration-300"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add Option
-          </Button>
+          <div className="flex items-center space-x-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search options..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 pr-4 py-2 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100"
+              />
+            </div>
+            <Button
+              onClick={() => setCurrentView("addOption")}
+              className="gradient-primary text-white hover:shadow-glow transition-all duration-300"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Add Option
+            </Button>
+          </div>
         </div>
 
+        {/* Table */}
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead className={cn(resolvedTheme === "dark" ? "bg-gray-700" : "bg-gray-50")}>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                S.No
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Option
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Language
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Update/Edit
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                Active/Inactive
-              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">S.No</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Option</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Language</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Update/Edit</th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">Active/Inactive</th>
             </tr>
           </thead>
-          <tbody
-            className={cn(
-              "divide-y transition-colors",
-              resolvedTheme === "dark" ? "divide-gray-700" : "divide-gray-200"
-            )}
-          >
+          <tbody className={cn("divide-y transition-colors", resolvedTheme === "dark" ? "divide-gray-700" : "divide-gray-200")}>
             {isLoadingTable ? (
-              <tr>
-                <td colSpan={5} className="p-6 text-center text-gray-500">
-                  Loading...
-                </td>
-              </tr>
+              <tr><td colSpan={5} className="p-6 text-center text-gray-500">Loading...</td></tr>
             ) : paginatedOptions.length ? (
               paginatedOptions.map((option, idx) => (
-                <tr
-                  key={idx}
-                  className={cn(
-                    "transition-colors",
-                    resolvedTheme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-50"
-                  )}
-                >
+                <tr key={idx} className={cn("transition-colors", resolvedTheme === "dark" ? "hover:bg-gray-700" : "hover:bg-gray-50")}>
                   <td className="px-6 py-4 text-sm">{(currentPage - 1) * pageSize + idx + 1}</td>
                   <td className="px-6 py-4 text-sm">{option.text}</td>
-                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                    {option.language}
-                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">{option.language}</td>
                   <td className="px-6 py-4 text-sm font-medium">
                     <button
                       onClick={() => {
-                        setUpdateQuestionForm({
-                          ...updateQuestionForm,
-                          text: option.text,
-                          language: option.language,
-                        });
+                        setUpdateQuestionForm({ ...updateQuestionForm, text: option.text, language: option.language });
                         setCurrentView("updateOption");
                       }}
                       className="text-blue-600 hover:text-blue-900 p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
@@ -285,27 +303,17 @@ export const UpdateQuestionView: React.FC<UpdateQuestionViewProps> = ({
                   </td>
                   <td className="px-6 py-4 text-sm font-medium">
                     <button
-                      onClick={() =>
-                        handleToggleOption((currentPage - 1) * pageSize + idx)
-                      }
+                      onClick={() => handleToggleOption((currentPage - 1) * pageSize + idx)}
                       className="flex items-center p-1 rounded hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                       title="Toggle option status"
                     >
-                      {option.active ? (
-                        <ToggleRight className="w-6 h-6 text-green-500" />
-                      ) : (
-                        <ToggleLeft className="w-6 h-6 text-gray-400" />
-                      )}
+                      {option.active ? <ToggleRight className="w-6 h-6 text-green-500" /> : <ToggleLeft className="w-6 h-6 text-gray-400" />}
                     </button>
                   </td>
                 </tr>
               ))
             ) : (
-              <tr>
-                <td colSpan={5} className="p-6 text-center text-gray-500">
-                  No options found.
-                </td>
-              </tr>
+              <tr><td colSpan={5} className="p-6 text-center text-gray-500">No options found.</td></tr>
             )}
           </tbody>
         </table>
@@ -313,33 +321,15 @@ export const UpdateQuestionView: React.FC<UpdateQuestionViewProps> = ({
         {/* Pagination */}
         {totalPages > 1 && (
           <Pagination className="py-4">
-            <PaginationFirst
-              onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1}
-            />
-            <PaginationPrevious
-              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              disabled={currentPage === 1}
-            />
+            <PaginationFirst onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
+            <PaginationPrevious onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} />
             {Array.from({ length: totalPages }, (_, i) => (
-              <PaginationLink
-                key={i}
-                isActive={currentPage === i + 1}
-                onClick={() => setCurrentPage(i + 1)}
-              >
+              <PaginationLink key={i} isActive={currentPage === i + 1} onClick={() => setCurrentPage(i + 1)}>
                 {i + 1}
               </PaginationLink>
             ))}
-            <PaginationNext
-              onClick={() =>
-                setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-              }
-              disabled={currentPage === totalPages}
-            />
-            <PaginationLast
-              onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages}
-            />
+            <PaginationNext onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} />
+            <PaginationLast onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} />
           </Pagination>
         )}
       </div>

@@ -14,6 +14,8 @@ interface QualificationForm {
 interface EditViewProps {
     setCurrentView: (view: ViewType) => void;
     qualificationForm: QualificationForm;
+    searchTerm: string;
+    setSearchTerm: (term: string) => void;
     setQualificationForm: (form: QualificationForm) => void;
     handleSaveQualification: () => void;
     editingQualification: Qualification | null;
@@ -26,6 +28,8 @@ interface EditViewProps {
 }
 
 export const EditView: React.FC<EditViewProps> = ({
+    searchTerm,
+    setSearchTerm,
     setCurrentView,
     qualificationForm,
     setQualificationForm,
@@ -125,7 +129,9 @@ export const EditView: React.FC<EditViewProps> = ({
                         <input
                             type="text"
                             placeholder="Search by name"
-                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100 transition-colors"
                         />
                     </div>
                 </div>

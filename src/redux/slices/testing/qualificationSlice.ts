@@ -1,4 +1,4 @@
-// src/redux/qualification/qualificationSlice.ts
+// src/redux/slices/testing/qualificationSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 import { getQualifications } from "@/service/qualifications/qualification.service";
 import { Qualification } from "@/types/qualicationTypes";
@@ -31,6 +31,7 @@ const initialState: QualificationState = {
 interface FetchQualificationsParams {
     page: number;
     limit: number;
+    search?: string;
 }
 
 // Response type from API
@@ -46,10 +47,9 @@ export const fetchQualifications = createAsyncThunk<
     { rejectValue: string }
 >(
     "qualifications/fetchAll",
-    async ({ page, limit }, { rejectWithValue }) => {
+    async ({ page, limit, search }, { rejectWithValue }) => {
         try {
-            console.log("📦 Fetching page:", page, "limit:", limit);
-            const response = await getQualifications({ page, limit });
+            const response = await getQualifications({ page, limit, search });
 
             if (response?.data && Array.isArray(response.data.data)) {
                 return {
@@ -69,7 +69,15 @@ export const fetchQualifications = createAsyncThunk<
 const qualificationSlice = createSlice({
     name: "qualifications",
     initialState,
-    reducers: {},
+    reducers: {
+        // Optional: Reset state
+        resetQualificationsState: (state) => {
+            state.items = [];
+            state.loading = false;
+            state.error = null;
+            state.pagination = null;
+        },
+    },
     extraReducers: (builder) => {
         builder
             .addCase(fetchQualifications.pending, (state) => {
@@ -91,4 +99,5 @@ const qualificationSlice = createSlice({
     },
 });
 
+export const { resetQualificationsState } = qualificationSlice.actions;
 export default qualificationSlice.reducer;
