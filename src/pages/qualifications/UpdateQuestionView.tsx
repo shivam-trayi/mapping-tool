@@ -13,14 +13,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Question, ViewType } from "../../types/qualicationTypes";
-import {
-  Pagination,
-  PaginationFirst,
-  PaginationPrevious,
-  PaginationNext,
-  PaginationLast,
-  PaginationLink,
-} from "@/components/ui/pagination";
 
 interface UpdateQuestionViewProps {
   setCurrentView: (view: ViewType) => void;
@@ -318,20 +310,6 @@ export const UpdateQuestionView: React.FC<UpdateQuestionViewProps> = ({
           </tbody>
         </table>
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <Pagination className="py-4">
-            <PaginationFirst onClick={() => setCurrentPage(1)} disabled={currentPage === 1} />
-            <PaginationPrevious onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))} disabled={currentPage === 1} />
-            {Array.from({ length: totalPages }, (_, i) => (
-              <PaginationLink key={i} isActive={currentPage === i + 1} onClick={() => setCurrentPage(i + 1)}>
-                {i + 1}
-              </PaginationLink>
-            ))}
-            <PaginationNext onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages} />
-            <PaginationLast onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} />
-          </Pagination>
-        )}
       </div>
     </motion.div>
   );

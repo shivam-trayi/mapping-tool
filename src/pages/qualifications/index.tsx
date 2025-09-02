@@ -28,6 +28,8 @@ const QualificationsDashboard: React.FC = () => {
     const dispatch = useDispatch();
     const { items, loading, error, pagination } = useSelector((state: RootState) => state.qualifications);
 
+    console.log(pagination, 'pagination')
+
     const [qualifications, setQualifications] = useState<Qualification[]>([]);
     const [currentView, setCurrentView] = useState<ViewType>('list');
     const [mappings, setMappings] = useState<MappingEntry[]>([]);
@@ -82,6 +84,7 @@ const QualificationsDashboard: React.FC = () => {
     }, [items, loading]);
 
     const totalPages = pagination?.totalPages || 1;
+    const totalItems = pagination?.total || 0;
 
     /** Reset form */
     const resetForm = () => {
@@ -169,7 +172,11 @@ const QualificationsDashboard: React.FC = () => {
         languages, questionTypes, resetForm, handleCreateQualification, handleEditQualification,
         handleEditQuestion, handleSaveQualification, handleUpdateQuestion, handleToggleActive,
         handleAddQuestion, filteredQualifications, uid, currentOption, setCurrentOption,
-        currentPage, setCurrentPage, totalPages
+        currentPage,
+        setCurrentPage,
+        totalPages,
+        totalItems,
+        pageSize
     };
 
     return (

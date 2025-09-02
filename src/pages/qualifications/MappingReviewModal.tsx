@@ -1,41 +1,12 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-// import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationFirst, PaginationLast, PaginationPrevious, PaginationNext } from './';
 import { Save, Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { MessageBox } from '@/components/ui/MessageBox';
-import { Pagination, PaginationContent, PaginationFirst, PaginationItem, PaginationLast, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { Checkbox } from '@/components/ui/checkbox';
 
-// usePagination hook
-const usePagination = ({ data, itemsPerPage }) => {
-  const [currentPage, setCurrentPage] = React.useState(1);
-  const totalItems = data.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  const paginatedData = React.useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return data.slice(start, start + itemsPerPage);
-  }, [data, currentPage, itemsPerPage]);
-
-  return {
-    currentPage, totalPages, paginatedData,
-    goToPage: (page) => page >= 1 && page <= totalPages && setCurrentPage(page),
-    goToNextPage: () => currentPage < totalPages && setCurrentPage(currentPage + 1),
-    goToPreviousPage: () => currentPage > 1 && setCurrentPage(currentPage - 1),
-    goToFirstPage: () => setCurrentPage(1),
-    goToLastPage: () => setCurrentPage(totalPages),
-    canGoNext: currentPage < totalPages,
-    canGoPrevious: currentPage > 1,
-    startIndex: (currentPage - 1) * itemsPerPage + 1,
-    endIndex: Math.min(currentPage * itemsPerPage, totalItems),
-    totalItems
-  };
-};
-
-// MappingReviewModal Component
 const MappingReviewModal = ({
   isOpen,
   onClose,
@@ -69,29 +40,10 @@ const MappingReviewModal = ({
     return matchesSearch && matchesStatus;
   });
 
-  const {
-    currentPage,
-    totalPages,
-    paginatedData,
-    goToPage,
-    goToNextPage,
-    goToPreviousPage,
-    goToFirstPage,
-    goToLastPage,
-    canGoNext,
-    canGoPrevious,
-    startIndex,
-    endIndex,
-    totalItems,
-  } = usePagination({
-    data: filteredData,
-    itemsPerPage: 5,
-  });
-
   const handleSelectAll = (checked) => {
     setSelectAll(checked);
     if (checked) {
-      setSelectedItems(new Set(paginatedData.map(item => item.id)));
+      setSelectedItems(new Set(filteredData.map(item => item.id)));
     } else {
       setSelectedItems(new Set());
     }
@@ -105,7 +57,7 @@ const MappingReviewModal = ({
       newSelected.delete(id);
     }
     setSelectedItems(newSelected);
-    setSelectAll(newSelected.size === paginatedData.length && paginatedData.length > 0);
+    setSelectAll(newSelected.size === filteredData.length && filteredData.length > 0);
   };
 
   const handleSave = () => {
@@ -115,7 +67,6 @@ const MappingReviewModal = ({
 
     console.log('Inserting selected review data:', selectedData);
     setMessage(`Successfully inserted ${selectedData.length} mapping entries.`);
-    // In a real application, you would perform an API call here.
   };
 
   const getStatusColor = (status) => {
@@ -137,14 +88,14 @@ const MappingReviewModal = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-50 overflow-y-auto bg-gray-900 bg-opacity-70 flex items-center justify-center p-4 sm:p-6"
+        className="fixed inset-0 z-50 bg-gray-900 bg-opacity-70 flex items-center justify-center p-4 sm:p-6"
       >
         <motion.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
           className={cn(
-            "relative rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden transition-colors",
+            "relative rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col transition-colors",
             resolvedTheme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'
           )}
         >
@@ -159,7 +110,8 @@ const MappingReviewModal = ({
             </Button>
           </div>
 
-          <div className="p-6 overflow-y-auto">
+          {/* Content (Scrollable) */}
+          <div className="flex-1 overflow-y-auto p-6">
             {/* Filters */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-6">
               <div className="relative flex-1 max-w-full sm:max-w-sm">
@@ -195,168 +147,119 @@ const MappingReviewModal = ({
               resolvedTheme === 'dark' ? 'text-gray-400' : 'text-gray-600'
             )}>
               <span>
-                Showing {startIndex} to {endIndex} of {totalItems} items
+                Showing {filteredData.length} items
                 {selectedItems.size > 0 && ` (${selectedItems.size} selected)`}
               </span>
-              <span>
-                Page {currentPage} of {totalPages}
-              </span>
             </div>
 
+            {/* Table */}
             <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
-              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead className={cn(
-                  "sticky top-0 transition-colors z-10",
-                  resolvedTheme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'
-                )}>
-                  <tr>
-                    <th className="px-6 py-4 text-left">
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          checked={selectAll}
-                          onCheckedChange={handleSelectAll}
-                        />
-                        <span className="text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 hidden sm:block">
-                          Select All
-                        </span>
-                      </div>
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                      Question
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                      Qualification
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                      Mapped Field
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className={cn(
-                  "divide-y transition-colors",
-                  resolvedTheme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'
-                )}>
-                  {paginatedData.length > 0 ? (
-                    paginatedData.map((item) => (
-                      <motion.tr
-                        key={item.id}
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        transition={{ duration: 0.2 }}
-                        className={cn(
-                          "transition-colors",
-                          resolvedTheme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-50',
-                          selectedItems.has(item.id) && 'bg-blue-50 dark:bg-blue-900/20'
-                        )}
-                      >
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <Checkbox
-                            checked={selectedItems.has(item.id)}
-                            onCheckedChange={(checked) => handleSelectItem(item.id, checked)}
-                          />
-                        </td>
-                        <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 max-w-[200px] truncate" title={item.questionText}>
-                          {item.questionText}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
-                          {item.qualificationName}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
-                          {item.mappedField || 'Not Mapped'}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
-                          <span className={cn(
-                            "inline-flex px-3 py-1 text-xs font-semibold rounded-full",
-                            getStatusColor(item.status)
-                          )}>
-                            {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                          </span>
-                        </td>
-                      </motion.tr>
-                    ))
-                  ) : (
+              <div className="max-h-[50vh] overflow-y-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className={cn(
+                    "sticky top-0 z-10 transition-colors",
+                    resolvedTheme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'
+                  )}>
                     <tr>
-                      <td colSpan={5} className="p-12 text-center">
-                        <div className="flex flex-col items-center space-y-3">
-                          <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
-                            <Search className="w-8 h-8 text-gray-400" />
-                          </div>
-                          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No data found</h3>
-                          <p className="text-gray-500 dark:text-gray-400">
-                            {searchTerm ? 'No results match your search criteria.' : 'No review data available.'}
-                          </p>
+                      <th className="px-6 py-4 text-left">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={selectAll}
+                            onCheckedChange={handleSelectAll}
+                          />
+                          <span className="text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 hidden sm:block">
+                            Select All
+                          </span>
                         </div>
-                      </td>
+                      </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Question</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Qualification</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Mapped Field</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Status</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Pagination and Action Buttons */}
-            <div className={cn(
-              "mt-6 flex flex-col sm:flex-row items-center justify-between space-y-4 sm:space-y-0",
-              "border-t pt-4 transition-colors",
-              resolvedTheme === 'dark' ? 'border-gray-700' : 'border-gray-200'
-            )}>
-              {totalPages > 1 && (
-                <div className="w-full sm:w-auto">
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem><PaginationFirst onClick={goToFirstPage} className={cn(!canGoPrevious && 'opacity-50 pointer-events-none')} /></PaginationItem>
-                      <PaginationItem><PaginationPrevious onClick={goToPreviousPage} className={cn(!canGoPrevious && 'opacity-50 pointer-events-none')} /></PaginationItem>
-
-                      {/* Render up to 5 page links centered around the current page */}
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).filter(page => {
-                        // Always show the first page
-                        if (page === 1) return true;
-                        // Always show the last page
-                        if (page === totalPages) return true;
-                        // Show pages immediately around the current page
-                        if (Math.abs(page - currentPage) <= 2) return true;
-                        return false;
-                      }).map((page, index, array) => (
-                        <React.Fragment key={page}>
-                          {index > 0 && array[index] - array[index - 1] > 1 && (
-                            <PaginationItem><span>...</span></PaginationItem>
+                  </thead>
+                  <tbody className={cn(
+                    "divide-y transition-colors",
+                    resolvedTheme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'
+                  )}>
+                    {filteredData.length > 0 ? (
+                      filteredData.map((item) => (
+                        <motion.tr
+                          key={item.id}
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          transition={{ duration: 0.2 }}
+                          className={cn(
+                            "transition-colors",
+                            resolvedTheme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-50',
+                            selectedItems.has(item.id) && 'bg-blue-50 dark:bg-blue-900/20'
                           )}
-                          <PaginationItem>
-                            <PaginationLink
-                              onClick={() => goToPage(page)}
-                              isActive={currentPage === page}
-                            >
-                              {page}
-                            </PaginationLink>
-                          </PaginationItem>
-                        </React.Fragment>
-                      ))}
-
-                      <PaginationItem><PaginationNext onClick={goToNextPage} className={cn(!canGoNext && 'opacity-50 pointer-events-none')} /></PaginationItem>
-                      <PaginationItem><PaginationLast onClick={goToLastPage} className={cn(!canGoNext && 'opacity-50 pointer-events-none')} /></PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
-              )}
-
-              <div className="flex space-x-3 w-full sm:w-auto justify-end">
-                <Button
-                  onClick={handleSave}
-                  disabled={selectedItems.size === 0}
-                  className="bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300 w-full sm:w-auto"
-                >
-                  <Save className="w-4 h-4 mr-2" />
-                  Insert Selected ({selectedItems.size})
-                </Button>
-                <Button onClick={onClose} variant="outline" className="w-full sm:w-auto">
-                  <X className="w-4 h-4 mr-2" />
-                  Close
-                </Button>
+                        >
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <Checkbox
+                              checked={selectedItems.has(item.id)}
+                              onCheckedChange={(checked) => handleSelectItem(item.id, checked)}
+                            />
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100 max-w-[200px] truncate" title={item.questionText}>
+                            {item.questionText}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">
+                            {item.qualificationName}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
+                            {item.mappedField || 'Not Mapped'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span className={cn(
+                              "inline-flex px-3 py-1 text-xs font-semibold rounded-full",
+                              getStatusColor(item.status)
+                            )}>
+                              {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                            </span>
+                          </td>
+                        </motion.tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={5} className="p-12 text-center">
+                          <div className="flex flex-col items-center space-y-3">
+                            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
+                              <Search className="w-8 h-8 text-gray-400" />
+                            </div>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No data found</h3>
+                            <p className="text-gray-500 dark:text-gray-400">
+                              {searchTerm ? 'No results match your search criteria.' : 'No review data available.'}
+                            </p>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
+          </div>
+
+          {/* Sticky Footer */}
+          <div className={cn(
+            "sticky bottom-0 z-20 flex flex-col sm:flex-row items-center justify-end space-y-4 sm:space-y-0 sm:space-x-3",
+            "border-t p-4 transition-colors",
+            resolvedTheme === 'dark' ? 'border-gray-700 bg-gray-900' : 'border-gray-50'
+          )}>
+            <Button
+              onClick={handleSave}
+              disabled={selectedItems.size === 0}
+              className="bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300 w-full sm:w-auto"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              Insert Selected ({selectedItems.size})
+            </Button>
+            <Button onClick={onClose} variant="outline" className="w-full sm:w-auto">
+              <X className="w-4 h-4 mr-2" />
+              Close
+            </Button>
           </div>
         </motion.div>
       </motion.div>
