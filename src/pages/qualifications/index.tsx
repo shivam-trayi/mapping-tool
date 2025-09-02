@@ -1,4 +1,3 @@
-// src/components/qualifications/QualificationsDashboard.tsx
 import React, { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { useDispatch, useSelector } from 'react-redux';
