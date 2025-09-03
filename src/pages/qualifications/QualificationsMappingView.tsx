@@ -87,21 +87,28 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 			};
 		});
 
+		if (selectedData.length === 0) return;
+
 		setIsSaving(true);
 		try {
 			await dispatch(saveQualMapping(selectedData)).unwrap();
 
-			// Update modal data for review without refetching
+			// Prepare review data: only newly saved
 			const reviewData = selectedData.map((d) => ({
 				id: d.qualification_id,
 				qualificationName: qualificationMappingData.find(q => q.id === d.qualification_id)?.qualificationName || '',
+				constantId: d.constantId,
 				mapped: true,
 				oldMapped: false,
-				constantId: d.constantId,
 			}));
 			setReviewMappings(reviewData);
 
-			alert(`Saved ${selectedData.length} qualifications for review`);
+			alert(`Saved ${selectedData.length} qualification(s) for review`);
+
+			// ✅ Reset selected items and constant inputs after save
+			setSelectedItems(new Set());
+			setSelectAll(false);
+			setConstantIds({});
 		} catch (err) {
 			console.error('Error saving qualification mapping:', err);
 			alert('Failed to save mapping. Please try again.');
@@ -109,6 +116,7 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 			setIsSaving(false);
 		}
 	};
+
 
 	React.useEffect(() => {
 		const fetchMappings = async () => {
@@ -244,15 +252,18 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 											<td className='px-6 py-4 whitespace-nowrap'>
 												<Input
 													type='text'
-													value={
-														constantIds[item.id] || // user typed value
-														fetchedMappings[item.id]?.constantId || // API value if exists
-														item.constantId // fallback default
+													value={constantIds[item.id] ?? fetchedMappings[item.id]?.constantId ?? ''}
+													onChange={(e) =>
+														setConstantIds(prev => ({
+															...prev,
+															[item.id]: e.target.value,
+														}))
 													}
-													onChange={(e) => handleConstantIdChange(item.id, e.target.value)}
 													className='w-full'
 													placeholder='Enter constant ID'
 												/>
+
+
 											</td>
 										</tr>
 									))
@@ -295,16 +306,11 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 			<QualificationMappingReviewModal
 				isOpen={showMappingReviewModal}
 				onClose={() => setShowMappingReviewModal(false)}
-				mappings={Object.values(fetchedMappings).map(item => ({
-					id: item.id,
-					qualificationName: item.qualificationName,
-					constantId: item.constantId,
-					memberId: selectedCustomer,
-					// remove status completely
-				}))}
+				mappings={reviewMappings} // only newly saved
 				qualifications={qualifications || []}
 				resolvedTheme={resolvedTheme}
 			/>
+
 
 
 		</>

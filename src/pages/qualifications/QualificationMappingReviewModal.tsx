@@ -38,13 +38,14 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
   const [selectAll, setSelectAll] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [message, setMessage] = React.useState('');
+  const [localMappings, setLocalMappings] = React.useState(mappings);
+
   const dispatch = useDispatch();
 
-  const filteredData = mappings.filter(item => 
+  const filteredData = localMappings.filter(item =>
     item.qualificationName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     item.constantId.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
   const handleSelectAll = (checked: boolean) => {
     setSelectAll(checked);
     setSelectedItems(checked ? new Set(filteredData.map(item => item.id)) : new Set());
@@ -58,25 +59,39 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
     setSelectAll(newSelected.size === filteredData.length && filteredData.length > 0);
   };
 
-  const handleSave = async () => {
-  const selectedData = Array.from(selectedItems)
-    .map(id => mappings.find(d => d.id === id))
-    .filter(Boolean);
 
-  if (selectedData.length === 0) return;
-
-  try {
-    // ✅ dispatch ke through thunk call karo
-    await dispatch(saveQualMappingReviewData(selectedData as any)).unwrap();
-
-    setMessage(`✅ Successfully inserted ${selectedData.length} qualification mapping entries.`);
+  React.useEffect(() => {
+    setLocalMappings(mappings);
     setSelectedItems(new Set());
     setSelectAll(false);
-  } catch (error) {
-    console.error('Error inserting qualification mappings:', error);
-    setMessage('❌ Failed to insert qualification mapping entries.');
-  }
-};
+  }, [mappings]);
+
+
+  const handleSave = async () => {
+    const selectedData = Array.from(selectedItems)
+      .map(id => localMappings.find(d => d.id === id))
+      .filter(Boolean);
+
+    if (selectedData.length === 0) return;
+
+    try {
+      await dispatch(saveQualMappingReviewData(selectedData as any)).unwrap();
+
+      setMessage(`✅ Successfully inserted ${selectedData.length} qualification mapping entries.`);
+
+      // ✅ Remove inserted items from localMappings
+      const remaining = localMappings.filter(item => !selectedItems.has(item.id));
+      setLocalMappings(remaining);
+
+      // ✅ Reset selection
+      setSelectedItems(new Set());
+      setSelectAll(false);
+    } catch (error) {
+      console.error('Error inserting qualification mappings:', error);
+      setMessage('❌ Failed to insert qualification mapping entries.');
+    }
+  };
+
 
   if (!isOpen) return null;
 

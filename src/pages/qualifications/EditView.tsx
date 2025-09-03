@@ -4,7 +4,6 @@ import { Plus, Edit, Search, ToggleLeft, ToggleRight, Save, X, List, HelpCircle 
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { Qualification, Question, ViewType } from '../../types/qualicationTypes';
-import Pagination from '@/components/ui/pagination';
 
 interface QualificationForm {
     name: string;
@@ -219,15 +218,6 @@ export const EditView: React.FC<EditViewProps> = ({
                 </tbody>
             </table>
         </div>
-        {/* pagination */}
-        {/* {editingQualification?.questions.length > 0 && totalPages > 1 && (
-            <Pagination
-                totalItems={totalItems}
-                itemsPerPage={pageSize}
-                currentPage={currentPage}
-                onPageChange={setCurrentPage}
-            />
-        )} */}
 
     </motion.div>
 );
