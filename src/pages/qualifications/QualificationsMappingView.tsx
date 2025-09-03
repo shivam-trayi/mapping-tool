@@ -35,19 +35,19 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 	const [showMappingReviewModal, setShowMappingReviewModal] = React.useState(false);
 	const [fetchedMappings, setFetchedMappings] = React.useState<Record<string, QualificationMappingDataItem>>({});
 	const [reviewMappings, setReviewMappings] = React.useState<QualificationMappingDataItem[]>([]);
-	
+
 
 
 	const dispatch = useDispatch<AppDispatch>();
 	const { items: clients, loading: clientLoading, error: clientError } = useSelector((state: RootState) => state.clients);
 
-  const qualificationMappingData: QualificationMappingDataItem[] = qualifications.map((q) => ({
-    id: q.id,
-    qualificationName: q.name,
-    mapped: !!fetchedMappings[q.id], // mark mapped if API returned mapping
-    oldMapped: false, // adjust if you want to track old mappings
-    constantId: fetchedMappings[q.id]?.constantId || '',
-  }));
+	const qualificationMappingData: QualificationMappingDataItem[] = qualifications.map((q) => ({
+		id: q.id,
+		qualificationName: q.name,
+		mapped: !!fetchedMappings[q.id], // mark mapped if API returned mapping
+		oldMapped: false, // adjust if you want to track old mappings
+		constantId: fetchedMappings[q.id]?.constantId || '',
+	}));
 
 
 	const handleSelectAll = (checked: boolean) => {
@@ -67,80 +67,80 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 		setConstantIds((prev) => ({ ...prev, [id]: value }));
 	};
 
-const handleSaveForReview = async () => {
-    if (!selectedCustomer) {
-        alert('Please select a Customer/Supplier first.');
-        return;
-    }
+	const handleSaveForReview = async () => {
+		if (!selectedCustomer) {
+			alert('Please select a Customer/Supplier first.');
+			return;
+		}
 
-    const selectedData: QualificationsMappingData[] = Array.from(selectedItems).map((id) => {
-        const item = qualificationMappingData.find((d) => d.id === id)!;
-        return {
-            qualification_id: item.id,
-            member_id: selectedCustomer,
-            member_type: 'customer',
-            member_qualification_id: undefined,
-            created_by: undefined,
-            updated_by: undefined,
-            old_member_qualification_id: undefined,
-            constantId: constantIds[id] || fetchedMappings[item.id]?.constantId || item.constantId || '',
-        };
-    });
+		const selectedData: QualificationsMappingData[] = Array.from(selectedItems).map((id) => {
+			const item = qualificationMappingData.find((d) => d.id === id)!;
+			return {
+				qualification_id: item.id,
+				member_id: selectedCustomer,
+				member_type: 'customer',
+				member_qualification_id: undefined,
+				created_by: undefined,
+				updated_by: undefined,
+				old_member_qualification_id: undefined,
+				constantId: constantIds[id] || fetchedMappings[item.id]?.constantId || item.constantId || '',
+			};
+		});
 
-    setIsSaving(true);
-    try {
-        await dispatch(saveQualMapping(selectedData)).unwrap();
+		setIsSaving(true);
+		try {
+			await dispatch(saveQualMapping(selectedData)).unwrap();
 
-        // Update modal data for review without refetching
-        const reviewData = selectedData.map((d) => ({
-            id: d.qualification_id,
-            qualificationName: qualificationMappingData.find(q => q.id === d.qualification_id)?.qualificationName || '',
-            mapped: true,
-            oldMapped: false,
-            constantId: d.constantId,
-        }));
-        setReviewMappings(reviewData);
+			// Update modal data for review without refetching
+			const reviewData = selectedData.map((d) => ({
+				id: d.qualification_id,
+				qualificationName: qualificationMappingData.find(q => q.id === d.qualification_id)?.qualificationName || '',
+				mapped: true,
+				oldMapped: false,
+				constantId: d.constantId,
+			}));
+			setReviewMappings(reviewData);
 
-        alert(`Saved ${selectedData.length} qualifications for review`);
-    } catch (err) {
-        console.error('Error saving qualification mapping:', err);
-        alert('Failed to save mapping. Please try again.');
-    } finally {
-        setIsSaving(false);
-    }
-};
+			alert(`Saved ${selectedData.length} qualifications for review`);
+		} catch (err) {
+			console.error('Error saving qualification mapping:', err);
+			alert('Failed to save mapping. Please try again.');
+		} finally {
+			setIsSaving(false);
+		}
+	};
 
-React.useEffect(() => {
-    const fetchMappings = async () => {
-        if (!selectedCustomer) {
-            setFetchedMappings({});
-            return;
-        }
-        try {
-            const response = await dispatch(getAllQualMapping({ memberId: selectedCustomer })).unwrap();
+	React.useEffect(() => {
+		const fetchMappings = async () => {
+			if (!selectedCustomer) {
+				setFetchedMappings({});
+				return;
+			}
+			try {
+				const response = await dispatch(getAllQualMapping({ memberId: selectedCustomer })).unwrap();
 
-            const result = response.data?.data || []; // <- extract actual array from API
-            const mappingRecord: Record<string, QualificationMappingDataItem> = {};
+				const result = response.data?.data || []; // <- extract actual array from API
+				const mappingRecord: Record<string, QualificationMappingDataItem> = {};
 
-            result.forEach((item: any) => {
-                mappingRecord[item.qualification_id] = {
-                    id: item.qualification_id,
-                    qualificationName: item.qualificationName,
-                    mapped: true,
-                    oldMapped: false,
-                    constantId: item.member_qualification_id?.toString() || '', // <- show API value here
-                };
-            });
+				result.forEach((item: any) => {
+					mappingRecord[item.qualification_id] = {
+						id: item.qualification_id,
+						qualificationName: item.qualificationName,
+						mapped: true,
+						oldMapped: false,
+						constantId: item.member_qualification_id?.toString() || '', // <- show API value here
+					};
+				});
 
-            setFetchedMappings(mappingRecord);
-        } catch (err) {
-            console.error('Error fetching qualification mappings:', err);
-            setFetchedMappings({});
-        }
-    };
+				setFetchedMappings(mappingRecord);
+			} catch (err) {
+				console.error('Error fetching qualification mappings:', err);
+				setFetchedMappings({});
+			}
+		};
 
-    fetchMappings();
-}, [selectedCustomer, dispatch]);
+		fetchMappings();
+	}, [selectedCustomer, dispatch]);
 
 
 	return (
@@ -243,16 +243,16 @@ React.useEffect(() => {
 											</td>
 											<td className='px-6 py-4 whitespace-nowrap'>
 												<Input
-    type='text'
-    value={
-        constantIds[item.id] || // user typed value
-        fetchedMappings[item.id]?.constantId || // API value if exists
-        item.constantId // fallback default
-    }
-    onChange={(e) => handleConstantIdChange(item.id, e.target.value)}
-    className='w-full'
-    placeholder='Enter constant ID'
-/>
+													type='text'
+													value={
+														constantIds[item.id] || // user typed value
+														fetchedMappings[item.id]?.constantId || // API value if exists
+														item.constantId // fallback default
+													}
+													onChange={(e) => handleConstantIdChange(item.id, e.target.value)}
+													className='w-full'
+													placeholder='Enter constant ID'
+												/>
 											</td>
 										</tr>
 									))
@@ -291,20 +291,20 @@ React.useEffect(() => {
 			</motion.div>
 
 			{/* Qualification Mapping Review Modal */}
-		{/* // In your QualificationsMappingView.tsx (only relevant changes) */}
-<QualificationMappingReviewModal
-    isOpen={showMappingReviewModal}
-    onClose={() => setShowMappingReviewModal(false)}
-    mappings={Object.values(fetchedMappings).map(item => ({
-        id: item.id,
-        qualificationName: item.qualificationName,
-        constantId: item.constantId,
-		memberId: selectedCustomer,
-        // remove status completely
-    }))}
-    qualifications={qualifications || []}
-    resolvedTheme={resolvedTheme}
-/>
+			{/* // In your QualificationsMappingView.tsx (only relevant changes) */}
+			<QualificationMappingReviewModal
+				isOpen={showMappingReviewModal}
+				onClose={() => setShowMappingReviewModal(false)}
+				mappings={Object.values(fetchedMappings).map(item => ({
+					id: item.id,
+					qualificationName: item.qualificationName,
+					constantId: item.constantId,
+					memberId: selectedCustomer,
+					// remove status completely
+				}))}
+				qualifications={qualifications || []}
+				resolvedTheme={resolvedTheme}
+			/>
 
 
 		</>

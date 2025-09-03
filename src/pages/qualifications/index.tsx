@@ -27,9 +27,6 @@ const uid = (prefix = "q") => `${prefix}_${Math.random().toString(36).slice(2, 9
 const QualificationsDashboard: React.FC = () => {
     const dispatch = useDispatch();
     const { items, loading, error, pagination } = useSelector((state: RootState) => state.qualifications);
-
-    console.log(pagination, 'pagination')
-
     const [qualifications, setQualifications] = useState<Qualification[]>([]);
     const [currentView, setCurrentView] = useState<ViewType>('list');
     const [mappings, setMappings] = useState<MappingEntry[]>([]);
@@ -51,9 +48,7 @@ const QualificationsDashboard: React.FC = () => {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize] = useState(8);
-
     const { resolvedTheme, toggleTheme } = useTheme();
-    const fetchCalledRef = useRef(false);
 
     const languages = ['English-US', 'Spanish', 'French', 'German', 'Italian'];
     const questionTypes: Question['type'][] = ['Radio', 'Checkbox', 'Text'];
