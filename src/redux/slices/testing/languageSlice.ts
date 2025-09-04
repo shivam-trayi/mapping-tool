@@ -11,14 +11,12 @@ interface LanguageState {
   items: Language[];
   loading: boolean;
   error: string | null;
-  selectedLang: string | null;   // 👈 add selected language
 }
 
 const initialState: LanguageState = {
   items: [],
   loading: false,
   error: null,
-  selectedLang: null,
 };
 
 // Async thunk
@@ -52,10 +50,7 @@ const languageSlice = createSlice({
       state.items = [];
       state.loading = false;
       state.error = null;
-      state.selectedLang = null;
-    },
-    setSelectedLang: (state, action: PayloadAction<string | null>) => {
-      state.selectedLang = action.payload;
+     
     },
   },
   extraReducers: (builder) => {
@@ -75,5 +70,5 @@ const languageSlice = createSlice({
   },
 });
 
-export const { resetLanguagesState, setSelectedLang } = languageSlice.actions;
+export const { resetLanguagesState } = languageSlice.actions;
 export default languageSlice.reducer;
