@@ -177,7 +177,7 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 			<motion.div key='qualifications-mapping-view' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className='p-6'>
 				{/* Header */}
 				<div className='flex items-center justify-between mb-6'>
-					<h2 className='text-xl font-semibold text-gray-900 dark:text-gray-100'>Qualifications Mapping</h2>
+					<h2 className='text-xl font-semibold text-gray-900 dark:text-gray-100'>Qualifications Mapping1</h2>
 					<div className='flex space-x-3'>
 						<Button onClick={() => setCurrentView('questionMapping')} variant='default'>
 							<FileText className='w-4 h-4 mr-2' /> Question Mapping

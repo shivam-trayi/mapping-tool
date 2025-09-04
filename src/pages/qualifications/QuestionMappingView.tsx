@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ViewType } from "../../types/qualicationTypes";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchLanguages } from "@/redux/slices/testing/languageSlice";
+import { fetchLanguages, setSelectedLang } from "@/redux/slices/testing/languageSlice";
 import type { RootState, AppDispatch } from "@/redux/store";
-import { fetchClients } from "@/redux/slices/testing/clientSlice";
+import { fetchClients, setSelectedClient } from "@/redux/slices/testing/clientSlice";
 import { fetchQuestionMappings, fetchQuestionReviewMappings, saveQuestionReviewMapping } from "@/redux/slices/testing/questionSlice";
 import MappingReviewModal from "./QuestionMappingReviewModal";
 
@@ -35,15 +35,15 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
   const [loadingMappings, setLoadingMappings] = useState(false);
   const [showMappingReviewModal, setShowMappingReviewModal] = useState(false);
 
-  const { items: languages, loading: langLoading, error: langError } = useSelector(
-    (state: RootState) => state.languages
-  );
-  const { items: clients, loading: clientLoading, error: clientError } = useSelector(
-    (state: RootState) => state.clients
-  );
+  // Redux state se clients, languages fetch karo
+  const { items: languages, loading: langLoading, error: langError, selectedLang } =
+    useSelector((state: RootState) => state.languages);
 
-  const [selectedLang, setSelectedLang] = useState<number | null>(null);
-  const [selectedClient, setSelectedClient] = useState<number | null>(null);
+  const { items: clients, loading: clientLoading, error: clientError, selectedClient } =
+    useSelector((state: RootState) => state.clients);
+
+  // const [selectedLang, setSelectedLang] = useState<number | null>(null);
+  // const [selectedClient, setSelectedClient] = useState<number | null>(null);
 
   // Load languages & clients
   useEffect(() => {
@@ -53,14 +53,14 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
 
   // Fetch mappings + review
   useEffect(() => {
-    if (selectedLang != null && selectedClient != null) {
+    if (selectedLang && selectedClient) {
       const fetchData = async () => {
         setLoadingMappings(true);
         try {
           const mappingsResult = await dispatch(
             fetchQuestionMappings({
               memberType: "customer",
-              memberId: selectedClient,
+              memberId: selectedClient, // 👈 already string
               langCode: selectedLang,
             })
           ).unwrap();
@@ -76,11 +76,7 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
           const mergedData: QuestionMappingItem[] = mappingsResult.map((item) => {
             const review = reviewResult.find((r) => r.questionId === item.questionId);
             return {
-              questionId: item.questionId,
-              questionText: item.questionText,
-              qualificationId: item.qualificationId,
-              qualificationName: item.qualificationName,
-              memberQuestionId: item.memberQuestionId,
+              ...item,
               oldMemberQuestionId: review?.memberQuestionId,
             };
           });
@@ -99,6 +95,7 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
       setFetchedMappings([]);
     }
   }, [selectedLang, selectedClient, dispatch]);
+
 
   // Save review
   const handleSaveReview = () => {
@@ -135,7 +132,7 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-          Question Mapping
+          Question Mapping1
         </h2>
         <div className="flex space-x-3">
           <Button onClick={() => setShowMappingReviewModal(true)} variant="default">
@@ -147,7 +144,7 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
             mappings={fetchedMappings}
             resolvedTheme={resolvedTheme}
           />
-          <Button onClick={() => setCurrentView("list")} variant="outline">
+          <Button onClick={() => setCurrentView("mapping")} variant="outline">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Button>
         </div>
@@ -160,8 +157,9 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
           resolvedTheme === "dark" ? "text-gray-100" : "text-gray-900"
         )}
       >
+        {/* Language Dropdown */}
         <select
-          onChange={(e) => setSelectedLang(Number(e.target.value))}
+          onChange={(e) => dispatch(setSelectedLang(e.target.value || null))}
           value={selectedLang ?? ""}
           className="px-4 py-2 border border-gray-300 rounded-lg dark:bg-gray-900 dark:text-gray-100 dark:border-gray-600"
         >
@@ -178,7 +176,7 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
         </select>
 
         <select
-          onChange={(e) => setSelectedClient(Number(e.target.value))}
+          onChange={(e) => dispatch(setSelectedClient(e.target.value || null))}
           value={selectedClient ?? ""}
           className="px-4 py-2 border border-gray-300 rounded-lg dark:bg-gray-900 dark:text-gray-100 dark:border-gray-600"
         >
