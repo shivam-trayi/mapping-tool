@@ -11,6 +11,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { RootState, AppDispatch } from '@/redux/store';
 import QualificationMappingReviewModal from './QualificationMappingReviewModal';
 
+// ---------------------- Types ----------------------
 interface QualificationsMappingViewProps {
 	setCurrentView: (view: ViewType) => void;
 	qualifications: Qualification[];
@@ -26,6 +27,18 @@ interface QualificationMappingDataItem {
 	constantId: string;
 }
 
+interface QualMappingItem {
+	qualification_id: string;
+	qualificationName: string;
+	member_qualification_id?: string;
+}
+
+interface GetAllQualMappingResponse {
+	success: boolean;
+	data: QualMappingItem[];
+}
+
+// ---------------------- Component ----------------------
 export const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({ setCurrentView, qualifications, isLoadingTable, resolvedTheme }) => {
 	const [selectedItems, setSelectedItems] = React.useState<Set<string>>(new Set());
 	const [selectAll, setSelectAll] = React.useState(false);
@@ -36,20 +49,19 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 	const [fetchedMappings, setFetchedMappings] = React.useState<Record<string, QualificationMappingDataItem>>({});
 	const [reviewMappings, setReviewMappings] = React.useState<QualificationMappingDataItem[]>([]);
 
-
-
 	const dispatch = useDispatch<AppDispatch>();
 	const { items: clients, loading: clientLoading, error: clientError } = useSelector((state: RootState) => state.clients);
 
+	// ---------------------- Derived Data ----------------------
 	const qualificationMappingData: QualificationMappingDataItem[] = qualifications.map((q) => ({
 		id: q.id,
 		qualificationName: q.name,
-		mapped: !!fetchedMappings[q.id], // mark mapped if API returned mapping
-		oldMapped: false, // adjust if you want to track old mappings
+		mapped: !!fetchedMappings[q.id],
+		oldMapped: false,
 		constantId: fetchedMappings[q.id]?.constantId || '',
 	}));
 
-
+	// ---------------------- Handlers ----------------------
 	const handleSelectAll = (checked: boolean) => {
 		setSelectAll(checked);
 		setSelectedItems(checked ? new Set(qualificationMappingData.map((item) => item.id)) : new Set());
@@ -65,6 +77,20 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 
 	const handleConstantIdChange = (id: string, value: string) => {
 		setConstantIds((prev) => ({ ...prev, [id]: value }));
+	};
+
+	const mapQualMapping = (items: QualMappingItem[]): Record<string, QualificationMappingDataItem> => {
+		const record: Record<string, QualificationMappingDataItem> = {};
+		items.forEach((item) => {
+			record[item.qualification_id] = {
+				id: item.qualification_id,
+				qualificationName: item.qualificationName,
+				mapped: true,
+				oldMapped: false,
+				constantId: item.member_qualification_id ?? '',
+			};
+		});
+		return record;
 	};
 
 	const handleSaveForReview = async () => {
@@ -91,21 +117,29 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 
 		setIsSaving(true);
 		try {
+			// Save selected qualifications
 			await dispatch(saveQualMapping(selectedData)).unwrap();
 
-			// Prepare review data: only newly saved
-			const reviewData = selectedData.map((d) => ({
+			// Fetch updated mappings for table
+			const response = (await dispatch(getAllQualMapping({ memberId: selectedCustomer })).unwrap()) as {
+				data: GetAllQualMappingResponse;
+			};
+			const result = response.data.data;
+			setFetchedMappings(mapQualMapping(result));
+
+			// Prepare review modal for newly saved items
+			const reviewData: QualificationMappingDataItem[] = selectedData.map((d) => ({
 				id: d.qualification_id,
-				qualificationName: qualificationMappingData.find(q => q.id === d.qualification_id)?.qualificationName || '',
-				constantId: d.constantId,
+				qualificationName: qualificationMappingData.find((q) => q.id === d.qualification_id)?.qualificationName || '',
 				mapped: true,
 				oldMapped: false,
+				constantId: d.constantId,
 			}));
 			setReviewMappings(reviewData);
 
 			alert(`Saved ${selectedData.length} qualification(s) for review`);
 
-			// ✅ Reset selected items and constant inputs after save
+			// Reset selections
 			setSelectedItems(new Set());
 			setSelectAll(false);
 			setConstantIds({});
@@ -117,7 +151,7 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 		}
 	};
 
-
+	// ---------------------- Fetch Mappings Effect ----------------------
 	React.useEffect(() => {
 		const fetchMappings = async () => {
 			if (!selectedCustomer) {
@@ -125,32 +159,19 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 				return;
 			}
 			try {
-				const response = await dispatch(getAllQualMapping({ memberId: selectedCustomer })).unwrap();
-
-				const result = response.data?.data || []; // <- extract actual array from API
-				const mappingRecord: Record<string, QualificationMappingDataItem> = {};
-
-				result.forEach((item: any) => {
-					mappingRecord[item.qualification_id] = {
-						id: item.qualification_id,
-						qualificationName: item.qualificationName,
-						mapped: true,
-						oldMapped: false,
-						constantId: item.member_qualification_id?.toString() || '', // <- show API value here
-					};
-				});
-
-				setFetchedMappings(mappingRecord);
+				const response = (await dispatch(getAllQualMapping({ memberId: selectedCustomer })).unwrap()) as {
+					data: GetAllQualMappingResponse;
+				};
+				setFetchedMappings(mapQualMapping(response.data.data));
 			} catch (err) {
 				console.error('Error fetching qualification mappings:', err);
 				setFetchedMappings({});
 			}
 		};
-
 		fetchMappings();
 	}, [selectedCustomer, dispatch]);
 
-
+	// ---------------------- Render ----------------------
 	return (
 		<>
 			<motion.div key='qualifications-mapping-view' initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.3 }} className='p-6'>
@@ -253,17 +274,10 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 												<Input
 													type='text'
 													value={constantIds[item.id] ?? fetchedMappings[item.id]?.constantId ?? ''}
-													onChange={(e) =>
-														setConstantIds(prev => ({
-															...prev,
-															[item.id]: e.target.value,
-														}))
-													}
+													onChange={(e) => handleConstantIdChange(item.id, e.target.value)}
 													className='w-full'
 													placeholder='Enter constant ID'
 												/>
-
-
 											</td>
 										</tr>
 									))
@@ -292,8 +306,7 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 								'Saving...'
 							) : (
 								<>
-									{' '}
-									<Save className='w-4 h-4 mr-2' /> Save for Review ({selectedItems.size}){' '}
+									<Save className='w-4 h-4 mr-2' /> Save for Review ({selectedItems.size})
 								</>
 							)}
 						</Button>
@@ -302,17 +315,13 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 			</motion.div>
 
 			{/* Qualification Mapping Review Modal */}
-			{/* // In your QualificationsMappingView.tsx (only relevant changes) */}
 			<QualificationMappingReviewModal
 				isOpen={showMappingReviewModal}
 				onClose={() => setShowMappingReviewModal(false)}
-				mappings={reviewMappings} // only newly saved
+				mappings={reviewMappings}
 				qualifications={qualifications || []}
 				resolvedTheme={resolvedTheme}
 			/>
-
-
-
 		</>
 	);
 };

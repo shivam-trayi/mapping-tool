@@ -13,7 +13,7 @@ import { QualificationsMappingView } from './QualificationsMappingView';
 import { QuestionMappingView } from './QuestionMappingView';
 import { AddOptionView } from './AddOptionView';
 import { UpdateOptionView } from './UpdateOptionView';
-import MappingReviewModal from './MappingReviewModal';
+// import MappingReviewModal from './MappingReviewModal';
 import { DashboardHeader } from '../dashboard/DashboardHeader';
 import { MessageBox } from '@/components/ui/MessageBox';
 import { useTheme } from '@/hooks/useTheme';
@@ -40,7 +40,6 @@ const QualificationsDashboard: React.FC = () => {
     const [currentOption, setCurrentOption] = useState({ text: '', language: 'English-US', active: true });
 
     const [message, setMessage] = useState('');
-    const [showMappingReviewModal, setShowMappingReviewModal] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [isLoadingTable, setIsLoadingTable] = useState(false);
     const [qualificationForm, setQualificationForm] = useState({ name: '', isTest: false, active: true });
@@ -161,7 +160,7 @@ const QualificationsDashboard: React.FC = () => {
         currentView, setCurrentView, qualifications, setQualifications, mappings, setMappings,
         selectedQualification, setSelectedQualification, editingQualification, setEditingQualification,
         editingQuestion, setEditingQuestion, searchTerm, setSearchTerm, newQuestion, setNewQuestion,
-        message, setMessage, showMappingReviewModal, setShowMappingReviewModal,
+        message, setMessage,
         isSaving, setIsSaving, isLoadingTable, setIsLoadingTable, resolvedTheme, toggleTheme,
         qualificationForm, setQualificationForm, updateQuestionForm, setUpdateQuestionForm,
         languages, questionTypes, resetForm, handleCreateQualification, handleEditQualification,
@@ -193,13 +192,7 @@ const QualificationsDashboard: React.FC = () => {
                 </AnimatePresence>
             </main>
             <MessageBox message={message} onClose={() => setMessage('')} resolvedTheme={resolvedTheme} />
-            <MappingReviewModal
-                isOpen={showMappingReviewModal}
-                onClose={() => setShowMappingReviewModal(false)}
-                mappings={mappings}
-                qualifications={qualifications}
-                resolvedTheme={resolvedTheme}
-            />
+       
         </div>
     );
 };

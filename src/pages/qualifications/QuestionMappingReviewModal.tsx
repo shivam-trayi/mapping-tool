@@ -124,21 +124,6 @@ const MappingReviewModal = ({
                   placeholder="Search questions..."
                 />
               </div>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className={cn(
-                  "flex-shrink-0 h-10 px-4 py-2 border rounded-lg text-sm transition-colors",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500",
-                  "focus-visible:ring-offset-2",
-                  resolvedTheme === 'dark' ? 'bg-gray-800 text-gray-100 border-gray-700' : 'bg-white text-gray-900 border-gray-300'
-                )}
-              >
-                <option value="">All Status</option>
-                <option value="pending">Pending</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-              </select>
             </div>
 
             {/* Results Summary */}

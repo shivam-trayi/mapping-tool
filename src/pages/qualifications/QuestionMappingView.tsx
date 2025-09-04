@@ -9,78 +9,109 @@ import { fetchLanguages } from "@/redux/slices/testing/languageSlice";
 import type { RootState, AppDispatch } from "@/redux/store";
 import { fetchClients } from "@/redux/slices/testing/clientSlice";
 import { fetchQuestionMappings, fetchQuestionReviewMappings, saveQuestionReviewMapping } from "@/redux/slices/testing/questionSlice";
+import MappingReviewModal from "./QuestionMappingReviewModal";
 
 interface QuestionMappingViewProps {
   setCurrentView: (view: ViewType) => void;
-  setShowMappingReviewModal: (show: boolean) => void;
   resolvedTheme: "light" | "dark";
+}
+
+// Strongly typed mapping items
+interface QuestionMappingItem {
+  questionId: number;
+  questionText: string;
+  qualificationId: number;
+  qualificationName: string;
+  memberQuestionId?: string;
+  oldMemberQuestionId?: string;
 }
 
 export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
   setCurrentView,
-  setShowMappingReviewModal,
   resolvedTheme,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const [fetchedMappings, setFetchedMappings] = useState<QuestionMappingItem[]>([]);
+  const [loadingMappings, setLoadingMappings] = useState(false);
+  const [showMappingReviewModal, setShowMappingReviewModal] = useState(false);
 
-  // Redux states
   const { items: languages, loading: langLoading, error: langError } = useSelector(
     (state: RootState) => state.languages
   );
   const { items: clients, loading: clientLoading, error: clientError } = useSelector(
     (state: RootState) => state.clients
   );
-  const {
-    items: questionMappings,
-    loading: qmLoading,
-    error: qmError,
-  } = useSelector((state: RootState) => state.questionMappings);
 
-  // Local state for selected filters
   const [selectedLang, setSelectedLang] = useState<number | null>(null);
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
 
-  // Load dropdowns initially
+  // Load languages & clients
   useEffect(() => {
     dispatch(fetchLanguages());
     dispatch(fetchClients());
   }, [dispatch]);
 
-  // Fetch review mapping data when both dropdowns are selected
+  // Fetch mappings + review
   useEffect(() => {
-    if (selectedLang && selectedClient) {
-      dispatch(
-        fetchQuestionReviewMappings({
-          memberType: "customer",       // always customer (can make dynamic later if needed)
-          memberId: selectedClient,     // dynamic from dropdown
-          langCode: selectedLang,       // dynamic from dropdown
-        })
-      );
+    if (selectedLang != null && selectedClient != null) {
+      const fetchData = async () => {
+        setLoadingMappings(true);
+        try {
+          const mappingsResult = await dispatch(
+            fetchQuestionMappings({
+              memberType: "customer",
+              memberId: selectedClient,
+              langCode: selectedLang,
+            })
+          ).unwrap();
+
+          const reviewResult = await dispatch(
+            fetchQuestionReviewMappings({
+              memberType: "customer",
+              memberId: selectedClient,
+              langCode: selectedLang,
+            })
+          ).unwrap();
+
+          const mergedData: QuestionMappingItem[] = mappingsResult.map((item) => {
+            const review = reviewResult.find((r) => r.questionId === item.questionId);
+            return {
+              questionId: item.questionId,
+              questionText: item.questionText,
+              qualificationId: item.qualificationId,
+              qualificationName: item.qualificationName,
+              memberQuestionId: item.memberQuestionId,
+              oldMemberQuestionId: review?.memberQuestionId,
+            };
+          });
+
+          setFetchedMappings(mergedData);
+        } catch (err) {
+          console.error("Error fetching mappings or reviews:", err);
+          setFetchedMappings([]);
+        } finally {
+          setLoadingMappings(false);
+        }
+      };
+
+      fetchData();
+    } else {
+      setFetchedMappings([]);
     }
   }, [selectedLang, selectedClient, dispatch]);
 
-
-  // Fetch mapping data when both dropdowns selected
-  useEffect(() => {
-    if (selectedLang && selectedClient) {
-      dispatch(
-        fetchQuestionMappings({
-          memberType: "customer",
-          memberId: selectedClient,
-          langCode: selectedLang,
-        })
-      );
-    }
-  }, [selectedLang, selectedClient, dispatch]);
-
-
+  // Save review
   const handleSaveReview = () => {
-    if (!selectedClient) return;
+    if (selectedClient == null) return;
 
-    const optionData = questionMappings.map((item) => ({
-      memberQuestionId: item.memberQuestionId?.toString() || "",
-      masterDemoId: item.qualificationId,
-      masterQueryId: item.questionId,
+    const optionData = fetchedMappings.map((item): {
+      questionId: number;
+      qualificationId: number;
+      memberQuestionId?: string;
+    } => ({
+      questionId: item.questionId,
+      qualificationId: item.qualificationId,
+      memberQuestionId: item.memberQuestionId,
     }));
 
     dispatch(
@@ -110,6 +141,12 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
           <Button onClick={() => setShowMappingReviewModal(true)} variant="default">
             Mapping Review
           </Button>
+          <MappingReviewModal
+            isOpen={showMappingReviewModal}
+            onClose={() => setShowMappingReviewModal(false)}
+            mappings={fetchedMappings}
+            resolvedTheme={resolvedTheme}
+          />
           <Button onClick={() => setCurrentView("list")} variant="outline">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Button>
@@ -123,7 +160,6 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
           resolvedTheme === "dark" ? "text-gray-100" : "text-gray-900"
         )}
       >
-        {/* Language dropdown */}
         <select
           onChange={(e) => setSelectedLang(Number(e.target.value))}
           value={selectedLang ?? ""}
@@ -141,7 +177,6 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
             ))}
         </select>
 
-        {/* Client dropdown */}
         <select
           onChange={(e) => setSelectedClient(Number(e.target.value))}
           value={selectedClient ?? ""}
@@ -164,65 +199,37 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
       <div
         className={cn(
           "rounded-lg shadow overflow-hidden transition-colors",
-          resolvedTheme === "dark"
-            ? "bg-gray-800 border border-gray-700"
-            : "bg-white border border-gray-200"
+          resolvedTheme === "dark" ? "bg-gray-800 border border-gray-700" : "bg-white border border-gray-200"
         )}
       >
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-          <thead
-            className={cn(
-              "transition-colors",
-              resolvedTheme === "dark" ? "bg-gray-700" : "bg-gray-50"
-            )}
-          >
+          <thead className={cn("transition-colors", resolvedTheme === "dark" ? "bg-gray-700" : "bg-gray-50")}>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">
-                S.No
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">
-                Question
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">
-                Qualification
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">
-                Mapped
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">
-                Old Mapped
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">
-                Enter Constant Id
-              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">S.No</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">Question</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">Qualification</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">Mapped</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">Old Mapped</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase dark:text-gray-200">Enter Constant Id</th>
             </tr>
           </thead>
           <tbody>
-            {qmLoading && (
-              <tr>
-                <td colSpan={6} className="p-6 text-center">
-                  Loading...
-                </td>
-              </tr>
-            )}
-            {qmError && (
-              <tr>
-                <td colSpan={6} className="p-6 text-center text-red-500">
-                  {qmError}
-                </td>
-              </tr>
-            )}
-            {!qmLoading && !qmError && Array.isArray(questionMappings) && questionMappings.length === 0 && (
+            {!selectedLang || !selectedClient ? (
               <tr>
                 <td colSpan={6} className="p-6 text-center text-gray-500">
-                  Data not found
+                  Please select both Language and Customer to load data.
                 </td>
               </tr>
-            )}
-            {!qmLoading &&
-              !qmError &&
-              Array.isArray(questionMappings) &&
-              questionMappings.map((item, idx) => (
+            ) : loadingMappings ? (
+              <tr>
+                <td colSpan={6} className="p-6 text-center text-gray-500">Loading...</td>
+              </tr>
+            ) : fetchedMappings.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="p-6 text-center text-gray-500">No data found</td>
+              </tr>
+            ) : (
+              fetchedMappings.map((item, idx) => (
                 <tr key={item.questionId}>
                   <td className="px-6 py-4">{idx + 1}</td>
                   <td className="px-6 py-4">{item.questionText}</td>
@@ -237,9 +244,9 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
                     />
                   </td>
                 </tr>
-              ))}
+              ))
+            )}
           </tbody>
-
         </table>
         <div className="p-4 text-right">
           <Button onClick={handleSaveReview}>Save for Review</Button>

@@ -37,13 +37,25 @@ export interface MappingEntry {
 export interface QualificationsMappingData {
   qualification_id: string;
   member_id: string;
-  member_type: 'customer' | 'supplier';
+  member_type: 'customer' | 'supplier'; // REQUIRED
   member_qualification_id?: string;
   created_by?: string;
   updated_by?: string;
   old_member_qualification_id?: string;
   constantId: string;
 }
+
+
+interface QualificationMappingReviewItem {
+  id: string;
+  qualification_id: string;
+  qualificationName: string;
+  member_id: string;
+  member_qualification_id?: string;
+  constantId: string;
+}
+
+
 export interface SaveQualMappingsPayload {
   memberId: string;
 }
@@ -66,3 +78,30 @@ export type ViewType =
   | 'questions'
   | 'addOption'
   | 'updateOption';
+
+
+
+//   export interface QualificationsMappingData {
+//   qualification_id: string;
+//   member_id: string;
+//   member_type: "customer" | "supplier";
+//   member_qualification_id?: string;
+//   created_by?: string;
+//   updated_by?: string;
+//   old_member_qualification_id?: string;
+//   constantId: string;
+// }
+
+export interface SaveQualMappingsPayload {
+  bodyData: QualificationsMappingData[];
+}
+
+export interface GetAllQualMappingsPayload {
+  memberId: string;
+}
+
+export interface SaveQualMappingsResponse {
+  success: boolean;
+  data: QualificationsMappingData[];
+  message?: string;
+}

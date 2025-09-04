@@ -8,9 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { MessageBox } from '@/components/ui/MessageBox';
 import type { Qualification } from '@/types/qualicationTypes';
-
-// 👇 API import karo
 import { saveQualMappingReviewData } from '@/redux/slices/testing/saveQualMappingSlice';
+import type { AppDispatch } from '@/redux/store';
 
 interface QualificationMappingReviewModalProps {
   isOpen: boolean;
@@ -40,12 +39,13 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
   const [message, setMessage] = React.useState('');
   const [localMappings, setLocalMappings] = React.useState(mappings);
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
 
   const filteredData = localMappings.filter(item =>
-    item.qualificationName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    item.constantId.toLowerCase().includes(searchTerm.toLowerCase())
+    (item.qualificationName?.toLowerCase() ?? '').includes(searchTerm.toLowerCase()) ||
+    (item.constantId?.toLowerCase() ?? '').includes(searchTerm.toLowerCase())
   );
+
   const handleSelectAll = (checked: boolean) => {
     setSelectAll(checked);
     setSelectedItems(checked ? new Set(filteredData.map(item => item.id)) : new Set());
@@ -59,13 +59,11 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
     setSelectAll(newSelected.size === filteredData.length && filteredData.length > 0);
   };
 
-
   React.useEffect(() => {
     setLocalMappings(mappings);
     setSelectedItems(new Set());
     setSelectAll(false);
   }, [mappings]);
-
 
   const handleSave = async () => {
     const selectedData = Array.from(selectedItems)
@@ -75,7 +73,7 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
     if (selectedData.length === 0) return;
 
     try {
-      await dispatch(saveQualMappingReviewData(selectedData as any)).unwrap();
+      await dispatch(saveQualMappingReviewData(selectedData as any[])).unwrap();
 
       setMessage(`✅ Successfully inserted ${selectedData.length} qualification mapping entries.`);
 
@@ -91,7 +89,6 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
       setMessage('❌ Failed to insert qualification mapping entries.');
     }
   };
-
 
   if (!isOpen) return null;
 
@@ -149,7 +146,7 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
                     <tr>
                       <th className="px-6 py-4 text-left">
                         <div className="flex items-center space-x-2">
-                          <Checkbox checked={selectAll} onCheckedChange={handleSelectAll} />
+                          <Checkbox checked={selectAll} onCheckedChange={val => handleSelectAll(Boolean(val))} />
                           <span className="text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300 hidden sm:block">
                             Select All
                           </span>
@@ -179,7 +176,7 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
                         <td className="px-6 py-4 whitespace-nowrap">
                           <Checkbox
                             checked={selectedItems.has(item.id)}
-                            onCheckedChange={checked => handleSelectItem(item.id, checked!)}
+                            onCheckedChange={val => handleSelectItem(item.id, Boolean(val))}
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
