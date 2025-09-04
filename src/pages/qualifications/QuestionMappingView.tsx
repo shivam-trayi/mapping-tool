@@ -101,29 +101,34 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
     }
   }, [selectedLang, selectedClient, dispatch]);
 
+const handleInputChange = (index: number, value: string) => {
+  setFetchedMappings((prev) =>
+    prev.map((item, idx) =>
+      idx === index ? { ...item, memberQuestionId: value } : item
+    )
+  );
+};
 
-  // Save review
-  const handleSaveReview = () => {
-    if (selectedClient == null) return;
+const handleSaveReview = () => {
+  if (selectedClient == null || selectedLang == null) return;
 
-    const optionData = fetchedMappings.map((item): {
-      questionId: number;
-      qualificationId: number;
-      memberQuestionId?: string;
-    } => ({
-      questionId: item.questionId,
-      qualificationId: item.qualificationId,
-      memberQuestionId: item.memberQuestionId,
-    }));
+  const optionData = fetchedMappings.map((item) => ({
+    memberQuestionId: item.memberQuestionId ?? "",
+    qualificationId: item.qualificationId, 
+    masterQueryId: item.questionId,
+  }));
 
-    dispatch(
-      saveQuestionReviewMapping({
-        memberType: "customer",
-        memberId: selectedClient.toString(),
-        optionData,
-      })
-    );
-  };
+  dispatch(
+    saveQuestionReviewMapping({
+      memberType: "customer",
+      langCode: selectedLang,
+      memberId: selectedClient.toString(),
+      optionData,
+    })
+  );
+};
+
+
 
   return (
     <motion.div
@@ -244,6 +249,7 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
                     <input
                       type="text"
                       defaultValue={item.memberQuestionId ?? ""}
+                      onChange={(e) => handleInputChange(idx, e.target.value)}
                       className="px-2 py-1 border rounded w-full"
                     />
                   </td>

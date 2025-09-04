@@ -82,18 +82,19 @@ export const fetchQuestionReviewMappings = createAsyncThunk<
 
 // ✅ New thunk for Save for Review
 export const saveQuestionReviewMapping = createAsyncThunk<
-    any,
-    SaveReviewParams,
-    { rejectValue: string }
+  any,
+  SaveReviewParams,
+  { rejectValue: string }
 >("questionMappings/saveReview", async (payload, { rejectWithValue }) => {
-    try {
-        const response = await updateQuestionReviewMapping(payload);
-        if (response.success) return response;
-        return rejectWithValue("Failed to save review mapping");
-    } catch {
-        return rejectWithValue("Failed to save review mapping");
-    }
+  try {
+    const response = await updateQuestionReviewMapping(payload); // 👈 bodyData pass करो
+    if (response.success) return response;
+    return rejectWithValue("Failed to save review mapping");
+  } catch (err) {
+    return rejectWithValue("Failed to save review mapping");
+  }
 });
+
 
 
 

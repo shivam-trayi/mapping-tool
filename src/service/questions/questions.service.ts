@@ -64,6 +64,7 @@ export const getQuestionReviewMappings = async ({
 export const updateQuestionReviewMapping = async ({
   memberType,
   memberId,
+  langCode,
   optionData,
 }: {
   memberType: number;
@@ -76,15 +77,22 @@ export const updateQuestionReviewMapping = async ({
 }) => {
   const cleanOptionData = optionData.map((item) => ({
     MemberQueryId: item.memberQuestionId,
-    MasterDemoId: item.masterDemoId,
+    MasterDemoId: item.qualificationId,
     MasterQueryId: item.masterQueryId,
   }));
 
-  const response = await axiosInstance.put("/questions/updateQuestionReviewMapping", {
+  const bodyData = {
     memberType,
     memberId,
     optionData: cleanOptionData,
-  });
+    langCode,
+  };
+
+  const response = await axiosInstance.put(
+    "/questions/updateQuestionReviewMapping",
+    bodyData // ✅ direct भेजा
+  );
 
   return response.data;
 };
+
