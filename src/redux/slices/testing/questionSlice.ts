@@ -1,8 +1,10 @@
 import {
+    getAllOptionText,
     getQuestionMappings,
     getQuestionReviewMappings,
     QuestionMappingItem,
     updateQuestionReviewMapping,
+    updateOptions,
 } from "@/service/questions/questions.service";
 import { createSlice, createAsyncThunk, PayloadAction } from "@reduxjs/toolkit";
 
@@ -25,6 +27,15 @@ interface FetchParams {
     memberId: number;
     langCode: number;
 }
+
+interface AnswerFetchParams {
+  memberType: string;
+  memberId: number;
+  marketId: number;
+  langCode: number;
+  questionId: number;
+}
+
 
 
 interface QuestionMappingState {
@@ -95,6 +106,53 @@ export const saveQuestionReviewMapping = createAsyncThunk<
   }
 });
 
+export const getAllAnswersList = createAsyncThunk<
+  QuestionMappingItem[],
+  AnswerFetchParams,
+  { rejectValue: string }
+>(
+  "questionMappings/fetch",
+  async ({ memberType, memberId, marketId, langCode, questionId }, { rejectWithValue }) => {
+    try {
+      const response = await getAllOptionText({
+        memberType,
+        memberId,
+        marketId,
+        langCode,
+        questionId,
+      });
+
+      if (response.success && response.data?.data) {
+        return response.data.data;
+      }
+      return rejectWithValue("Failed to fetch answers");
+    } catch {
+      return rejectWithValue("Failed to fetch answers");
+    }
+  }
+);
+
+
+// ✅ Thunk for updateOptions
+export const updateOptionsThunk = createAsyncThunk<
+  any,
+  {
+    qualificationId: number;
+    questionId: number;
+    memberId: number;
+    langCode: number;
+    options: { answerId: number; constantId: string }[];
+  },
+  { rejectValue: string }
+>("questionMappings/updateOptions", async (payload, { rejectWithValue }) => {
+  try {
+    const response = await updateOptions(payload);
+    if (response.success) return response;
+    return rejectWithValue("Failed to update options");
+  } catch (err) {
+    return rejectWithValue("Failed to update options");
+  }
+});
 
 
 

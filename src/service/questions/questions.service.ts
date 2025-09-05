@@ -1,4 +1,5 @@
 // questions.service.ts
+import { MappingReviewPayload } from "@/types/qualicationTypes";
 import axiosInstance from "../axios.helper";
 
 export interface QuestionMappingItem {
@@ -96,3 +97,59 @@ export const updateQuestionReviewMapping = async ({
   return response.data;
 };
 
+export const getAllOptionText = async ({
+  memberType,
+  memberId,
+  marketId,
+  langCode,
+  questionId,
+}: {
+  memberType: string;
+  memberId: number;
+  marketId: number;
+  langCode: number;
+  questionId: number;
+}) => {
+  const response = await axiosInstance.get<GetQuestionMappingResponse>(
+    "/questions/getAnswersByQID",
+    { params: { memberType, memberId, marketId, langCode, questionId } }
+  );
+  return response.data;
+};
+
+
+
+export const insertMappingReview = async (payload: MappingReviewPayload) => {
+  const response = await axiosInstance.post("/questions/createQuestionReviewMapping", payload); 
+  return response.data;
+};
+
+
+// ✅ New API: updateOptions
+export const updateOptions = async ({
+  qualificationId,
+  questionId,
+  memberId,
+  langCode,
+  options,
+}: {
+  qualificationId: number;
+  questionId: number;
+  memberId: number;
+  langCode: number;
+  options: {
+    answerId: number;
+    constantId: string;
+  }[];
+}) => {
+  const bodyData = {
+    qualificationId,
+    questionId,
+    memberId,
+    langCode,
+    options,
+  };
+
+  const response = await axiosInstance.put("/questions/updateAnswersByQID", bodyData);
+  return response.data;
+};

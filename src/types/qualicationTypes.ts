@@ -105,3 +105,17 @@ export interface SaveQualMappingsResponse {
   data: QualificationsMappingData[];
   message?: string;
 }
+
+
+
+export interface MappingReviewPayload {
+  memberId: number;
+  memberType: string;
+  createdBy?: number;
+  optionData: {
+    questionId: number;
+    qualificationId: number;
+    memberQuestionId?: number | null;
+    qualificationMappingId?: number | null;
+  }[];
+}
