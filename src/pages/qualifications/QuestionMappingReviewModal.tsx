@@ -11,96 +11,96 @@ import { insertMappingReviewThunk, resetReviewState } from "@/redux/slices/testi
 import { useAppSelector } from "@/redux/store";
 
 const MappingReviewModal = ({ isOpen, onClose, mappings, resolvedTheme }) => {
-  const [selectedItems, setSelectedItems] = React.useState<Set<number>>(
-    new Set()
-  );
-  const [selectAll, setSelectAll] = React.useState(false);
-  const [searchTerm, setSearchTerm] = React.useState("");
-  const [message, setMessage] = React.useState("");
+	const [selectedItems, setSelectedItems] = React.useState<Set<number>>(
+		new Set()
+	);
+	const [selectAll, setSelectAll] = React.useState(false);
+	const [searchTerm, setSearchTerm] = React.useState("");
+	const [message, setMessage] = React.useState("");
 
-  const dispatch = useDispatch();
-const { loading, success, error } = useAppSelector(
-  (state) => state.mappingReview
-);
+	const dispatch = useDispatch();
+	const { loading, success, error } = useAppSelector(
+		(state) => state.mappingReview
+	);
 
-  // ✅ Sirf mapped questions hi lena hai
-  const mappedData = React.useMemo(
-    () =>
-      mappings.filter(
-        (item) => item.memberQuestionId && item.memberQuestionId !== ""
-      ),
-    [mappings]
-  );
+	// ✅ Sirf mapped questions hi lena hai
+	const mappedData = React.useMemo(
+		() =>
+			mappings.filter(
+				(item) => item.memberQuestionId && item.memberQuestionId !== ""
+			),
+		[mappings]
+	);
 
-  const filteredData = React.useMemo(
-    () =>
-      mappedData.filter((item) =>
-        item.questionText.toLowerCase().includes(searchTerm.toLowerCase())
-      ),
-    [mappedData, searchTerm]
-  );
+	const filteredData = React.useMemo(
+		() =>
+			mappedData.filter((item) =>
+				item.questionText.toLowerCase().includes(searchTerm.toLowerCase())
+			),
+		[mappedData, searchTerm]
+	);
 
-  const handleSelectAll = (checked: boolean) => {
-    setSelectAll(checked);
-    if (checked) {
-      setSelectedItems(new Set(filteredData.map((item) => item.questionId)));
-    } else {
-      setSelectedItems(new Set());
-    }
-  };
+	const handleSelectAll = (checked: boolean) => {
+		setSelectAll(checked);
+		if (checked) {
+			setSelectedItems(new Set(filteredData.map((item) => item.questionId)));
+		} else {
+			setSelectedItems(new Set());
+		}
+	};
 
-  const handleSelectItem = (id: number, checked: boolean) => {
-    const newSelected = new Set(selectedItems);
-    if (checked) {
-      newSelected.add(id);
-    } else {
-      newSelected.delete(id);
-    }
-    setSelectedItems(newSelected);
-    setSelectAll(
-      newSelected.size === filteredData.length && filteredData.length > 0
-    );
-  };
+	const handleSelectItem = (id: number, checked: boolean) => {
+		const newSelected = new Set(selectedItems);
+		if (checked) {
+			newSelected.add(id);
+		} else {
+			newSelected.delete(id);
+		}
+		setSelectedItems(newSelected);
+		setSelectAll(
+			newSelected.size === filteredData.length && filteredData.length > 0
+		);
+	};
 
-const handleSave = () => {
-  const selectedData = Array.from(selectedItems).map((id) =>
-    mappedData.find((d) => d.questionId === id)
-  ).filter(Boolean); // null/undefined clean
+	const handleSave = () => {
+		const selectedData = Array.from(selectedItems).map((id) =>
+			mappedData.find((d) => d.questionId === id)
+		).filter(Boolean); // null/undefined clean
 
-  if (selectedData.length === 0) return;
+		if (selectedData.length === 0) return;
 
-  const memberId = selectedData[0]?.memberId || mappings[0]?.memberId;
+		const memberId = selectedData[0]?.memberId || mappings[0]?.memberId;
 
-  const payload = {
-    memberId,
-    optionData: selectedData.map((item) => ({
-      questionId: item.questionId,
-      qualificationId: item.qualificationId,
-      memberQuestionId: item.memberQuestionId,
-    })),
-  };
+		const payload = {
+			memberId,
+			optionData: selectedData.map((item) => ({
+				questionId: item.questionId,
+				qualificationId: item.qualificationId,
+				memberQuestionId: item.memberQuestionId,
+			})),
+		};
 
-  dispatch(insertMappingReviewThunk(payload));
-};
+		dispatch(insertMappingReviewThunk(payload));
+	};
 
 
 
-  // ✅ Success/Error message handling
-  React.useEffect(() => {
-    if (success) {
-      setMessage("✅ Successfully inserted mappings!");
-      dispatch(resetReviewState());
-      setSelectedItems(new Set());
-      setSelectAll(false);
-    } else if (error) {
-      setMessage(`❌ ${error}`);
-      dispatch(resetReviewState());
-    }
-  }, [success, error, dispatch]);
+	// ✅ Success/Error message handling
+	React.useEffect(() => {
+		if (success) {
+			setMessage("✅ Successfully inserted mappings!");
+			dispatch(resetReviewState());
+			setSelectedItems(new Set());
+			setSelectAll(false);
+		} else if (error) {
+			setMessage(`❌ ${error}`);
+			dispatch(resetReviewState());
+		}
+	}, [success, error, dispatch]);
 
-  if (!isOpen) return null;
+	if (!isOpen) return null;
 
-  return (
+	return (
 		<AnimatePresence>
 			<motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className='fixed inset-0 z-50 bg-gray-900 bg-opacity-70 flex items-center justify-center p-4 sm:p-6'>
 				<motion.div
@@ -199,7 +199,7 @@ const handleSave = () => {
 			{/* MessageBox */}
 			<MessageBox message={message} onClose={() => setMessage('')} resolvedTheme={resolvedTheme} />
 		</AnimatePresence>
-  );
+	);
 };
 
 export default MappingReviewModal;

@@ -186,10 +186,10 @@ const QualificationsDashboard: React.FC = () => {
                     {currentView === 'updateQuestion' && <UpdateQuestionView {...commonProps} />}
                     {currentView === 'mapping' && <QualificationsMappingView {...commonProps} />}
                     {currentView === 'demoMapping' && <DemoPriorityMappingView {...commonProps} />}
-                    {/* {currentView === 'questionMapping' && <QuestionMappingView {...commonProps} />} */}
+                    {currentView === 'questionMapping' && <QuestionMappingView {...commonProps} />}
                     {currentView === 'addOption' && <AddOptionView {...commonProps} />}
                     {currentView === 'updateOption' && <UpdateOptionView {...commonProps} />}
-                    {/* {currentView === 'Option' && <QuestionOptionsModal {...commonProps} />} */}
+                    {currentView === 'Option' && <QuestionOptionsModal {...commonProps} />}
 
                 </AnimatePresence>
             </main>

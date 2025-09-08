@@ -8,14 +8,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchLanguages } from "@/redux/slices/testing/languageSlice";
 import type { RootState, AppDispatch } from "@/redux/store";
 import { fetchClients } from "@/redux/slices/testing/clientSlice";
-import { useNavigate } from "react-router-dom";
-
 import {
   fetchQuestionMappings,
   fetchQuestionReviewMappings,
   saveQuestionReviewMapping,
 } from "@/redux/slices/testing/questionSlice";
 import MappingReviewModal from "./QuestionMappingReviewModal";
+import QuestionOptionsModal from "./QuestionOptionsModal";
+
 
 interface QuestionMappingViewProps {
   setCurrentView: (view: ViewType) => void;
@@ -40,11 +40,10 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
   const [fetchedMappings, setFetchedMappings] = useState<QuestionMappingItem[]>([]);
   const [loadingMappings, setLoadingMappings] = useState(false);
   const [showMappingReviewModal, setShowMappingReviewModal] = useState(false);
-  // const [showQuestionModal, setShowQuestionModal] = useState(false);
+  const [showQuestionModal, setShowQuestionModal] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<string>("");
   const [isSaving, setIsSaving] = useState(false);
-
-  const navigate = useNavigate();
+  const [reviewData, setReviewData] = useState<any[]>([]);
 
   const [selectedQuestionData, setSelectedQuestionData] = useState<{
     questionId: number | null;
@@ -63,60 +62,65 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
   const [selectedLang, setSelectedLang] = useState<number | null>(null);
   const [selectedClient, setSelectedClient] = useState<number | null>(null);
 
-  // Fetch languages & clients
+  // ✅ Reusable function to fetch both mappings and review
+  const loadMappings = async (lang: number, client: number) => {
+    setLoadingMappings(true);
+    try {
+      const mappingsResult = await dispatch(
+        fetchQuestionMappings({
+          memberType: "customer",
+          memberId: client,
+          langCode: lang,
+        })
+      ).unwrap();
+
+      const reviewResult = await dispatch(
+        fetchQuestionReviewMappings({
+          memberType: "customer",
+          memberId: client,
+          langCode: lang,
+        })
+      ).unwrap();
+
+      const mergedData: QuestionMappingItem[] = mappingsResult.map((item) => {
+        const review = reviewResult.find((r) => r.questionId === item.questionId);
+        return {
+          questionId: item.questionId,
+          questionText: item.questionText,
+          qualificationId: item.qualificationId,
+          qualificationName: item.qualificationName,
+          memberQuestionId: item.memberQuestionId ?? "", // current value
+          oldMemberQuestionId: review?.oldMemberQuestionId ?? item.memberQuestionId ?? "", // correct old value
+          memberId: client,
+        };
+      });
+
+
+
+      setFetchedMappings(mergedData);
+    } catch (err) {
+      console.error("Error fetching mappings or reviews:", err);
+      setFetchedMappings([]);
+    } finally {
+      setLoadingMappings(false);
+    }
+  };
+  
+
+  // Fetch languages & clients on mount
   useEffect(() => {
     dispatch(fetchLanguages());
     dispatch(fetchClients());
   }, [dispatch]);
 
-  // Fetch mappings & review
+  // Fetch mappings whenever lang + client are selected
   useEffect(() => {
-    if (selectedLang != null && selectedClient != null) {
-      const fetchData = async () => {
-        setLoadingMappings(true);
-        try {
-          const mappingsResult = await dispatch(
-            fetchQuestionMappings({
-              memberType: "customer",
-              memberId: selectedClient,
-              langCode: selectedLang,
-            })
-          ).unwrap();
-
-          const reviewResult = await dispatch(
-            fetchQuestionReviewMappings({
-              memberType: "customer",
-              memberId: selectedClient,
-              langCode: selectedLang,
-            })
-          ).unwrap();
-
-          const mergedData: QuestionMappingItem[] = mappingsResult.map((item) => {
-            const review = reviewResult.find((r) => r.questionId === item.questionId);
-            return {
-              questionId: item.questionId,
-              questionText: item.questionText,
-              qualificationId: item.qualificationId,
-              qualificationName: item.qualificationName,
-              memberQuestionId: item.memberQuestionId ?? "",
-              oldMemberQuestionId: review?.memberQuestionId ?? "",
-              memberId: selectedClient,
-            };
-          });
-
-          setFetchedMappings(mergedData);
-        } catch (err) {
-          console.error("Error fetching mappings or reviews:", err);
-          setFetchedMappings([]);
-        } finally {
-          setLoadingMappings(false);
-        }
-      };
-      fetchData();
+    if (selectedLang && selectedClient) {
+      loadMappings(selectedLang, selectedClient);
     } else {
       setFetchedMappings([]);
     }
-  }, [selectedLang, selectedClient, dispatch]);
+  }, [selectedLang, selectedClient]);
 
   // Input change handler
   const handleInputChange = (index: number, value: string) => {
@@ -152,6 +156,9 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
           optionData,
         })
       ).unwrap();
+
+      // ✅ Refresh data after save
+      await loadMappings(selectedLang, selectedClient);
     } catch (err) {
       console.error("Error saving review:", err);
     } finally {
@@ -243,14 +250,14 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
         </select>
       </div>
 
-      {/* Table with scroll */}
+      {/* Table */}
       <div
         className={cn(
           "rounded-2xl shadow-lg border flex flex-col overflow-hidden",
           resolvedTheme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
         )}
       >
-        <div className="overflow-y-auto max-h-[500px]"> {/* Scrollable table */}
+        <div className="overflow-y-auto max-h-[500px]">
           <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
             <thead
               className={cn(
@@ -287,75 +294,86 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
                       <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
                         <Search className="w-8 h-8 text-gray-400" />
                       </div>
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No data found</h3>
-                      <p className="text-gray-500 dark:text-gray-400">No qualification and questions mapping data available.</p>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        No data found
+                      </h3>
+                      <p className="text-gray-500 dark:text-gray-400">
+                        No qualification and questions mapping data available.
+                      </p>
                     </div>
                   </td>
                 </tr>
               ) : (
-                fetchedMappings.map((item, idx) => (
-                  <tr
-                    key={item.questionId}
-                    className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                  >
-                    <td className="px-6 py-4">{idx + 1}</td>
-                    <td
-                      className="text-blue-600 dark:text-blue-400 cursor-pointer underline"
-                      onClick={() => {
-                        navigate("/dashboard/question/options", {
-                          state: {
-                            question: item.questionText,
+                fetchedMappings.map((item, idx) => {
+                  const isMapped = item.memberQuestionId != null && item.memberQuestionId !== "";
+                  const isOldMapped =
+                    item.oldMemberQuestionId != null && item.oldMemberQuestionId !== "";
+
+                  return (
+                    <tr
+                      key={item.questionId}
+                      className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                    >
+                      <td className="px-6 py-4">{idx + 1}</td>
+                      <td
+                        className="text-blue-600 dark:text-blue-400 cursor-pointer underline"
+                        onClick={() => {
+                          setSelectedQuestion(item.questionText);
+                          setShowQuestionModal(true);
+                          setSelectedQuestionData({
                             questionId: item.questionId,
                             memberId: selectedClient,
                             marketId: item.qualificationId,
                             langCode: selectedLang,
-                          },
-                        });
-                      }}
-                    >
-                      {item.questionText}
-                    </td>
+                          });
+                        }}
+                      >
+                        {item.questionText}
+                      </td>
+                      <td className="px-6 py-4">{item.qualificationName}</td>
 
-                    <td className="px-6 py-4">{item.qualificationName}</td>
-                    <td className="px-6 py-4 text-center">
-                      <span
-                        className={cn(
-                          "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                          item.oldMemberQuestionId
-                            ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
-                            : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
-                        )}
-                      >
-                        {item.oldMemberQuestionId ? "Old Mapped" : "Not Mapped"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span
-                        className={cn(
-                          "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                          item.memberQuestionId
-                            ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
-                            : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
-                        )}
-                      >
-                        {item.memberQuestionId ? "Mapped" : "Not Mapped"}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <input
-                        type="text"
-                        defaultValue={item.memberQuestionId ?? ""}
-                        onChange={(e) => handleInputChange(idx, e.target.value)}
-                        className={cn(
-                          "px-2 py-1 border rounded-lg w-full text-sm focus:outline-none focus:ring-2 transition-all",
-                          resolvedTheme === "dark"
-                            ? "bg-gray-900 text-gray-100 border-gray-700 focus:ring-blue-500"
-                            : "bg-white text-gray-900 border-gray-300 focus:ring-blue-500"
-                        )}
-                      />
-                    </td>
-                  </tr>
-                ))
+                      <td className="px-6 py-4 text-center">
+                        <span
+                          className={cn(
+                            "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                            isMapped
+                              ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
+                              : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
+                          )}
+                        >
+                          {isMapped ? "Mapped" : "Not Mapped"}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4 text-center">
+                        <span
+                          className={cn(
+                            "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                            isOldMapped
+                              ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+                              : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
+                          )}
+                        >
+                          {isOldMapped ? "Old Mapped" : "Not Mapped"}
+                        </span>
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <input
+                          type="text"
+                          defaultValue={item.memberQuestionId ?? ""}
+                          onChange={(e) => handleInputChange(idx, e.target.value)}
+                          className={cn(
+                            "px-2 py-1 border rounded-lg w-full text-sm focus:outline-none focus:ring-2 transition-all",
+                            resolvedTheme === "dark"
+                              ? "bg-gray-900 text-gray-100 border-gray-700 focus:ring-blue-500"
+                              : "bg-white text-gray-900 border-gray-300 focus:ring-blue-500"
+                          )}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -385,13 +403,18 @@ export const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({
         </div>
       </div>
 
-      {/* <QuestionOptionsPage
+      {/* Question Options Modal */}
+      {showQuestionModal && (
+        <QuestionOptionsModal
+          isOpen={showQuestionModal}
+          onClose={() => setShowQuestionModal(false)}
           question={selectedQuestion}
           questionId={selectedQuestionData.questionId}
           memberId={selectedQuestionData.memberId}
           marketId={selectedQuestionData.marketId}
           langCode={selectedQuestionData.langCode}
-        /> */}
+        />
+      )}
     </motion.div>
   );
 };

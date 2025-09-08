@@ -9,7 +9,6 @@ import { saveQualMapping, getAllQualMapping } from "@/redux/slices/testing/saveQ
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState, AppDispatch } from "@/redux/store";
 import QualificationMappingReviewModal from "./QualificationMappingReviewModal";
-import { useNavigate } from "react-router-dom";
 
 interface QualificationsMappingViewProps {
 	setCurrentView: (view: string) => void;
@@ -37,7 +36,6 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 	const [fetchedQualifications, setFetchedQualifications] = React.useState<QualificationMappingDataItem[]>([]);
 	const [loadingTable, setLoadingTable] = React.useState(false);
 	const [reviewMappings, setReviewMappings] = React.useState<QualificationMappingDataItem[]>([]);
-	  const navigate = useNavigate();
 
 	const dispatch = useDispatch<AppDispatch>();
 	const { items: clients, loading: clientLoading, error: clientError } = useSelector((state: RootState) => state.clients);
@@ -164,9 +162,9 @@ export const QualificationsMappingView: React.FC<QualificationsMappingViewProps>
 				<div className="flex items-center justify-between mb-6">
 					<h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Qualifications Mapping</h2>
 					<div className="flex space-x-3">
-					 <Button onClick={() => navigate("/dashboard/question-mapping")} variant="default">
-      <FileText className="w-4 h-4 mr-2" /> Question Mapping
-    </Button>
+						<Button onClick={() => setCurrentView("questionMapping")} variant="default">
+							<FileText className="w-4 h-4 mr-2" /> Question Mapping
+						</Button>
 						<Button onClick={() => setShowMappingReviewModal(true)} variant="default">
 							<Map className="w-4 h-4 mr-2" /> Mapping Review
 						</Button>
