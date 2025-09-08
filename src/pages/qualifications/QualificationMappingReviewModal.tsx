@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Save, Search, X } from 'lucide-react';
+import { Loader2, Save, Search, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,17 +11,21 @@ import type { Qualification } from '@/types/qualicationTypes';
 import { saveQualMappingReviewData } from '@/redux/slices/testing/saveQualMappingSlice';
 import type { AppDispatch } from '@/redux/store';
 
+interface QualificationMappingItem {
+  id: string;
+  qualificationId: number;
+  qualificationName: string;
+  memberId: number;
+  memberQualificationId: number;
+  constantId: string;
+  oldMapped: boolean; // dynamic
+  newMapped: boolean; // dynamic
+}
+
 interface QualificationMappingReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  mappings: {
-    id: string;
-    qualificationId: number;
-    qualificationName: string;
-    memberId: number;
-    memberQualificationId: number;
-    constantId: string;
-  }[];
+  mappings: QualificationMappingItem[];
   qualifications: Qualification[];
   resolvedTheme: 'light' | 'dark';
 }
@@ -30,14 +34,14 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
   isOpen,
   onClose,
   mappings,
-  qualifications,
   resolvedTheme
 }) => {
   const [selectedItems, setSelectedItems] = React.useState<Set<string>>(new Set());
   const [selectAll, setSelectAll] = React.useState(false);
   const [searchTerm, setSearchTerm] = React.useState('');
   const [message, setMessage] = React.useState('');
-  const [localMappings, setLocalMappings] = React.useState(mappings);
+  const [loading, setLoading] = React.useState(false);
+  const [localMappings, setLocalMappings] = React.useState<QualificationMappingItem[]>(mappings);
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -72,29 +76,30 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
 
     if (selectedData.length === 0) return;
 
+    setLoading(true);
     try {
       await dispatch(saveQualMappingReviewData(selectedData as any[])).unwrap();
 
       setMessage(`✅ Successfully inserted ${selectedData.length} qualification mapping entries.`);
 
-      // ✅ Remove inserted items from localMappings
       const remaining = localMappings.filter(item => !selectedItems.has(item.id));
       setLocalMappings(remaining);
 
-      // ✅ Reset selection
       setSelectedItems(new Set());
       setSelectAll(false);
     } catch (error) {
       console.error('Error inserting qualification mappings:', error);
       setMessage('❌ Failed to insert qualification mapping entries.');
+    } finally {
+      setLoading(false);
     }
   };
+
 
   if (!isOpen) return null;
 
   return (
     <AnimatePresence>
-      {/* Modal wrapper */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -152,15 +157,19 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
                           </span>
                         </div>
                       </th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">S.No</th>
+
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Qualification</th>
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Constant ID</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Old Mapped</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">New Mapped</th>
                     </tr>
                   </thead>
                   <tbody className={cn(
                     "divide-y transition-colors",
                     resolvedTheme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'
                   )}>
-                    {filteredData.length > 0 ? filteredData.map(item => (
+                    {filteredData.length > 0 ? filteredData.map((item, index) => (
                       <motion.tr
                         key={item.id}
                         initial={{ opacity: 0, y: -10 }}
@@ -173,22 +182,57 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
                           selectedItems.has(item.id) && 'bg-blue-50 dark:bg-blue-900/20'
                         )}
                       >
+                        {/* Dynamic ID Column */}
+
+
+                        {/* Select Checkbox */}
                         <td className="px-6 py-4 whitespace-nowrap">
                           <Checkbox
                             checked={selectedItems.has(item.id)}
                             onCheckedChange={val => handleSelectItem(item.id, Boolean(val))}
                           />
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
+                          {index + 1}
+                        </td>
+
+                        {/* Qualification */}
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                           {item.qualificationName}
                         </td>
+
+                        {/* Constant ID */}
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
                           {item.constantId || 'Not Mapped'}
+                        </td>
+
+                        {/* Old Mapped */}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <span className={cn(
+                            "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                            item.oldMapped
+                              ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+                              : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
+                          )}>
+                            {item.oldMapped ? "Old Mapped" : "Not Mapped"}
+                          </span>
+                        </td>
+
+                        {/* New Mapped */}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          <span className={cn(
+                            "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                            item.constantId
+                              ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
+                              : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
+                          )}>
+                            {item.constantId ? "Mapped" : "Not Mapped"}
+                          </span>
                         </td>
                       </motion.tr>
                     )) : (
                       <tr>
-                        <td colSpan={3} className="p-12 text-center">
+                        <td colSpan={6} className="p-12 text-center">
                           <div className="flex flex-col items-center space-y-3">
                             <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                               <Search className="w-8 h-8 text-gray-400" />
@@ -202,6 +246,7 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
                       </tr>
                     )}
                   </tbody>
+
                 </table>
               </div>
             </div>
@@ -215,12 +260,14 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
           )}>
             <Button
               onClick={handleSave}
-              disabled={selectedItems.size === 0}
-              className="bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300 w-full sm:w-auto"
+              disabled={selectedItems.size === 0 || loading}
+              className="bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300 w-full sm:w-auto flex items-center justify-center"
             >
+              {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Save className="w-4 h-4 mr-2" />
-              Insert Selected ({selectedItems.size})
+              Approved Selected ({selectedItems.size})
             </Button>
+
             <Button onClick={onClose} variant="outline" className="w-full sm:w-auto">
               <X className="w-4 h-4 mr-2" />
               Close

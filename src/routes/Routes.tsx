@@ -8,6 +8,8 @@ import { Loadable } from "./Loadable";
 
 import ForgotPassword from "@/pages/auth/ForgotPassword";
 import QualificationsDashboard from "@/pages/qualifications";
+import QuestionOptionsPage from "@/pages/qualifications/QuestionOptionsModal";
+import { QuestionMappingView } from "@/pages/qualifications/QuestionMappingView";
 
 const Login = Loadable(lazy(() => import("../pages/auth/Login")));
 const Signup = Loadable(lazy(() => import("../pages/auth/Signup")));
@@ -69,22 +71,22 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
       },
-      // {
-      //   path: "add-qualification-query",
-      //   element: (
-      //     <ProtectedRoute>
-      //       <AddOptionView />
-      //     </ProtectedRoute>
-      //   ),
-      // },
-      // {
-      //   path: "update-qualification-query/:id",
-      //   element: (
-      //     <ProtectedRoute>
-      //       <UpdateOptionView />
-      //     </ProtectedRoute>
-      //   ),
-      // },
+       {
+        path: "dashboard/question/options",
+        element: (
+          <ProtectedRoute>
+            <QuestionOptionsPage />
+          </ProtectedRoute>
+        ),
+      },
+        {
+        path: "/dashboard/question-mapping",
+        element: (
+          <ProtectedRoute>
+            <QuestionMappingView />
+          </ProtectedRoute>
+        ),
+      },
     ],
   },
   { path: "*", element: <NotFound /> },

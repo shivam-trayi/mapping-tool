@@ -77,8 +77,8 @@ export type ViewType =
   | 'demoMapping'
   | 'questions'
   | 'addOption'
-  | 'updateOption';
-
+  | 'updateOption'
+  | 'Option'
 
 
 //   export interface QualificationsMappingData {

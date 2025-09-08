@@ -110,7 +110,7 @@ const handleSave = () => {
 					className={cn('relative rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col transition-colors', resolvedTheme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900')}>
 					{/* Header */}
 					<div className={cn('p-6 flex justify-between items-center border-b transition-colors', resolvedTheme === 'dark' ? 'border-gray-700' : 'border-gray-200')}>
-						<h2 className='text-2xl font-bold'>Question Mapping Review</h2>
+						<h2 className='text-2xl font-bold'>Question Mapping Review23</h2>
 						<Button onClick={onClose} variant='ghost' size='sm' className='rounded-full'>
 							<X className='w-5 h-5' />
 						</Button>
@@ -186,22 +186,8 @@ const handleSave = () => {
 							'border-t p-4 transition-colors',
 							resolvedTheme === 'dark' ? 'border-gray-700 bg-gray-900' : 'border-gray-50'
 						)}>
-						{/* <Button
-              onClick={handleSave}
-              disabled={selectedItems.size === 0 || loading}
-              className="bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300 w-full sm:w-auto"
-            >
-              {loading ? (
-                "Saving..."
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" /> Insert Selected (
-                  {selectedItems.size})
-                </>
-              )}
-            </Button> */}
 						<Button onClick={handleSave} className='bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300 w-full sm:w-auto'>
-							Option Mapping Approved
+							Question Mapping Approved
 						</Button>
 						<Button onClick={onClose} variant='outline' className='w-full sm:w-auto'>
 							<X className='w-4 h-4 mr-2' /> Close
