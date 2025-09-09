@@ -52,7 +52,7 @@ export default function Login() {
             <span>SuveyMappingTool</span>
           </Link>
           <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
-            Welcome Back, Vendor!
+            Welcome Back, Mapping-Tool!
           </h1>
           <p className="text-muted-foreground">
             Sign in to access your dashboard and projects

@@ -132,7 +132,7 @@ const handleSubmit = async (e: React.FormEvent) => {
             <span>SuveyMappingTool</span>
           </Link>
           <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
-            Join Our Global Vendor Network
+            Join Our Global Mapping-Tool
           </h1>
           <p className="text-muted-foreground">
             Start earning from market research projects today

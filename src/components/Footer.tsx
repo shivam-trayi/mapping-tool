@@ -31,7 +31,7 @@ export default function Footer() {
               <span>SuveyMappingTool</span>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed max-w-xs">
-              The leading platform connecting market research vendors with global 
+              The leading platform connecting market research Mapping-Tool with global 
               opportunities. Grow your business securely and efficiently.
             </p>
           </div>
