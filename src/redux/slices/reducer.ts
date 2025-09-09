@@ -4,9 +4,7 @@ import languageSlice from "../slices/testing/languageSlice";
 import clientSlice from "../slices/testing/clientSlice";
 import questionMappingSlice from "../slices/testing/questionSlice";
 import mappingReviewSlice from "../slices/testing/createmMppingReviewSlice";
-
-
-
+import selectedMappingSlice from "../slices/testing/selectedMappingSlice";
 
 
 const reducer = {
@@ -15,6 +13,8 @@ const reducer = {
   clients: clientSlice,
   questionMappings: questionMappingSlice,
   mappingReview: mappingReviewSlice, // ✅ add reducer
+  selectedMapping: selectedMappingSlice,
+
 
 };
 

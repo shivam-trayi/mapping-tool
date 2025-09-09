@@ -1,89 +1,78 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { Qualification, Question, ViewType } from "../../types/qualicationTypes";
 
-interface AddOptionViewProps {
-  resolvedTheme: "light" | "dark";
-  setCurrentView: (view: ViewType) => void;
+type QuestionType = "Radio" | "Checkbox" | "Text";
+type Option = { text: string; language: string; active: boolean };
+type Question = { id: string; text: string; type: QuestionType; language: string; options?: Option[] };
+type Qualification = { id: string; name: string; questions: Question[] };
 
-  // option input is stored in updateQuestionForm.text + language
-  updateQuestionForm: Partial<Question>;
-  setUpdateQuestionForm: React.Dispatch<React.SetStateAction<Partial<Question>>>;
+const AddOptionView: React.FC = () => {
+  const [currentView, setCurrentView] = useState<"updateQuestion" | "addOption">("addOption");
+  const [updateQuestionForm, setUpdateQuestionForm] = useState<Partial<Question>>({
+    text: "",
+    language: "English-US",
+  });
+  const [isSaving, setIsSaving] = useState(false);
+  const [message, setMessage] = useState("");
 
-  languages: string[];
-  isSaving: boolean;
-  setIsSaving: React.Dispatch<React.SetStateAction<boolean>>;
+  // Dummy data for demonstration
+  const [qualifications, setQualifications] = useState<Qualification[]>([
+    {
+      id: "q1",
+      name: "Sample Qualification",
+      questions: [
+        {
+          id: "ques1",
+          text: "Sample question?",
+          type: "Radio",
+          language: "English-US",
+          options: [
+            { text: "Option 1", language: "English-US", active: true },
+          ],
+        },
+      ],
+    },
+  ]);
+  const [editingQualification, setEditingQualification] = useState<Qualification | null>(qualifications[0]);
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(editingQualification?.questions[0] || null);
 
-  // current editing context
-  editingQuestion: Question | null;
-  editingQualification: Qualification | null;
-  setEditingQualification: React.Dispatch<React.SetStateAction<Qualification | null>>;
+  const languages = ["English-US", "Hindi", "Spanish"];
 
-  // full list
-  qualifications: Qualification[];
-  setQualifications: React.Dispatch<React.SetStateAction<Qualification[]>>;
+  const handleAddOption = () => {
+    if (!editingQuestion || !editingQualification) return;
 
-  // feedback
-  setMessage: React.Dispatch<React.SetStateAction<string>>;
-}
+    const text = (updateQuestionForm.text || "").trim();
+    const language = updateQuestionForm.language || "English-US";
+    if (!text) return;
 
-export const AddOptionView: React.FC<AddOptionViewProps> = ({
-  resolvedTheme,
-  setCurrentView,
-  updateQuestionForm,
-  setUpdateQuestionForm,
-  languages,
-  isSaving,
-  setIsSaving,
-  editingQuestion,
-  editingQualification,
-  setEditingQualification,
-  qualifications,
-  setQualifications,
-  setMessage,
-}) => {
-const handleAddOption = () => {
-  if (!editingQuestion || !editingQualification) return;
+    setIsSaving(true);
+    setTimeout(() => {
+      const newOption: Option = { text, language, active: true };
 
-  const text = (updateQuestionForm.text || "").trim();
-  const language = updateQuestionForm.language || "English-US";
+      const updatedQuestions = editingQualification.questions.map((q) =>
+        q.id === editingQuestion.id
+          ? { ...q, options: [...(q.options ?? []), newOption] }
+          : q
+      );
 
-  if (!text) return;
+      const updatedQualification: Qualification = {
+        ...editingQualification,
+        questions: updatedQuestions,
+      };
 
-  setIsSaving(true);
+      setQualifications((prev) =>
+        prev.map((q) => (q.id === editingQualification.id ? updatedQualification : q))
+      );
+      setEditingQualification(updatedQualification);
 
-  setTimeout(() => {
-    // Create new Option object
-    const newOption = { text, language, active: true };
-
-    // Append to current question's options
-    const updatedQuestions = editingQualification.questions.map((q) =>
-      q.id === editingQuestion.id
-        ? { ...q, options: [...(q.options ?? []), newOption] }
-        : q
-    );
-
-    const updatedQualification: Qualification = {
-      ...editingQualification,
-      questions: updatedQuestions,
-    };
-
-    setQualifications((prev) =>
-      prev.map((q) => (q.id === editingQualification.id ? updatedQualification : q))
-    );
-    setEditingQualification(updatedQualification);
-
-    // Clear input but keep last chosen language
-    setUpdateQuestionForm((prev) => ({ ...prev, text: "", language }));
-
-    setMessage("Option added successfully!");
-    setIsSaving(false);
-    setCurrentView("updateQuestion");
-  }, 600);
-};
-
+      setUpdateQuestionForm({ ...updateQuestionForm, text: "", language });
+      setMessage("Option added successfully!");
+      setIsSaving(false);
+      setCurrentView("updateQuestion");
+    }, 600);
+  };
 
   return (
     <motion.div
@@ -95,27 +84,16 @@ const handleAddOption = () => {
       className="p-6"
     >
       <div className="flex justify-between items-center mb-6">
-        <h2
-          className={cn(
-            "text-2xl font-bold transition-colors",
-            resolvedTheme === "dark" ? "text-gray-100" : "text-gray-900"
-          )}
-        >
-          Add Option
-        </h2>
+        <h2 className={cn("text-2xl font-bold transition-colors", "text-gray-900")}>Add Option</h2>
         <Button onClick={() => setCurrentView("updateQuestion")} variant="default">
           Back to Question
         </Button>
       </div>
 
-      <div
-        className={cn(
-          "rounded-2xl shadow-lg p-8 transition-colors",
-          resolvedTheme === "dark"
-            ? "bg-gray-800 text-gray-100 border border-gray-700"
-            : "bg-white text-gray-900 border border-gray-200"
-        )}
-      >
+      <div className={cn(
+        "rounded-2xl shadow-lg p-8 transition-colors",
+        "bg-white text-gray-900 border border-gray-200"
+      )}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* Option Text */}
           <div className="mb-6">
@@ -123,10 +101,8 @@ const handleAddOption = () => {
             <input
               type="text"
               value={updateQuestionForm.text || ""}
-              onChange={(e) =>
-                setUpdateQuestionForm((prev) => ({ ...prev, text: e.target.value }))
-              }
-              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100"
+              onChange={(e) => setUpdateQuestionForm((prev) => ({ ...prev, text: e.target.value }))}
+              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
               placeholder="Enter option text"
             />
           </div>
@@ -136,36 +112,27 @@ const handleAddOption = () => {
             <label className="block text-sm font-medium mb-2">Option Language*</label>
             <select
               value={updateQuestionForm.language || "English-US"}
-              onChange={(e) =>
-                setUpdateQuestionForm((prev) => ({ ...prev, language: e.target.value }))
-              }
-              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors dark:bg-gray-900 dark:border-gray-600 dark:text-gray-100"
+              onChange={(e) => setUpdateQuestionForm((prev) => ({ ...prev, language: e.target.value }))}
+              className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500"
             >
-              {languages.map((lang) => (
-                <option key={lang} value={lang}>
-                  {lang}
-                </option>
-              ))}
+              {languages.map((lang) => <option key={lang} value={lang}>{lang}</option>)}
             </select>
           </div>
         </div>
 
         <div className="flex justify-end space-x-3">
-          <Button
-            onClick={handleAddOption}
-            disabled={!updateQuestionForm.text?.trim() || isSaving}
-          >
+          <Button onClick={handleAddOption} disabled={!updateQuestionForm.text?.trim() || isSaving}>
             {isSaving ? "Adding..." : "Add Option"}
           </Button>
-          <Button
-            onClick={() => setCurrentView("updateQuestion")}
-            variant="outline"
-            disabled={isSaving}
-          >
+          <Button onClick={() => setCurrentView("updateQuestion")} variant="outline" disabled={isSaving}>
             Cancel
           </Button>
         </div>
+
+        {message && <p className="mt-4 text-green-600">{message}</p>}
       </div>
     </motion.div>
   );
 };
+
+export default AddOptionView;

@@ -1,28 +1,39 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { Option, ViewType } from "../../types/qualicationTypes";
 
-interface UpdateOptionViewProps {
-  resolvedTheme: string;
-  setCurrentView: React.Dispatch<React.SetStateAction<ViewType>>; // FIXED ✅
-  currentOption: Option;
-  setCurrentOption: React.Dispatch<React.SetStateAction<Option>>;
-  languages: string[];
-  handleSaveOption: () => void;
-  isSaving: boolean;
-}
+const UpdateOptionView: React.FC = () => {
+  const resolvedTheme = "light"; // dummy theme
+  const [currentOption, setCurrentOption] = useState({
+    text: "Sample Option",
+    language: "English-US",
+    active: true,
+  });
 
-export const UpdateOptionView: React.FC<UpdateOptionViewProps> = ({
-  resolvedTheme,
-  setCurrentView,
-  currentOption,
-  setCurrentOption,
-  languages,
-  handleSaveOption,
-  isSaving,
-}) => {
+  const languages = ["English-US", "Spanish", "French"]; // dummy languages
+  const [isSaving, setIsSaving] = useState(false);
+  const [currentView, setCurrentView] = useState<"updateOption" | "updateQuestion">(
+    "updateOption"
+  );
+
+  const handleSaveOption = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      console.log("Saved option:", currentOption);
+      setIsSaving(false);
+      setCurrentView("updateQuestion"); // redirect to dummy previous view
+    }, 500);
+  };
+
+  if (currentView === "updateQuestion") {
+    return (
+      <div className="p-6">
+        <h2>Back to Question View (dummy)</h2>
+      </div>
+    );
+  }
+
   return (
     <motion.div
       key="update-option-view"
@@ -54,12 +65,9 @@ export const UpdateOptionView: React.FC<UpdateOptionViewProps> = ({
             : "bg-white text-gray-900 border border-gray-200"
         )}
       >
-        {/* Option Text */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Option Text*
-            </label>
+            <label className="block text-sm font-medium mb-2">Option Text*</label>
             <input
               type="text"
               value={currentOption.text}
@@ -71,11 +79,8 @@ export const UpdateOptionView: React.FC<UpdateOptionViewProps> = ({
             />
           </div>
 
-          {/* Option Language */}
           <div>
-            <label className="block text-sm font-medium mb-2">
-              Option Language*
-            </label>
+            <label className="block text-sm font-medium mb-2">Option Language*</label>
             <select
               value={currentOption.language}
               onChange={(e) =>
@@ -92,7 +97,6 @@ export const UpdateOptionView: React.FC<UpdateOptionViewProps> = ({
           </div>
         </div>
 
-        {/* Active Toggle */}
         <div className="flex items-center gap-2 mb-6">
           <input
             type="checkbox"
@@ -104,7 +108,6 @@ export const UpdateOptionView: React.FC<UpdateOptionViewProps> = ({
           <span>Active</span>
         </div>
 
-        {/* Actions */}
         <div className="flex justify-end space-x-3">
           <Button
             onClick={handleSaveOption}
@@ -124,3 +127,5 @@ export const UpdateOptionView: React.FC<UpdateOptionViewProps> = ({
     </motion.div>
   );
 };
+
+export default UpdateOptionView;

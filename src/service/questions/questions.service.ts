@@ -91,7 +91,7 @@ export const updateQuestionReviewMapping = async ({
 
   const response = await axiosInstance.put(
     "/questions/updateQuestionReviewMapping",
-    bodyData // ✅ direct भेजा
+    bodyData
   );
 
   return response.data;
