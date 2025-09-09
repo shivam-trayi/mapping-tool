@@ -8,6 +8,16 @@ import { Loadable } from "./Loadable";
 import ForgotPassword from "@/pages/auth/ForgotPassword";
 import QualificationsDashboard from "@/pages/qualifications";
 import QuestionOptionsPage from "../pages/qualifications/QuestionOptionsModal";
+import ListView from '@/pages/qualifications/ListView';
+import CreateEditView from '@/pages/qualifications/CreateEditView';
+import EditView from '@/pages/qualifications/EditView';
+import AddQuestionView from '@/pages/qualifications/AddQuestionView';
+import UpdateQuestionView from '@/pages/qualifications/UpdateQuestionView';
+import DemoPriorityMappingView from '@/pages/qualifications/DemoPriorityMappingView';
+import QualificationsMappingView from '@/pages/qualifications/QualificationsMappingView';
+import QuestionMappingView from '@/pages/qualifications/QuestionMappingView';
+import AddOptionView from '@/pages/qualifications/AddOptionView';
+import UpdateOptionView from '@/pages/qualifications/UpdateOptionView';
 
 const Login = Loadable(lazy(() => import("../pages/auth/Login")));
 const Signup = Loadable(lazy(() => import("../pages/auth/Signup")));
@@ -15,16 +25,16 @@ const ResetPassword = Loadable(lazy(() => import("../pages/auth/ResetPassword"))
 const NotFound = Loadable(lazy(() => import("../pages/NotFound")));
 
 // Dashboard children
-const ListView = Loadable(lazy(() => import("../pages/qualifications/ListView")));
-const CreateEditView = Loadable(lazy(() => import("../pages/qualifications/CreateEditView")));
-const EditView = Loadable(lazy(() => import("../pages/qualifications/EditView")));
-const AddQuestionView = Loadable(lazy(() => import("../pages/qualifications/AddQuestionView")));
-const UpdateQuestionView = Loadable(lazy(() => import("../pages/qualifications/UpdateQuestionView")));
-const DemoPriorityMappingView = Loadable(lazy(() => import("../pages/qualifications/DemoPriorityMappingView")));
-const QualificationsMappingView = Loadable(lazy(() => import("../pages/qualifications/QualificationsMappingView")));
-const QuestionMappingView = Loadable(lazy(() => import("../pages/qualifications/QuestionMappingView")));
-const AddOptionView = Loadable(lazy(() => import("../pages/qualifications/AddOptionView")));
-const UpdateOptionView = Loadable(lazy(() => import("../pages/qualifications/UpdateOptionView")));
+// const ListView = Loadable(lazy(() => import("../pages/qualifications/ListView")));
+// const CreateEditView = Loadable(lazy(() => import("../pages/qualifications/CreateEditView")));
+// const EditView = Loadable(lazy(() => import("../pages/qualifications/EditView")));
+// const AddQuestionView = Loadable(lazy(() => import("../pages/qualifications/AddQuestionView")));
+// const UpdateQuestionView = Loadable(lazy(() => import("../pages/qualifications/UpdateQuestionView")));
+// const DemoPriorityMappingView = Loadable(lazy(() => import("../pages/qualifications/DemoPriorityMappingView")));
+// const QualificationsMappingView = Loadable(lazy(() => import("../pages/qualifications/QualificationsMappingView")));
+// const QuestionMappingView = Loadable(lazy(() => import("../pages/qualifications/QuestionMappingView")));
+// const AddOptionView = Loadable(lazy(() => import("../pages/qualifications/AddOptionView")));
+// const UpdateOptionView = Loadable(lazy(() => import("../pages/qualifications/UpdateOptionView")));
 // const QuestionOptionsModal = Loadable(lazy(() => import("../pages/qualifications/QuestionOptionsModal")));
 
 const router = createBrowserRouter([
