@@ -5,6 +5,8 @@ import clientSlice from "../slices/testing/clientSlice";
 import questionMappingSlice from "../slices/testing/questionSlice";
 import mappingReviewSlice from "../slices/testing/createmMppingReviewSlice";
 import selectedMappingSlice from "../slices/testing/selectedMappingSlice";
+import answerSlice from "../slices/testing/answerSlice";
+
 
 
 const reducer = {
@@ -14,6 +16,8 @@ const reducer = {
   questionMappings: questionMappingSlice,
   mappingReview: mappingReviewSlice, // ✅ add reducer
   selectedMapping: selectedMappingSlice,
+  answers: answerSlice, // ✅ add here
+
 
 
 };

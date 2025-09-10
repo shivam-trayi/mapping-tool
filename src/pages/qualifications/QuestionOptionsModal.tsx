@@ -35,13 +35,15 @@ const QuestionOptionsPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const location = useLocation();
-  const state = location.state as LocationState;
+  // const state = location.state as LocationState;
 
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [optionInputs, setOptionInputs] = useState<Record<number, string>>({});
   const [selectedItems, setSelectedItems] = useState<Set<number>>(new Set());
   const [selectAll, setSelectAll] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const state = location.state as LocationState;
+
 
   const { items: answers, loading } = useSelector(
     (state: RootState) => state.questionMappings
@@ -157,10 +159,6 @@ const QuestionOptionsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Question */}
-      {/* <h3 className="text-lg font-medium mb-4 text-gray-900 dark:text-gray-100">
-        {state.question}
-      </h3> */}
       <div className="mb-6 p-4 rounded-xl bg-white dark:bg-gray-800 shadow-md">
         <h6 className="text-lg font-medium mb-4 text-gray-900 dark:text-gray-100">
           {state.question}
@@ -332,7 +330,10 @@ const QuestionOptionsPage: React.FC = () => {
         isOpen={isReviewOpen}
         onClose={() => setIsReviewOpen(false)}
         answers={answers}
-        resolvedTheme={undefined} />
+        resolvedTheme={undefined}
+        memberId={state.memberId} // ✅ use this
+      />
+
     </motion.div>
   );
 };

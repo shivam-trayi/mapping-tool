@@ -88,11 +88,7 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
 
   const handleSelectItem = (id: number, checked: boolean) => {
     const newSelected = new Set(selectedItems);
-    if (checked) {
-      newSelected.add(id);
-    } else {
-      newSelected.delete(id);
-    }
+    checked ? newSelected.add(id) : newSelected.delete(id);
     setSelectedItems(newSelected);
     setSelectAll(newSelected.size === filteredData.length && filteredData.length > 0);
   };

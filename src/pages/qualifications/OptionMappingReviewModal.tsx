@@ -1,23 +1,44 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Search, Save } from "lucide-react";
+import { X, Search, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MessageBox } from "@/components/ui/MessageBox";
 import { cn } from "@/lib/utils";
 import { useAppDispatch, useAppSelector } from "@/redux/store";
-import { insertMappingReviewThunk, resetReviewState } from "@/redux/slices/testing/createmMppingReviewSlice";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const OptionMappingReviewModal = ({ isOpen, onClose, answers, resolvedTheme }) => {
+// ✅ Import slice actions
+import {
+  insertAnswerMapping,
+  resetAnswerState,
+} from "@/redux/slices/testing/answerSlice";
+
+const OptionMappingReviewModal = ({ isOpen, onClose, answers, memberId, resolvedTheme }) => {
+  console.log("Answers Data:", answers,memberId);
   const dispatch = useAppDispatch();
-  const { success, error } = useAppSelector((state) => state.mappingReview);
+
+  const { loading, success, error } = useAppSelector((state) => state.answers);
 
   const [updatedValues, setUpdatedValues] = useState({});
   const [selected, setSelected] = useState({});
   const [selectAll, setSelectAll] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [message, setMessage] = useState("");
+
+  // ✅ Show message when API responds
+  useEffect(() => {
+    if (success) {
+      setMessage("✅ Mapping saved successfully!");
+      dispatch(resetAnswerState());
+      setSelected({});
+      setSelectAll(false);
+    }
+    if (error) {
+      setMessage(`❌ ${error}`);
+      dispatch(resetAnswerState());
+    }
+  }, [success, error, dispatch]);
 
   // Filter based on search term
   const filteredData = useMemo(
@@ -27,6 +48,7 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, resolvedTheme }) =
       ),
     [answers, searchTerm]
   );
+
   const handleInputChange = (answerId, value) => {
     setUpdatedValues((prev) => ({ ...prev, [answerId]: value }));
   };
@@ -46,37 +68,31 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, resolvedTheme }) =
     setSelectAll(checked);
   };
 
-  const handleSave = () => {
-    const selectedData = filteredData.filter((ans) => selected[ans.answerId]);
-    if (!selectedData.length) return;
+ const handleSave = () => {
+  // Get only the selected answers
+  const selectedData = filteredData.filter((ans) => selected[ans.answerId]);
+  if (!selectedData.length) return;
 
-    const memberId = selectedData[0]?.memberId || answers[0]?.memberId;
+  if (!memberId) {
+    setMessage("❌ memberId is missing!");
+    return;
+  }
 
-    const payload = {
-      memberId,
-      memberType: selectedData[0]?.memberType || answers[0]?.memberType || "", // Provide a default or get from data
-      optionData: selectedData.map((item) => ({
-        questionId: item.questionId,
-        qualificationId: item.qualificationId,
-        memberQuestionId: item.memberQuestionId ?? null,
-        qualificationMappingId: item.qualificationMappingId ?? null,
-      })),
-    };
-
-    dispatch(insertMappingReviewThunk(payload));
+  // Build payload with full answer objects
+  const payload = {
+    memberId, // ✅ directly from props
+    memberType: "customer", // static
+    optionData: selectedData, // send the full object as is
   };
 
-  useEffect(() => {
-    if (success) {
-      setMessage("✅ Successfully inserted mappings!");
-      dispatch(resetReviewState());
-      setSelected({});
-      setSelectAll(false);
-    } else if (error) {
-      setMessage(`❌ ${error}`);
-      dispatch(resetReviewState());
-    }
-  }, [success, error, dispatch]);
+  console.log("Final Payload (full data):", payload);
+
+  // Dispatch Redux thunk
+  dispatch(insertAnswerMapping(payload));
+};
+
+
+
 
   if (!isOpen) return null;
 
@@ -98,10 +114,12 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, resolvedTheme }) =
           )}
         >
           {/* Header */}
-          <div className={cn(
-            "p-6 flex justify-between items-center border-b transition-colors",
-            resolvedTheme === "dark" ? "border-gray-700" : "border-gray-200"
-          )}>
+          <div
+            className={cn(
+              "p-6 flex justify-between items-center border-b transition-colors",
+              resolvedTheme === "dark" ? "border-gray-700" : "border-gray-200"
+            )}
+          >
             <h2 className="text-2xl font-bold">Option Mapping Review</h2>
             <Button onClick={onClose} variant="ghost" size="sm" className="rounded-full">
               <X className="w-5 h-5" />
@@ -137,7 +155,6 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, resolvedTheme }) =
                         <div className="flex items-center space-x-2">
                           <span>Select All</span>
                           <Checkbox checked={selectAll} onCheckedChange={handleSelectAll} />
-
                         </div>
                       </th>
                     </tr>
@@ -145,7 +162,9 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, resolvedTheme }) =
                   <tbody>
                     {filteredData.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="p-12 text-center">No data found</td>
+                        <td colSpan={6} className="p-12 text-center">
+                          No data found
+                        </td>
                       </tr>
                     ) : (
                       filteredData.map((ans, idx) => (
@@ -155,7 +174,10 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, resolvedTheme }) =
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 5 }}
                           transition={{ duration: 0.2 }}
-                          className={cn(idx % 2 === 0 ? "bg-white" : "bg-gray-50", selected[ans.answerId] && "bg-blue-50 dark:bg-blue-900/20")}
+                          className={cn(
+                            idx % 2 === 0 ? "bg-white" : "bg-gray-50",
+                            selected[ans.answerId] && "bg-blue-50 dark:bg-blue-900/20"
+                          )}
                         >
                           <td className="px-6 py-4">{idx + 1}</td>
                           <td className="px-6 py-4">{ans.answerText}</td>
@@ -193,9 +215,10 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, resolvedTheme }) =
                             </span>
                           </td>
                           <td className="px-6 py-4 text-center">
-                            <Checkbox checked={!!selected[ans.answerId]}
-                              onCheckedChange={() => toggleSelect(ans.answerId)} />
-
+                            <Checkbox
+                              checked={!!selected[ans.answerId]}
+                              onCheckedChange={() => toggleSelect(ans.answerId)}
+                            />
                           </td>
                         </motion.tr>
                       ))
@@ -207,33 +230,21 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, resolvedTheme }) =
           </div>
 
           {/* Footer */}
-
-          <div className={cn(
-            "sticky bottom-0 z-20 flex flex-col sm:flex-row items-center justify-end space-y-4 sm:space-y-0 sm:space-x-3 border-t p-4 transition-colors",
-            resolvedTheme === "dark" ? "border-gray-700 bg-gray-900" : "border-gray-50"
-          )}>
+          <div
+            className={cn(
+              "sticky bottom-0 z-20 flex flex-col sm:flex-row items-center justify-end space-y-4 sm:space-y-0 sm:space-x-3 border-t p-4 transition-colors",
+              resolvedTheme === "dark" ? "border-gray-700 bg-gray-900" : "border-gray-50"
+            )}
+          >
             {/* Close Button */}
             <Button onClick={onClose} variant="outline" className="w-full sm:w-auto">
               <X className="w-4 h-4 mr-2" /> Close
             </Button>
 
-            {/* Update Button */}
-            <Button
-              onClick={handleSave}
-              disabled={Object.values(selected).every((v) => !v)}
-              className={cn(
-                "transition-all duration-300 w-full sm:w-auto flex items-center justify-center",
-                Object.values(selected).some((v) => v)
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-blue-200 text-white cursor-not-allowed"
-              )}
-            >
-              <Save className="w-4 h-4 mr-2" /> Update
-            </Button>
-
             {/* Mapping Approve Button */}
             <Button
-              disabled={Object.values(selected).every((v) => !v)}
+              onClick={handleSave}
+              disabled={Object.values(selected).every((v) => !v) || loading}
               className={cn(
                 "transition-all duration-300 w-full sm:w-auto flex items-center justify-center",
                 Object.values(selected).some((v) => v)
@@ -241,14 +252,21 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, resolvedTheme }) =
                   : "bg-blue-200 text-white cursor-not-allowed"
               )}
             >
-              <Save className="w-4 h-4 mr-2" /> Mapping Approve
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" /> Mapping Approve
+                </>
+              )}
             </Button>
           </div>
-
         </motion.div>
 
         {/* Message */}
-        <MessageBox message={message} onClose={() => setMessage('')} resolvedTheme={resolvedTheme} />
+        <MessageBox message={message} onClose={() => setMessage("")} resolvedTheme={resolvedTheme} />
       </motion.div>
     </AnimatePresence>
   );
