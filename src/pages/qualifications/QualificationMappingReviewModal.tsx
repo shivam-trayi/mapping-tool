@@ -8,7 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
 import { MessageBox } from '@/components/ui/MessageBox';
 import type { Qualification } from '@/types/qualicationTypes';
-import { saveQualMappingReviewData } from '@/redux/slices/testing/saveQualMappingSlice';
+import { saveQualMappingReviewData, updateQualificationConstantIdData } from '@/redux/slices/testing/saveQualMappingSlice';
+// import { saveQualMappingReviewData, updateQualificationConstantIdData } from '@/redux/slices/testing/saveQualMappingSlice';
+
 import type { AppDispatch } from '@/redux/store';
 
 interface QualificationMappingItem {
@@ -18,8 +20,8 @@ interface QualificationMappingItem {
   memberId: number;
   memberQualificationId: number;
   constantId: string;
-  oldMapped: boolean; // dynamic
-  newMapped: boolean; // dynamic
+  oldMapped: boolean;
+  newMapped: boolean;
 }
 
 interface QualificationMappingReviewModalProps {
@@ -42,6 +44,8 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
   const [message, setMessage] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [localMappings, setLocalMappings] = React.useState<QualificationMappingItem[]>(mappings);
+  // const [updateLoading, setUpdateLoading] = React.useState(false);
+  // const [editedValues, setEditedValues] = React.useState<Record<number, string>>({});
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -54,6 +58,10 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
     setSelectAll(checked);
     setSelectedItems(checked ? new Set(filteredData.map(item => item.id)) : new Set());
   };
+
+  // const handleInputChange = (questionId: number, value: string) => {
+  //   setEditedValues((prev) => ({ ...prev, [questionId]: value }));
+  // };
 
   const handleSelectItem = (id: string, checked: boolean) => {
     const newSelected = new Set(selectedItems);
@@ -95,6 +103,42 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
     }
   };
 
+  // // New handler for Update
+  // const handleUpdate = async () => {
+  //   if (Object.keys(editedValues).length === 0) return;
+
+  //   setUpdateLoading(true);
+  //   try {
+  //     const payload = Object.entries(editedValues).map(([qualificationId, newConstantId]) => {
+  //       const item = localMappings.find((m) => m.qualificationId === Number(qualificationId));
+  //       return {
+  //         qualificationId: Number(qualificationId),
+  //         memberId: item?.memberId,
+  //         memberQualificationId: item?.memberQualificationId,
+  //         constantId: newConstantId,
+  //       };
+  //     });
+
+  //     await dispatch(updateQualificationConstantIdData(payload as any)).unwrap();
+
+  //     setMessage("✅ Constant IDs updated successfully");
+
+  //     // Update UI instantly
+  //     setLocalMappings((prev) =>
+  //       prev.map((m) =>
+  //         editedValues[m.qualificationId]
+  //           ? { ...m, constantId: editedValues[m.qualificationId] }
+  //           : m
+  //       )
+  //     );
+  //     setEditedValues({});
+  //   } catch (error) {
+  //     console.error("Error updating qualification constant IDs:", error);
+  //     setMessage("❌ Failed to update constant IDs");
+  //   } finally {
+  //     setUpdateLoading(false);
+  //   }
+  // };
 
   if (!isOpen) return null;
 
@@ -158,9 +202,9 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
                         </div>
                       </th>
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">S.No</th>
-
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Qualification</th>
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Constant ID</th>
+                      {/* <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Qualifications Constant ID</th> */}
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Old Mapped</th>
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">New Mapped</th>
                     </tr>
@@ -204,6 +248,25 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
                         {/* Constant ID */}
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900 dark:text-gray-100">
                           {item.constantId || 'Not Mapped'}
+                        </td>
+
+                        <td className="px-6 py-4">
+{/* 
+                          <td className="px-6 py-4">
+                            <Input
+                              type="text"
+                              value={editedValues[item.qualificationId] ?? ""}
+                              onChange={(e) => handleInputChange(item.qualificationId, e.target.value)}
+                              placeholder="Enter Constant ID"
+                              className={cn(
+                                "px-2 py-1 border rounded-lg w-full text-sm focus:outline-none focus:ring-2 transition-all",
+                                resolvedTheme === "dark"
+                                  ? "bg-gray-900 text-gray-100 border-gray-700 focus:ring-blue-500"
+                                  : "bg-white text-gray-900 border-gray-300 focus:ring-blue-500"
+                              )}
+                            />
+                          </td> */}
+
                         </td>
 
                         {/* Old Mapped */}
@@ -267,6 +330,11 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
               <Save className="w-4 h-4 mr-2" />
               Approved Selected ({selectedItems.size})
             </Button>
+
+            {/* <Button onClick={handleUpdate} disabled={Object.keys(editedValues).length === 0 || updateLoading} className="bg-yellow-600 text-white hover:bg-yellow-700 w-full sm:w-auto flex items-center justify-center">
+              {updateLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Save className="w-4 h-4 mr-2" /> Update
+            </Button> */}
 
             <Button onClick={onClose} variant="outline" className="w-full sm:w-auto">
               <X className="w-4 h-4 mr-2" />

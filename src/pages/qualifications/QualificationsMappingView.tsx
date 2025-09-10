@@ -305,8 +305,7 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 				isOpen={showReviewModal}
 				onClose={() => {
 					setShowReviewModal(false);
-					// ✅ Refresh after modal closes
-					// fetchMappings();
+					fetchMappings();
 				}}
 				mappings={reviewMappings}
 				qualifications={[]}

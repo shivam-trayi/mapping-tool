@@ -119,3 +119,24 @@ export interface MappingReviewPayload {
     qualificationMappingId?: number | null;
   }[];
 }
+
+
+// Payload type
+export interface OptionData {
+  questionId: number;
+  qualificationId: number;
+  memberQuestionId?: number | null;
+  qualificationMappingId?: number | null;
+}
+
+export interface MappingReviewPayload {
+  memberId: number;
+  memberType: string;
+  optionData: OptionData[];
+}
+
+// API response type
+export interface MappingReviewResponse {
+  success: boolean;
+  message: string;
+}

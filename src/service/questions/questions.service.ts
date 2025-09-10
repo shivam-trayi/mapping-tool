@@ -153,3 +153,20 @@ export const updateOptions = async ({
   const response = await axiosInstance.put("/questions/updateAnswersByQID", bodyData);
   return response.data;
 };
+
+
+export const updateConstantQuestionReviewMapping = async (payload: {
+  memberType: string;
+  memberId: number;
+  optionData: {
+    questionId: number;
+    qualificationId: number;
+    memberQuestionId: number;
+  }[];
+}) => {
+  const response = await axiosInstance.put(
+    "/questions/updateConstantQuestionReviewMapping",
+    payload
+  );
+  return response.data;
+};

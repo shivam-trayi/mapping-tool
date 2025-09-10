@@ -53,6 +53,20 @@ export const saveQualMappingReviewData = createAsyncThunk<void, QualificationsMa
 );
 
 
+// ✅ New thunk for updating Constant ID
+// export const updateQualificationConstantIdData = createAsyncThunk<
+//   void,
+//   QualificationsMappingData[],
+//   { rejectValue: string }
+// >("qualifications/updateQualificationConstantId", async (bodyData, { rejectWithValue }) => {
+//   try {
+//     await updateQualificationConstantId({ bodyData });
+//   } catch (err) {
+//     return rejectWithValue("Failed to update qualification constant ID");
+//   }
+// });
+
+
 const saveQualMappingSlice = createSlice({
   name: "qualifications",
   initialState,
@@ -75,7 +89,19 @@ const saveQualMappingSlice = createSlice({
       .addCase(saveQualMapping.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload ?? "Unknown error";
-      });
+      })
+      // .addCase(updateQualificationConstantIdData.pending, (state) => {
+      //   state.loading = true;
+      //   state.error = null;
+      // })
+      // .addCase(updateQualificationConstantIdData.fulfilled, (state) => {
+      //   state.loading = false;
+      // })
+      // .addCase(updateQualificationConstantIdData.rejected, (state, action) => {
+      //   state.loading = false;
+      //   state.error = action.payload ?? "Unknown error";
+      // });
+
   },
 });
 
