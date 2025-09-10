@@ -5,9 +5,9 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ViewType } from "../../types/qualicationTypes";
 import { useDispatch, useSelector } from "react-redux";
-// import { fetchLanguages } from "@/redux/slices/testing/languageSlice";
+import { fetchLanguages } from "@/redux/slices/testing/languageSlice";
 import type { RootState, AppDispatch } from "@/redux/store";
-// import { fetchClients } from "@/redux/slices/testing/clientSlice";
+import { fetchClients } from "@/redux/slices/testing/clientSlice";
 import {
   fetchQuestionMappings,
   fetchQuestionReviewMappings,
@@ -60,10 +60,10 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
   // const selectedClient = useSelector((state: RootState) => state.selectedMapping.client);
 
   // Fetch languages & clients on mount
-  // useEffect(() => {
-  //   dispatch(fetchLanguages());
-  //   dispatch(fetchClients());
-  // }, [dispatch]);
+  useEffect(() => {
+    dispatch(fetchLanguages());
+    dispatch(fetchClients());
+  }, [dispatch]);
 
   // Fetch mappings whenever language or client selection changes
   useEffect(() => {

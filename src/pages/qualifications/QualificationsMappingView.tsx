@@ -12,7 +12,7 @@ import type { RootState, AppDispatch } from "@/redux/store";
 import QualificationMappingReviewModal from "./QualificationMappingReviewModal";
 import { QualificationsMappingData } from "@/types/qualicationTypes";
 import { useNavigate } from "react-router-dom";
-import { setClient } from "@/redux/slices/testing/selectedMappingSlice";
+// import { setClient } from "@/redux/slices/testing/selectedMappingSlice";
 
 interface QualificationsMappingViewProps {
 	setCurrentView: (view: string) => void;
@@ -38,7 +38,7 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 		(state: RootState) => state.clients
 	);
 
-	// const [selectedCustomer, setSelectedCustomer] = useState("");
+	const [selectedCustomer, setSelectedCustomer] = useState("");
 	const [fetchedQualifications, setFetchedQualifications] = useState<QualificationMappingDataItem[]>([]);
 	const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 	const [selectAll, setSelectAll] = useState(false);
@@ -48,7 +48,7 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 	const [showReviewModal, setShowReviewModal] = useState(false);
 	const [reviewMappings, setReviewMappings] = useState<QualificationMappingDataItem[]>([]);
 
-	const selectedCustomer = useSelector((state: RootState) => state.selectedMapping.client);
+	// const selectedCustomer = useSelector((state: RootState) => state.selectedMapping.client);
 
 
 	// ✅ Fetch qualifications
@@ -176,7 +176,7 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 
 				{/* Customer select */}
 				<div className={cn("flex items-center space-x-4 mb-6", resolvedTheme === "dark" ? "text-gray-100" : "text-gray-900")}>
-					<select
+					{/* <select
 						value={selectedCustomer ?? ""}
 						onChange={(e) => dispatch(setClient(Number(e.target.value)))}
 						className="px-4 py-2 border border-gray-300 rounded-lg dark:bg-gray-900 dark:text-gray-100 dark:border-gray-600"
@@ -191,9 +191,9 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 									{client.name}
 								</option>
 							))}
-					</select>
+					</select> */}
 
-					{/* <select
+					<select
   value={selectedCustomer}
   onChange={(e) => setSelectedCustomer(e.target.value)}
   className="px-4 py-2 border border-gray-300 rounded-lg dark:bg-gray-900 dark:text-gray-100 dark:border-gray-600"
@@ -208,7 +208,7 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
         {client.name}
       </option>
     ))}
-</select> */}
+</select>
 
 
 				</div>
