@@ -20,3 +20,25 @@ export const insertAnswerMappingReviewApi = async (payload: any) => {
   );
   return data;
 };
+
+
+export interface UpdateAnswerPayload {
+  memberId: number | string;       // Required
+  memberType: string;              // Usually "customer"
+  optionData: {
+    questionId: number;
+    qualificationId: number;
+    member_answer_id: string;      // Updated value
+    memberQuestionId?: number | null;
+    qualificationMappingId?: number | null;
+  }[];
+}
+
+// API call to update member_answer_id
+export const updateAnswerMappingApi = async (payload: UpdateAnswerPayload) => {
+  const { data } = await axiosInstance.put(
+    "/questions/updateOptionQueryMapping", // New endpoint for update
+    payload
+  );
+  return data;
+};

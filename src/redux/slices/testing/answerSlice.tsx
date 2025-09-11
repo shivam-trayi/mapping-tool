@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import {
   insertAnswerMappingReviewApi,
+  updateAnswerMappingApi,
+  UpdateAnswerPayload,
 } from "@/service/answers/answer.Service";
 
-// Thunk for API call
+// Thunk for inserting mapping
 export const insertAnswerMapping = createAsyncThunk(
   "answers/insertAnswerMapping",
   async (payload: any, { rejectWithValue }) => {
@@ -16,48 +18,90 @@ export const insertAnswerMapping = createAsyncThunk(
   }
 );
 
+// Thunk for updating mapping
+export const updateAnswerMapping = createAsyncThunk(
+  "answers/updateAnswerMapping",
+  async (payload: UpdateAnswerPayload, { rejectWithValue }) => {
+    try {
+      const response = await updateAnswerMappingApi(payload);
+      return response;
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data || "Failed to update answer mapping");
+    }
+  }
+);
 
 interface AnswerState {
-  loading: boolean;
-  success: boolean;
-  error: string | null;
+  loadingInsert: boolean;
+  loadingUpdate: boolean;
+  successInsert: boolean;
+  successUpdate: boolean;
+  errorInsert: string | null;
+  errorUpdate: string | null;
 }
 
 const initialState: AnswerState = {
-  loading: false,
-  success: false,
-  error: null,
+  loadingInsert: false,
+  loadingUpdate: false,
+  successInsert: false,
+  successUpdate: false,
+  errorInsert: null,
+  errorUpdate: null,
 };
 
 const answerSlice = createSlice({
   name: "answers",
   initialState,
   reducers: {
-    resetAnswerState: (state) => {
-      state.loading = false;
-      state.success = false;
-      state.error = null;
+    resetInsertState: (state) => {
+      state.loadingInsert = false;
+      state.successInsert = false;
+      state.errorInsert = null;
+    },
+    resetUpdateState: (state) => {
+      state.loadingUpdate = false;
+      state.successUpdate = false;
+      state.errorUpdate = null;
     },
   },
   extraReducers: (builder) => {
+    // Insert Mapping
     builder
       .addCase(insertAnswerMapping.pending, (state) => {
-        state.loading = true;
-        state.success = false;
-        state.error = null;
+        state.loadingInsert = true;
+        state.successInsert = false;
+        state.errorInsert = null;
       })
       .addCase(insertAnswerMapping.fulfilled, (state) => {
-        state.loading = false;
-        state.success = true;
-        state.error = null;
+        state.loadingInsert = false;
+        state.successInsert = true;
+        state.errorInsert = null;
       })
       .addCase(insertAnswerMapping.rejected, (state, action) => {
-        state.loading = false;
-        state.success = false;
-        state.error = action.payload as string;
+        state.loadingInsert = false;
+        state.successInsert = false;
+        state.errorInsert = action.payload as string;
+      });
+
+    // Update Mapping
+    builder
+      .addCase(updateAnswerMapping.pending, (state) => {
+        state.loadingUpdate = true;
+        state.successUpdate = false;
+        state.errorUpdate = null;
+      })
+      .addCase(updateAnswerMapping.fulfilled, (state) => {
+        state.loadingUpdate = false;
+        state.successUpdate = true;
+        state.errorUpdate = null;
+      })
+      .addCase(updateAnswerMapping.rejected, (state, action) => {
+        state.loadingUpdate = false;
+        state.successUpdate = false;
+        state.errorUpdate = action.payload as string;
       });
   },
 });
 
-export const { resetAnswerState } = answerSlice.actions;
+export const { resetInsertState, resetUpdateState } = answerSlice.actions;
 export default answerSlice.reducer;

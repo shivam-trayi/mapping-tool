@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Search, Save, Loader2 } from "lucide-react";
+import { X, Save, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MessageBox } from "@/components/ui/MessageBox";
@@ -11,34 +11,50 @@ import { Checkbox } from "@/components/ui/checkbox";
 // ✅ Import slice actions
 import {
   insertAnswerMapping,
-  resetAnswerState,
+  resetInsertState,
+  updateAnswerMapping,
+  resetUpdateState,
 } from "@/redux/slices/testing/answerSlice";
 
 const OptionMappingReviewModal = ({ isOpen, onClose, answers, memberId, resolvedTheme }) => {
-  console.log("Answers Data:", answers,memberId);
   const dispatch = useAppDispatch();
 
-  const { loading, success, error } = useAppSelector((state) => state.answers);
+  const { successInsert, errorInsert, successUpdate, errorUpdate } = useAppSelector(
+    (state) => state.answers
+  );
 
-  const [updatedValues, setUpdatedValues] = useState({});
+  const [editedValues, setEditedValues] = useState<Record<number, string>>({});
   const [selected, setSelected] = useState({});
   const [selectAll, setSelectAll] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [message, setMessage] = useState("");
 
-  // ✅ Show message when API responds
+  // ✅ Show message for Insert Mapping
   useEffect(() => {
-    if (success) {
+    if (successInsert) {
       setMessage("✅ Mapping saved successfully!");
-      dispatch(resetAnswerState());
+      dispatch(resetInsertState());
       setSelected({});
       setSelectAll(false);
     }
-    if (error) {
-      setMessage(`❌ ${error}`);
-      dispatch(resetAnswerState());
+    if (errorInsert) {
+      setMessage(`❌ ${errorInsert}`);
+      dispatch(resetInsertState());
     }
-  }, [success, error, dispatch]);
+  }, [successInsert, errorInsert, dispatch]);
+
+  // ✅ Show message for Update Mapping
+  useEffect(() => {
+    if (successUpdate) {
+      setMessage("✅ Update saved successfully!");
+      dispatch(resetUpdateState());
+      setEditedValues({});
+    }
+    if (errorUpdate) {
+      setMessage(`❌ ${errorUpdate}`);
+      dispatch(resetUpdateState());
+    }
+  }, [successUpdate, errorUpdate, dispatch]);
 
   // Filter based on search term
   const filteredData = useMemo(
@@ -49,18 +65,18 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, memberId, resolved
     [answers, searchTerm]
   );
 
-  const handleInputChange = (answerId, value) => {
-    setUpdatedValues((prev) => ({ ...prev, [answerId]: value }));
+  const handleInputChange = (questionId: number, value: string) => {
+    setEditedValues((prev) => ({ ...prev, [questionId]: value }));
   };
 
-  const toggleSelect = (answerId) => {
+  const toggleSelect = (answerId: number) => {
     const newSelected = { ...selected, [answerId]: !selected[answerId] };
     setSelected(newSelected);
     setSelectAll(filteredData.every((a) => newSelected[a.answerId]));
   };
 
   const handleSelectAll = (checked) => {
-    const all = {};
+    const all: Record<number, boolean> = {};
     filteredData.forEach((ans) => {
       all[ans.answerId] = checked;
     });
@@ -68,30 +84,45 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, memberId, resolved
     setSelectAll(checked);
   };
 
- const handleSave = () => {
-  // Get only the selected answers
-  const selectedData = filteredData.filter((ans) => selected[ans.answerId]);
-  if (!selectedData.length) return;
+  const handleSave = () => {
+    const selectedData = filteredData.filter((ans) => selected[ans.answerId]);
+    if (!selectedData.length) return;
 
+    if (!memberId) {
+      setMessage("❌ memberId is missing!");
+      return;
+    }
+
+    const payload = {
+      memberId,
+      memberType: "customer",
+      optionData: selectedData,
+    };
+
+    dispatch(insertAnswerMapping(payload));
+  };
+
+const handleUpdate = () => {
   if (!memberId) {
     setMessage("❌ memberId is missing!");
     return;
   }
 
-  // Build payload with full answer objects
-  const payload = {
-    memberId, // ✅ directly from props
-    memberType: "customer", // static
-    optionData: selectedData, // send the full object as is
-  };
+  const updatedOptions = Object.entries(editedValues).map(([answerId, value]) => {
+    const answerObj = answers.find((a) => a.answerId === Number(answerId));
+    if (!answerObj) return null;
 
-  console.log("Final Payload (full data):", payload);
+    return {
+      questionId: answerObj.questionId,
+      qualificationId: answerObj.qualificationId,
+      member_answer_id: value,
+    };
+  }).filter(Boolean); // remove nulls
 
-  // Dispatch Redux thunk
-  dispatch(insertAnswerMapping(payload));
+  if (!updatedOptions.length) return;
+
+  dispatch(updateAnswerMapping({ memberId, memberType: "customer", optionData: updatedOptions }));
 };
-
-
 
 
   if (!isOpen) return null;
@@ -128,7 +159,6 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, memberId, resolved
 
           {/* Content */}
           <div className="flex-1 overflow-y-auto p-6">
-            {/* Search */}
             <div className="relative flex-1 max-w-full sm:max-w-sm mb-6">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
@@ -140,7 +170,6 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, memberId, resolved
               />
             </div>
 
-            {/* Table */}
             <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
               <div className="max-h-[50vh] overflow-y-auto">
                 <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
@@ -148,7 +177,8 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, memberId, resolved
                     <tr>
                       <th className="px-6 py-4">S.No</th>
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase">Option</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium uppercase">Mapped</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium uppercase">Option Review</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium uppercase">Option Review Update</th>
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase">Update</th>
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase">Old Mapped</th>
                       <th className="px-6 py-4 text-center text-xs font-medium uppercase">
@@ -162,7 +192,7 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, memberId, resolved
                   <tbody>
                     {filteredData.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="p-12 text-center">
+                        <td colSpan={7} className="p-12 text-center">
                           No data found
                         </td>
                       </tr>
@@ -181,13 +211,20 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, memberId, resolved
                         >
                           <td className="px-6 py-4">{idx + 1}</td>
                           <td className="px-6 py-4">{ans.answerText}</td>
+                          <td className="px-6 py-4">{ans.member_answer_id}</td>
+
                           <td className="px-6 py-4">
                             <Input
                               type="text"
-                              value={updatedValues[ans.answerId] || ""}
+                              value={editedValues[ans.answerId] ?? ans.member_answer_id ?? ""}
                               onChange={(e) => handleInputChange(ans.answerId, e.target.value)}
-                              placeholder="Enter update"
-                              className="rounded-lg"
+                              placeholder="Enter value"
+                              className={cn(
+                                "px-2 py-1 border rounded-lg w-full text-sm focus:outline-none focus:ring-2 transition-all",
+                                resolvedTheme === "dark"
+                                  ? "bg-gray-900 text-gray-100 border-gray-700 focus:ring-blue-500"
+                                  : "bg-white text-gray-900 border-gray-300 focus:ring-blue-500"
+                              )}
                             />
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -236,15 +273,21 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, memberId, resolved
               resolvedTheme === "dark" ? "border-gray-700 bg-gray-900" : "border-gray-50"
             )}
           >
-            {/* Close Button */}
             <Button onClick={onClose} variant="outline" className="w-full sm:w-auto">
               <X className="w-4 h-4 mr-2" /> Close
             </Button>
 
-            {/* Mapping Approve Button */}
+            <Button
+              onClick={handleUpdate}
+              disabled={Object.keys(editedValues).length === 0}
+              className="bg-yellow-600 text-white hover:bg-yellow-700 w-full sm:w-auto flex items-center justify-center"
+            >
+              <Save className="w-4 h-4 mr-2" /> Update
+            </Button>
+
             <Button
               onClick={handleSave}
-              disabled={Object.values(selected).every((v) => !v) || loading}
+              disabled={Object.values(selected).every((v) => !v)}
               className={cn(
                 "transition-all duration-300 w-full sm:w-auto flex items-center justify-center",
                 Object.values(selected).some((v) => v)
@@ -252,20 +295,11 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, memberId, resolved
                   : "bg-blue-200 text-white cursor-not-allowed"
               )}
             >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" /> Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" /> Mapping Approve
-                </>
-              )}
+              <Save className="w-4 h-4 mr-2" /> Mapping Approve
             </Button>
           </div>
         </motion.div>
 
-        {/* Message */}
         <MessageBox message={message} onClose={() => setMessage("")} resolvedTheme={resolvedTheme} />
       </motion.div>
     </AnimatePresence>
