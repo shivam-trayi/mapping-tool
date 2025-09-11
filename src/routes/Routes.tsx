@@ -55,7 +55,7 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
-          { index: true, element: <Navigate to="list" replace /> }, // fallback
+          { index: true, element: <Navigate to="list" /> }, // fallback
           { path: "list", element: <ListView /> },// ye wala list view ka route hai
           { path: "create", element: <CreateEditView /> },// ye wala create view ka route hai
           { path: "edit", element: <EditView /> },// ye wala EditView ka route hai

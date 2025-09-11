@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { saveQualMappings, getQualMappings, saveQualMappingReview, updateQualificationConstantId } from "@/service/qualifications/qualification.service";
+import { saveQualMappings, getQualMappings, saveQualMappingReview, updateQualificationConstantId, SaveQualMappingsResponse } from "@/service/qualifications/qualification.service";
 import { QualificationsMappingData } from "@/types/qualicationTypes";
 
 interface QualificationState {
@@ -41,30 +41,67 @@ export const getAllQualMapping = createAsyncThunk<
   }
 );
 
-export const saveQualMappingReviewData = createAsyncThunk<void, QualificationsMappingData[], { rejectValue: string }>(
-  "qualifications/saveQualMapping",
+// export const saveQualMappingReviewData = createAsyncThunk<void, QualificationsMappingData[], { rejectValue: string }>(
+//   "qualifications/saveQualMapping",
+//   async (bodyData, { rejectWithValue }) => {
+//     try {
+//       await saveQualMappingReview(bodyData);
+//     } catch (err) {
+//       return rejectWithValue("Failed to save qualifications");
+//     }
+//   }
+// );
+
+
+// // ✅ New thunk for updating Constant ID
+// export const updateQualificationConstantIdData = createAsyncThunk<
+//   void,
+//   QualificationsMappingData[],
+//   { rejectValue: string }
+// >("qualifications/updateQualificationConstantId", async (bodyData, { rejectWithValue }) => {
+//   try {
+//     await updateQualificationConstantId({ bodyData });
+//   } catch (err) {
+//     return rejectWithValue("Failed to update qualification constant ID");
+//   }
+// });
+
+
+// ✅ save qualification review
+export const saveQualMappingReviewData = createAsyncThunk<
+  SaveQualMappingsResponse, // return type
+  QualificationsMappingData[], // payload type
+  { rejectValue: string }
+>(
+  "qualifications/saveQualMappingReviewData",
   async (bodyData, { rejectWithValue }) => {
     try {
-      await saveQualMappingReview(bodyData);
+      const response = await saveQualMappingReview({ bodyData });
+      return response; // full API response
     } catch (err) {
       return rejectWithValue("Failed to save qualifications");
     }
   }
 );
 
-
-// ✅ New thunk for updating Constant ID
+// ✅ update constant ID
 export const updateQualificationConstantIdData = createAsyncThunk<
-  void,
+  SaveQualMappingsResponse,
   QualificationsMappingData[],
   { rejectValue: string }
->("qualifications/updateQualificationConstantId", async (bodyData, { rejectWithValue }) => {
-  try {
-    await updateQualificationConstantId({ bodyData });
-  } catch (err) {
-    return rejectWithValue("Failed to update qualification constant ID");
+>(
+  "qualifications/updateQualificationConstantId",
+  async (bodyData, { rejectWithValue }) => {
+    try {
+      const response = await updateQualificationConstantId({ bodyData });
+      return response;
+    } catch (err) {
+      return rejectWithValue("Failed to update qualification constant ID");
+    }
   }
-});
+);
+
+
 
 
 const saveQualMappingSlice = createSlice({

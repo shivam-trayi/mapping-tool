@@ -76,61 +76,116 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
     setSelectAll(false);
   }, [mappings]);
 
-  const handleSave = async () => {
-    const selectedData = Array.from(selectedItems)
-      .map(id => localMappings.find(d => d.id === id))
-      .filter(Boolean);
+  // const handleSaveQualification = async () => {
+  //   const selectedData = Array.from(selectedItems)
+  //     .map(id => localMappings.find(d => d.id === id))
+  //     .filter(Boolean);
 
-    if (selectedData.length === 0) return;
+  //   if (selectedData.length === 0) return;
 
-    setLoading(true);
-    try {
-      await dispatch(saveQualMappingReviewData(selectedData as any[])).unwrap();
+  //   setLoading(true);
+  //   try {
+  //     await dispatch(saveQualMappingReviewData(selectedData as any[])).unwrap();
 
-      setMessage(`✅ Successfully inserted ${selectedData.length} qualification mapping entries.`);
+  //     setMessage(`✅ Successfully inserted ${selectedData.length} qualification mapping entries.`);
 
-      const remaining = localMappings.filter(item => !selectedItems.has(item.id));
-      setLocalMappings(remaining);
+  //     const remaining = localMappings.filter(item => !selectedItems.has(item.id));
+  //     setLocalMappings(remaining);
 
-      setSelectedItems(new Set());
-      setSelectAll(false);
-    } catch (error) {
-      console.error('Error inserting qualification mappings:', error);
-      setMessage('❌ Failed to insert qualification mapping entries.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     setSelectedItems(new Set());
+  //     setSelectAll(false);
+  //   } catch (error) {
+  //     console.error('Error inserting qualification mappings:', error);
+  //     setMessage('❌ Failed to insert qualification mapping entries.');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
-  // // New handler for Update
-const handleUpdate = async () => {
+  // // // New handler for Update
+  // const handleUpdateQualification = async () => {
+  //   if (Object.keys(editedValues).length === 0) return;
+
+  //   setUpdateLoading(true);
+  //   try {
+  //     // Map editedValues onto the full objects in localMappings
+  //     const payload = localMappings.map((item) => {
+  //       if (editedValues[item.qualificationId]) {
+  //         return {
+  //           ...item,
+  //           constantId: editedValues[item.qualificationId], // update constantId
+  //         };
+  //       }
+  //       return item;
+  //     });
+
+  //     console.log("Payload being sent:", payload); // ✅ check payload
+
+  //     // Dispatch thunk
+  //     await dispatch(updateQualificationConstantIdData(payload)).unwrap();
+
+  //     setMessage("✅ Constant IDs updated successfully");
+
+  //     // Update UI instantly
+  //     setLocalMappings(payload);
+  //     setEditedValues({});
+  //   } catch (error) {
+  //     console.error("Error updating qualification constant IDs:", error);
+  //     setMessage("❌ Failed to update constant IDs");
+  //   } finally {
+  //     setUpdateLoading(false);
+  //   }
+  // };
+
+
+  const handleSaveQualification = async () => {
+  const selectedData = Array.from(selectedItems)
+    .map(id => localMappings.find(d => d.id === id))
+    .filter(Boolean);
+
+  if (selectedData.length === 0) return;
+
+  setLoading(true);
+  try {
+    const response = await dispatch(saveQualMappingReviewData(selectedData)).unwrap();
+
+    // ✅ Access message, success, data safely
+    setMessage(response.message || "Saved successfully");
+
+    const remaining = localMappings.filter(item => !selectedItems.has(item.id));
+    setLocalMappings(remaining);
+    setSelectedItems(new Set());
+    setSelectAll(false);
+  } catch (error) {
+    console.error(error);
+    setMessage("❌ Failed to save qualification mapping entries");
+  } finally {
+    setLoading(false);
+  }
+};
+
+const handleUpdateQualification = async () => {
   if (Object.keys(editedValues).length === 0) return;
 
   setUpdateLoading(true);
   try {
-    // Map editedValues onto the full objects in localMappings
     const payload = localMappings.map((item) => {
       if (editedValues[item.qualificationId]) {
         return {
           ...item,
-          constantId: editedValues[item.qualificationId], // update constantId
+          constantId: editedValues[item.qualificationId],
         };
       }
       return item;
     });
 
-    console.log("Payload being sent:", payload); // ✅ check payload
+    const response = await dispatch(updateQualificationConstantIdData(payload)).unwrap();
 
-    // Dispatch thunk
-    await dispatch(updateQualificationConstantIdData(payload)).unwrap();
-
-    setMessage("✅ Constant IDs updated successfully");
-
-    // Update UI instantly
+    setMessage(response.message || "✅ Constant IDs updated successfully");
     setLocalMappings(payload);
     setEditedValues({});
   } catch (error) {
-    console.error("Error updating qualification constant IDs:", error);
+    console.error(error);
     setMessage("❌ Failed to update constant IDs");
   } finally {
     setUpdateLoading(false);
@@ -290,7 +345,7 @@ const handleUpdate = async () => {
                       </motion.tr>
                     )) : (
                       <tr>
-                        <td colSpan={6} className="p-12 text-center">
+                        <td colSpan={8} className="p-12 text-center">
                           <div className="flex flex-col items-center space-y-3">
                             <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
                               <Search className="w-8 h-8 text-gray-400" />
@@ -317,7 +372,7 @@ const handleUpdate = async () => {
             resolvedTheme === 'dark' ? 'border-gray-700 bg-gray-900' : 'border-gray-50'
           )}>
             <Button
-              onClick={handleSave}
+              onClick={handleSaveQualification}
               disabled={selectedItems.size === 0 || loading}
               className="bg-blue-600 text-white hover:bg-blue-700 transition-all duration-300 w-full sm:w-auto flex items-center justify-center"
             >
@@ -326,7 +381,7 @@ const handleUpdate = async () => {
               Approved Selected ({selectedItems.size})
             </Button>
 
-            <Button onClick={handleUpdate} disabled={Object.keys(editedValues).length === 0 || updateLoading} className="bg-yellow-600 text-white hover:bg-yellow-700 w-full sm:w-auto flex items-center justify-center">
+            <Button onClick={handleUpdateQualification} disabled={Object.keys(editedValues).length === 0 || updateLoading} className="bg-yellow-600 text-white hover:bg-yellow-700 w-full sm:w-auto flex items-center justify-center">
               {updateLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Save className="w-4 h-4 mr-2" /> Update
             </Button>

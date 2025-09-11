@@ -11,7 +11,9 @@ import { useDispatch, useSelector } from "react-redux";
 import type { RootState, AppDispatch } from "@/redux/store";
 import QualificationMappingReviewModal from "./QualificationMappingReviewModal";
 import { QualificationsMappingData } from "@/types/qualicationTypes";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { fetchClients } from "@/redux/slices/testing/clientSlice";
+import { setClient } from "@/redux/slices/testing/selectedMappingSlice";
 // import { setClient } from "@/redux/slices/testing/selectedMappingSlice";
 
 interface QualificationsMappingViewProps {
@@ -34,11 +36,14 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 }) => {
 	const dispatch = useDispatch<AppDispatch>();
 	const navigate = useNavigate();
+	const location = useLocation();
 	const { items: clients, loading: clientLoading, error: clientError } = useSelector(
 		(state: RootState) => state.clients
 	);
+	console.log('clients', clients);
+	
 
-	const [selectedCustomer, setSelectedCustomer] = useState("");
+	// const [selectedCustomer, setSelectedCustomer] = useState("");
 	const [fetchedQualifications, setFetchedQualifications] = useState<QualificationMappingDataItem[]>([]);
 	const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
 	const [selectAll, setSelectAll] = useState(false);
@@ -48,15 +53,23 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 	const [showReviewModal, setShowReviewModal] = useState(false);
 	const [reviewMappings, setReviewMappings] = useState<QualificationMappingDataItem[]>([]);
 
-	// const selectedCustomer = useSelector((state: RootState) => state.selectedMapping.client);
+	const selectedCustomer = useSelector((state: RootState) => state.selectedMapping.client);
+
+	useEffect(() => {
+    const fromChild = location.state?.fromChild;	
+    if (!fromChild) {
+	  dispatch(setClient(0));
+    }
+    dispatch(fetchClients());
+  }, [location.pathname, dispatch]);
 
 
 	// ✅ Fetch qualifications
 	const fetchMappings = async () => {
-		if (!selectedCustomer) {
-			setFetchedQualifications([]);
-			return;
-		}
+		// if (!selectedCustomer) {
+		// 	setFetchedQualifications([]);
+		// 	return;
+		// }
 		setLoadingTable(true);
 		try {
 			const response = await dispatch(getAllQualMapping({ memberId: selectedCustomer })).unwrap();
@@ -85,6 +98,7 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 	// Fetch whenever customer changes
 	useEffect(() => {
 		fetchMappings();
+		fetchClients();
 	}, [selectedCustomer]);
 
 	// Handlers
@@ -176,7 +190,7 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 
 				{/* Customer select */}
 				<div className={cn("flex items-center space-x-4 mb-6", resolvedTheme === "dark" ? "text-gray-100" : "text-gray-900")}>
-					{/* <select
+					<select
 						value={selectedCustomer ?? ""}
 						onChange={(e) => dispatch(setClient(Number(e.target.value)))}
 						className="px-4 py-2 border border-gray-300 rounded-lg dark:bg-gray-900 dark:text-gray-100 dark:border-gray-600"
@@ -191,26 +205,7 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 									{client.name}
 								</option>
 							))}
-					</select> */}
-
-					<select
-  value={selectedCustomer}
-  onChange={(e) => setSelectedCustomer(e.target.value)}
-  className="px-4 py-2 border border-gray-300 rounded-lg dark:bg-gray-900 dark:text-gray-100 dark:border-gray-600"
->
-  <option value="">Select Customer/Supplier</option>
-  {clientLoading && <option>Loading...</option>}
-  {clientError && <option disabled>{clientError}</option>}
-  {!clientLoading &&
-    !clientError &&
-    clients.map((client) => (
-      <option key={client.id} value={client.id}>
-        {client.name}
-      </option>
-    ))}
-</select>
-
-
+					</select>
 				</div>
 
 				{/* Table */}

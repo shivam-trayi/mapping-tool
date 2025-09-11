@@ -104,7 +104,7 @@ const QualificationsDashboard: React.FC = () => {
         resolvedTheme === "dark" ? "bg-gray-900 text-gray-100" : "bg-gray-100 text-gray-900"
       }`}
     >
-      <Navigation {...commonProps} />
+      {/* <Navigation {...commonProps} /> */}
 
       <main className="max-w-7xl mx-auto">
         <Outlet context={commonProps} />

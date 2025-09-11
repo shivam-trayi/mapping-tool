@@ -14,7 +14,8 @@ import {
   saveQuestionReviewMapping,
 } from "@/redux/slices/testing/questionSlice";
 import MappingReviewModal from "./QuestionMappingReviewModal";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { setClient, setLang } from "@/redux/slices/testing/selectedMappingSlice";
 // import { setClient, setLang } from "@/redux/slices/testing/selectedMappingSlice";
 
 interface QuestionMappingViewProps {
@@ -43,8 +44,8 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
 
 
   const [isSaving, setIsSaving] = useState(false);
-  const [selectedLang, setSelectedLang] = useState<number | null>(null);
-  const [selectedClient, setSelectedClient] = useState<number | null>(null);
+  // const [selectedLang, setSelectedLang] = useState<number | null>(null);
+  // const [selectedClient, setSelectedClient] = useState<number | null>(null);
   const [reviewMappings, setReviewMappings] = useState<any[]>([]);
 
 
@@ -56,8 +57,8 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
     (state: RootState) => state.clients
   );
 
-  // const selectedLang = useSelector((state: RootState) => state.selectedMapping.lang);
-  // const selectedClient = useSelector((state: RootState) => state.selectedMapping.client);
+  const selectedLang = useSelector((state: RootState) => state.selectedMapping.lang);
+  const selectedClient = useSelector((state: RootState) => state.selectedMapping.client);
 
   // Fetch languages & clients on mount
   useEffect(() => {
@@ -188,6 +189,17 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
   //   }
   // }, [selectedLang, selectedClient]);
 
+    const location = useLocation();
+
+    useEffect(() => {
+      const isData = location.state?.isData;
+      if (!isData) {
+        dispatch(setClient(0));
+        dispatch(setLang(0));
+      }
+      dispatch(fetchClients());
+    }, [location.pathname, dispatch]);
+
   return (
     <motion.div
       key="question-mapping-view"
@@ -208,7 +220,7 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
           </Button>
 
           <Button
-            onClick={() => navigate("/dashboard/qualifications-mapping")}
+            onClick={() => navigate("/dashboard/qualifications-mapping", { state: { fromChild: true } })}
             variant="outline"
             className="rounded-xl"
           >
@@ -220,8 +232,8 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
       {/* Dropdowns */}
       <div className="flex items-center space-x-4 mb-6">
         <select
-          // onChange={(e) => dispatch(setLang(Number(e.target.value)))}
-          onChange={(e) => setSelectedLang(Number(e.target.value))}
+          onChange={(e) => dispatch(setLang(Number(e.target.value)))}
+          // onChange={(e) => setSelectedLang(Number(e.target.value))}
 
           value={selectedLang ?? ""}
           className={cn(
@@ -244,8 +256,8 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
         </select>
 
         <select
-          // onChange={(e) => dispatch(setClient(Number(e.target.value)))}
-          onChange={(e) => setSelectedClient(Number(e.target.value))}
+          onChange={(e) => dispatch(setClient(Number(e.target.value)))}
+          // onChange={(e) => setSelectedClient(Number(e.target.value))}
           value={selectedClient ?? ""}
           className={cn(
             "px-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all",

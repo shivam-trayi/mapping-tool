@@ -153,7 +153,7 @@ const QuestionOptionsPage: React.FC = () => {
           >
             <Map className="w-4 h-4 mr-2" /> Options Mapping Review
           </Button>
-          <Button onClick={() => navigate("/dashboard/question-mapping")} variant="default">
+          <Button onClick={() => navigate("/dashboard/question-mapping", { state: { isData: true } })} variant="default">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Button>
         </div>
