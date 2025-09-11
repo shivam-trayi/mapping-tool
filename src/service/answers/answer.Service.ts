@@ -42,3 +42,23 @@ export const updateAnswerMappingApi = async (payload: UpdateAnswerPayload) => {
   );
   return data;
 };
+
+
+
+export interface OptionReviewParams {
+  memberType: string;
+  memberId: number;
+  marketId: number;
+  langCode: number;
+  questionId: number;
+}
+
+// ✅ API call function
+export const getOptionQueryReviewMapping = async (params: OptionReviewParams) => {
+  const { memberType, memberId, marketId, langCode, questionId } = params;
+  const response = await axios.get(
+    `/questions/getOptionQueryReviewMapping`,
+    { params: { memberType, memberId, marketId, langCode, questionId } }
+  );
+  return response.data;
+};

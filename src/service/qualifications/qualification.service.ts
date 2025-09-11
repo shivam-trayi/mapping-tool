@@ -67,13 +67,13 @@ export const saveQualMappingReview = async (payload: SaveQualMappingsPayload): P
 };
 
 
-// // ✅ Update Qualification Constant ID
-// export const updateQualificationConstantId = async (
-//   payload: SaveQualMappingsPayload
-// ): Promise<SaveQualMappingsResponse> => {
-//   const response = await axiosInstance.put<SaveQualMappingsResponse>(
-//     "/qualifications/updateQualificationConstantId",
-//     payload
-//   );
-//   return response.data;
-// };
+// ✅ Update Qualification Constant ID
+export const updateQualificationConstantId = async (
+  payload: SaveQualMappingsPayload
+): Promise<SaveQualMappingsResponse> => {
+  const response = await axiosInstance.put<SaveQualMappingsResponse>(
+    "/qualifications/updateQualificationConstantId",
+    payload
+  );
+  return response.data;
+};

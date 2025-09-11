@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { saveQualMappings, getQualMappings, saveQualMappingReview } from "@/service/qualifications/qualification.service";
+import { saveQualMappings, getQualMappings, saveQualMappingReview, updateQualificationConstantId } from "@/service/qualifications/qualification.service";
 import { QualificationsMappingData } from "@/types/qualicationTypes";
 
 interface QualificationState {
@@ -54,17 +54,17 @@ export const saveQualMappingReviewData = createAsyncThunk<void, QualificationsMa
 
 
 // ✅ New thunk for updating Constant ID
-// export const updateQualificationConstantIdData = createAsyncThunk<
-//   void,
-//   QualificationsMappingData[],
-//   { rejectValue: string }
-// >("qualifications/updateQualificationConstantId", async (bodyData, { rejectWithValue }) => {
-//   try {
-//     await updateQualificationConstantId({ bodyData });
-//   } catch (err) {
-//     return rejectWithValue("Failed to update qualification constant ID");
-//   }
-// });
+export const updateQualificationConstantIdData = createAsyncThunk<
+  void,
+  QualificationsMappingData[],
+  { rejectValue: string }
+>("qualifications/updateQualificationConstantId", async (bodyData, { rejectWithValue }) => {
+  try {
+    await updateQualificationConstantId({ bodyData });
+  } catch (err) {
+    return rejectWithValue("Failed to update qualification constant ID");
+  }
+});
 
 
 const saveQualMappingSlice = createSlice({
@@ -90,17 +90,17 @@ const saveQualMappingSlice = createSlice({
         state.loading = false;
         state.error = action.payload ?? "Unknown error";
       })
-      // .addCase(updateQualificationConstantIdData.pending, (state) => {
-      //   state.loading = true;
-      //   state.error = null;
-      // })
-      // .addCase(updateQualificationConstantIdData.fulfilled, (state) => {
-      //   state.loading = false;
-      // })
-      // .addCase(updateQualificationConstantIdData.rejected, (state, action) => {
-      //   state.loading = false;
-      //   state.error = action.payload ?? "Unknown error";
-      // });
+      .addCase(updateQualificationConstantIdData.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateQualificationConstantIdData.fulfilled, (state) => {
+        state.loading = false;
+      })
+      .addCase(updateQualificationConstantIdData.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload ?? "Unknown error";
+      });
 
   },
 });
