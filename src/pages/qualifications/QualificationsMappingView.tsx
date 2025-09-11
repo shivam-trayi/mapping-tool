@@ -14,6 +14,7 @@ import { QualificationsMappingData } from "@/types/qualicationTypes";
 import { useNavigate, useLocation } from "react-router-dom";
 import { fetchClients } from "@/redux/slices/testing/clientSlice";
 import { setClient } from "@/redux/slices/testing/selectedMappingSlice";
+import { toast } from "@/components/ui/use-toast";
 // import { setClient } from "@/redux/slices/testing/selectedMappingSlice";
 
 interface QualificationsMappingViewProps {
@@ -121,7 +122,7 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 
 	const handleSaveForReview = async () => {
 		if (!selectedCustomer) {
-			alert("Please select a Customer/Supplier first.");
+			toast({ description: "Please select a Customer/Supplier first." });
 			return;
 		}
 		if (selectedItems.size === 0) return;
@@ -138,7 +139,7 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 
 		setIsSaving(true);
 		try {
-			await dispatch(saveQualMapping(selectedData)).unwrap();
+			const res = await dispatch(saveQualMapping(selectedData)).unwrap();
 
 			setReviewMappings(
 				selectedData.map((d) => ({
@@ -152,8 +153,10 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 					member_type: d.member_type,
 				}))
 			);
-
-			alert(`Saved ${selectedData.length} qualification(s) for review`);
+			// if(res?.status === 200) {
+				toast({ description: res.message || "Saved for review successfully." });
+			// }
+			// alert(`Saved ${selectedData.length} qualification(s) for review`);
 
 			setSelectedItems(new Set());
 			setSelectAll(false);
@@ -163,7 +166,8 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 			fetchMappings();
 		} catch (err) {
 			console.error("Error saving:", err);
-			alert("Failed to save. Try again.");
+			// alert("Failed to save. Try again.");
+			toast({ description: "Failed to save. Try again." });
 		} finally {
 			setIsSaving(false);
 		}

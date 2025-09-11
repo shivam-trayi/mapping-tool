@@ -29,7 +29,8 @@ export const insertMappingReviewThunk = createAsyncThunk<
   "mappingReview/insert",
   async (payload, { rejectWithValue }) => {
     try {
-      return await insertMappingReview(payload);
+      const res = await insertMappingReview(payload);
+      return res;
     } catch (err: unknown) {
       if (err instanceof Error) {
         return rejectWithValue(err.message);
@@ -59,7 +60,8 @@ export const updateMappingReviewThunk = createAsyncThunk<
             memberQuestionId: item.memberQuestionId as number,
           })),
       };
-      return await updateConstantQuestionReviewMapping(fixedPayload);
+      const res = await updateConstantQuestionReviewMapping(fixedPayload);
+      return res;
     } catch (err: unknown) {
       if (err instanceof Error) {
         return rejectWithValue(err.message);

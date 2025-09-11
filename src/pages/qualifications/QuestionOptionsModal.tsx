@@ -14,6 +14,7 @@ import {
 } from "@/redux/slices/testing/questionSlice";
 import OptionMappingReviewModal from "./OptionMappingReviewModal";
 import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "@/components/ui/use-toast";
 
 interface LocationState {
   question: string;
@@ -98,7 +99,7 @@ const QuestionOptionsPage: React.FC = () => {
 
     setIsSaving(true);
     try {
-      await dispatch(
+      const res = await dispatch(
         updateOptionsThunk({
           qualificationId: answers[0]?.qualificationId,
           questionId: state.questionId,
@@ -108,6 +109,9 @@ const QuestionOptionsPage: React.FC = () => {
         })
       ).unwrap();
 
+      if(res.status === 200) {
+        toast({ description: `${res.message || "Options update for review successfully!"}` });
+      }
       // ✅ Refetch latest answers after update
       await dispatch(
         getAllAnswersList({
@@ -118,14 +122,14 @@ const QuestionOptionsPage: React.FC = () => {
           questionId: state.questionId,
         })
       ).unwrap();
-
-      alert(`Saved ${options.length} option(s) for review`);
+      // alert(`Saved ${options.length} option(s) for review`);
       setSelectedItems(new Set());
       setSelectAll(false);
       setOptionInputs({});
     } catch (err) {
       console.error(err);
-      alert("Failed to save options. Try again.");
+      // alert("Failed to save options. Try again.");
+      toast({ description: 'Failed to save options. Try again.' });
     } finally {
       setIsSaving(false);
     }

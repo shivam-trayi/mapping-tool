@@ -13,11 +13,12 @@ const initialState: QualificationState = {
 };
 
 // Async thunk
-export const saveQualMapping = createAsyncThunk<void, QualificationsMappingData[], { rejectValue: string }>(
+export const saveQualMapping = createAsyncThunk<SaveQualMappingsResponse, QualificationsMappingData[], { rejectValue: string }>(
   "qualifications/saveQualMapping",
   async (bodyData, { rejectWithValue }) => {
     try {
-      await saveQualMappings(bodyData);
+      const res = await saveQualMappings(bodyData);
+      return res;
     } catch (err) {
       return rejectWithValue("Failed to save qualifications");
     }

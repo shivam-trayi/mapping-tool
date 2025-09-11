@@ -11,6 +11,7 @@ import type { Qualification } from '@/types/qualicationTypes';
 
 import type { AppDispatch } from '@/redux/store';
 import { saveQualMappingReviewData, updateQualificationConstantIdData } from '@/redux/slices/testing/saveQualMappingSlice';
+import { toast } from '@/components/ui/use-toast';
 
 interface QualificationMappingItem {
   id: string;
@@ -151,6 +152,9 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
 
     // ✅ Access message, success, data safely
     setMessage(response.message || "Saved successfully");
+    if(response.status === 200) {
+      toast({ description: response.message || "Qualification mappings saved successfully." });
+    }
 
     const remaining = localMappings.filter(item => !selectedItems.has(item.id));
     setLocalMappings(remaining);
@@ -180,12 +184,16 @@ const handleUpdateQualification = async () => {
     });
 
     const response = await dispatch(updateQualificationConstantIdData(payload)).unwrap();
+    if(response.status === 200) {
+      toast({ description: response.message || "Constant IDs updated successfully." });
+    }
 
     setMessage(response.message || "✅ Constant IDs updated successfully");
     setLocalMappings(payload);
     setEditedValues({});
   } catch (error) {
     console.error(error);
+    toast({ description: response.message || "Something went wrong" });
     setMessage("❌ Failed to update constant IDs");
   } finally {
     setUpdateLoading(false);

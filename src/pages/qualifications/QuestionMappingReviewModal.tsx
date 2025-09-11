@@ -14,6 +14,7 @@ import {
 } from "@/redux/slices/testing/createmMppingReviewSlice";
 import { QuestionMappingItem } from "@/service/questions/questions.service";
 import { fetchQuestionReviewMappings } from "@/redux/slices/testing/questionSlice";
+import { toast } from "@/components/ui/use-toast";
 
 interface MappingReviewModalProps {
   isOpen: boolean;
@@ -112,7 +113,10 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
         })),
       };
 
-      await dispatch(insertMappingReviewThunk(payload)).unwrap();
+      const res = await dispatch(insertMappingReviewThunk(payload)).unwrap();
+      if(res?.status === 200) {
+        toast({ description: res.message || "Mappings inserted successfully." });
+      }
       setMessage("✅ Successfully inserted mappings!");
       setSelectedItems(new Set());
       setSelectAll(false);
@@ -163,7 +167,10 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
         })),
       };
 
-      await dispatch(updateMappingReviewThunk(payload)).unwrap();
+      const res = await dispatch(updateMappingReviewThunk(payload)).unwrap();
+      if(res?.status === 200) {
+        toast({ description: res.message || "Mappings updated successfully." });
+      }
       setMessage("✅ Successfully updated mappings!");
       setEditedValues({});
       await fetchMappings(); // refresh after update

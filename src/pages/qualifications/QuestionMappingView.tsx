@@ -189,16 +189,16 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
   //   }
   // }, [selectedLang, selectedClient]);
 
-    const location = useLocation();
+  const location = useLocation();
 
-    useEffect(() => {
-      const isData = location.state?.isData;
-      if (!isData) {
-        dispatch(setClient(0));
-        dispatch(setLang(0));
-      }
-      dispatch(fetchClients());
-    }, [location.pathname, dispatch]);
+  useEffect(() => {
+    const isData = location.state?.isData;
+    if (!isData) {
+      dispatch(setClient(0));
+      dispatch(setLang(0));
+    }
+    dispatch(fetchClients());
+  }, [location.pathname, dispatch]);
 
   return (
     <motion.div

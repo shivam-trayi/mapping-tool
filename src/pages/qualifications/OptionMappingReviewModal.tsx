@@ -15,6 +15,7 @@ import {
   updateAnswerMapping,
   resetUpdateState,
 } from "@/redux/slices/testing/answerSlice";
+import { toast } from "@/components/ui/use-toast";
 
 const OptionMappingReviewModal = ({ isOpen, onClose, answers, memberId, resolvedTheme }) => {
   const dispatch = useAppDispatch();
@@ -84,7 +85,7 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, memberId, resolved
     setSelectAll(checked);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const selectedData = filteredData.filter((ans) => selected[ans.answerId]);
     if (!selectedData.length) return;
 
@@ -99,10 +100,13 @@ const OptionMappingReviewModal = ({ isOpen, onClose, answers, memberId, resolved
       optionData: selectedData,
     };
 
-    dispatch(insertAnswerMapping(payload));
+    const res = await dispatch(insertAnswerMapping(payload)).unwrap();
+    if(res?.status === 200) {
+      toast({ description: `${res.message || "Mapping saved successfully!"}` });
+    }
   };
 
-const handleUpdate = () => {
+const handleUpdate = async() => {
   if (!memberId) {
     setMessage("❌ memberId is missing!");
     return;
@@ -121,7 +125,10 @@ const handleUpdate = () => {
 
   if (!updatedOptions.length) return;
 
-  dispatch(updateAnswerMapping({ memberId, memberType: "customer", optionData: updatedOptions }));
+  const res = await dispatch(updateAnswerMapping({ memberId, memberType: "customer", optionData: updatedOptions })).unwrap();
+  if(res?.status === 200) {
+    toast({ description: `${res.message || "Update saved successfully!"}` });
+  }
 };
 
 
