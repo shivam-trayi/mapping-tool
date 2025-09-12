@@ -19,7 +19,7 @@ const MasterLayout: React.FC = () => {
         <Toaster />
         <div className="flex flex-col min-h-screen">
           {/* 🔹 Public pages ke liye normal Header */}
-          {!isDashboardRoute && <Header />}
+          {/* {!isDashboardRoute && <Header />} */}
 
           {/* 🔹 Dashboard ke liye DashboardHeader */}
           {isDashboardRoute && (

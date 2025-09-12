@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import {
+  getOptionQueryReviewMapping,
   insertAnswerMappingReviewApi,
+  OptionReviewParams,
   updateAnswerMappingApi,
   UpdateAnswerPayload,
 } from "@/service/answers/answer.Service";
@@ -27,6 +29,18 @@ export const updateAnswerMapping = createAsyncThunk(
       return response;
     } catch (err: any) {
       return rejectWithValue(err.response?.data || "Failed to update answer mapping");
+    }
+  }
+);
+
+
+export const fetchOptionReview = createAsyncThunk(
+  "answers/fetchOptionReview",
+  async (params: OptionReviewParams, { rejectWithValue }) => {
+    try {
+      return await getOptionQueryReviewMapping(params);
+    } catch (err: any) {
+      return rejectWithValue(err.response?.data || "Failed to fetch review mapping");
     }
   }
 );

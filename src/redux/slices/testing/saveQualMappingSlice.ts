@@ -42,31 +42,6 @@ export const getAllQualMapping = createAsyncThunk<
   }
 );
 
-// export const saveQualMappingReviewData = createAsyncThunk<void, QualificationsMappingData[], { rejectValue: string }>(
-//   "qualifications/saveQualMapping",
-//   async (bodyData, { rejectWithValue }) => {
-//     try {
-//       await saveQualMappingReview(bodyData);
-//     } catch (err) {
-//       return rejectWithValue("Failed to save qualifications");
-//     }
-//   }
-// );
-
-
-// // ✅ New thunk for updating Constant ID
-// export const updateQualificationConstantIdData = createAsyncThunk<
-//   void,
-//   QualificationsMappingData[],
-//   { rejectValue: string }
-// >("qualifications/updateQualificationConstantId", async (bodyData, { rejectWithValue }) => {
-//   try {
-//     await updateQualificationConstantId({ bodyData });
-//   } catch (err) {
-//     return rejectWithValue("Failed to update qualification constant ID");
-//   }
-// });
-
 
 // ✅ save qualification review
 export const saveQualMappingReviewData = createAsyncThunk<

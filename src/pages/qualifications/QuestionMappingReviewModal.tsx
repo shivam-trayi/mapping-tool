@@ -191,7 +191,7 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
           className={cn(
-            "relative rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] flex flex-col",
+            "relative rounded-2xl shadow-2xl w-full max-w-8xl max-h-[90vh] flex flex-col",
             resolvedTheme === "dark" ? "bg-gray-900 text-gray-100" : "bg-white text-gray-900"
           )}
         >

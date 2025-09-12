@@ -15,6 +15,7 @@ import {
 import OptionMappingReviewModal from "./OptionMappingReviewModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
+import { getOptionQueryReviewMapping } from "@/service/answers/answer.Service";
 
 interface LocationState {
   question: string;
@@ -36,7 +37,6 @@ const QuestionOptionsPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
   const location = useLocation();
-  // const state = location.state as LocationState;
 
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [optionInputs, setOptionInputs] = useState<Record<number, string>>({});
@@ -44,7 +44,7 @@ const QuestionOptionsPage: React.FC = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const state = location.state as LocationState;
-
+  const [reviewData, setReviewData] = useState<any[]>([]);
 
   const { items: answers, loading } = useSelector(
     (state: RootState) => state.questionMappings
@@ -85,6 +85,59 @@ const QuestionOptionsPage: React.FC = () => {
     setSelectAll(newSelected.size === answers.length);
   };
 
+
+  // handleOpenReview
+  const handleOpenReview = async () => {
+    try {
+      const res = await getOptionQueryReviewMapping({
+        memberId: state.memberId,
+        questionId: state.questionId,
+      });
+
+      console.log("Review API response:", res);
+
+      // ✅ Only send data array
+      setReviewData(res.data || []);
+      setIsReviewOpen(true);
+    } catch (err) {
+      console.error("Failed to fetch review data:", err);
+      toast({ description: "Failed to fetch review data" });
+    }
+  };
+
+
+  // QuestionOptionsPage.tsx ke andar
+  const handleCloseReview = async () => {
+    setIsReviewOpen(false);
+
+    if (!state) return;
+
+    try {
+      // ✅ Refetch answers for table
+      await dispatch(
+        getAllAnswersList({
+          memberType: "customer",
+          memberId: state.memberId,
+          marketId: state.marketId,
+          langCode: state.langCode,
+          questionId: state.questionId,
+        })
+      ).unwrap();
+
+      // ✅ Refetch review data for next time modal opens
+      const res = await getOptionQueryReviewMapping({
+        memberId: state.memberId,
+        questionId: state.questionId,
+      });
+
+      setReviewData(res.data || []);
+    } catch (err) {
+      console.error("Failed to refresh data on modal close:", err);
+      toast({ description: "Failed to refresh data" });
+    }
+  };
+
+  
   const handleUpdateOptions = async () => {
     if (!state) return;
 
@@ -109,7 +162,7 @@ const QuestionOptionsPage: React.FC = () => {
         })
       ).unwrap();
 
-      if(res.status === 200) {
+      if (res.status === 200) {
         toast({ description: `${res.message || "Options update for review successfully!"}` });
       }
       // ✅ Refetch latest answers after update
@@ -151,8 +204,7 @@ const QuestionOptionsPage: React.FC = () => {
         </h2>
         <div className="flex space-x-3">
           <Button
-            onClick={() => setIsReviewOpen(true)}
-            // className="bg-indigo-600 text-white hover:bg-indigo-700 w-full sm:w-auto"
+            onClick={handleOpenReview}
             variant="default"
           >
             <Map className="w-4 h-4 mr-2" /> Options Mapping Review
@@ -266,36 +318,30 @@ const QuestionOptionsPage: React.FC = () => {
                       <span
                         className={cn(
                           "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                          ans.member_answer_id
+                          ans.member_answer_id != null
                             ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
                             : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
                         )}
                       >
-                        {ans.member_answer_id ?? "Not Mapped"}
+                        {ans.member_answer_id != null ? "Mapped" : "Not Mapped"}
                       </span>
                     </td>
+
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span
                         className={cn(
                           "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                          ans.old_member_answer_id
+                          ans.old_member_answer_id != null
                             ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
                             : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
                         )}
                       >
-                        {ans.old_member_answer_id ?? "Not Mapped"}
+                        {ans.old_member_answer_id != null ? "Old Mapped" : "Not Mapped"}
                       </span>
                     </td>
+
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <Input
-                        type="text"
-                        value={optionInputs[ans.answerId] ?? ans.member_answer_id ?? ""}
-                        onChange={(e) =>
-                          handleInputChange(ans.answerId, e.target.value)
-                        }
-                        placeholder="Enter constant ID"
-                        className="w-full rounded-lg"
-                      />
+                      <Input type="text" value={optionInputs[ans.answerId] ?? ans.member_answer_id} onChange={(e) => handleInputChange(ans.answerId, e.target.value)} className="w-full" placeholder="Enter constant ID" />
                     </td>
                   </tr>
                 ))
@@ -332,11 +378,13 @@ const QuestionOptionsPage: React.FC = () => {
       {/* Review Modal */}
       <OptionMappingReviewModal
         isOpen={isReviewOpen}
-        onClose={() => setIsReviewOpen(false)}
-        answers={answers}
+        onClose={handleCloseReview}   // ✅ yaha pe handleCloseReview
+        answers={reviewData}
+        memberId={state.memberId}
+        questionId={state.questionId}
         resolvedTheme={undefined}
-        memberId={state.memberId} // ✅ use this
       />
+
 
     </motion.div>
   );

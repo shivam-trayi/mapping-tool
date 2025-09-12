@@ -11,7 +11,7 @@ import type { Qualification } from '@/types/qualicationTypes';
 
 import type { AppDispatch } from '@/redux/store';
 import { saveQualMappingReviewData, updateQualificationConstantIdData } from '@/redux/slices/testing/saveQualMappingSlice';
-import { toast } from '@/components/ui/use-toast';
+import { toast } from "@/components/ui/use-toast";
 
 interface QualificationMappingItem {
   id: string;
@@ -216,7 +216,7 @@ const handleUpdateQualification = async () => {
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
           className={cn(
-            "relative rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col transition-colors",
+            "relative rounded-2xl shadow-2xl w-full max-w-7xl max-h-[90vh] flex flex-col transition-colors",
             resolvedTheme === 'dark' ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'
           )}
         >

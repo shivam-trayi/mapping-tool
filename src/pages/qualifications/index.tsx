@@ -106,7 +106,7 @@ const QualificationsDashboard: React.FC = () => {
     >
       {/* <Navigation {...commonProps} /> */}
 
-      <main className="max-w-7xl mx-auto">
+      <main className="max-w-8xl mx-auto">
         <Outlet context={commonProps} />
       </main>
 
