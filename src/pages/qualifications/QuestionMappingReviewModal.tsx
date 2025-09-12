@@ -114,7 +114,7 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
       };
 
       const res = await dispatch(insertMappingReviewThunk(payload)).unwrap();
-      if(res?.status === 200) {
+      if (res?.status === 200) {
         toast({ description: res.message || "Mappings inserted successfully." });
       }
       setMessage("✅ Successfully inserted mappings!");
@@ -146,12 +146,12 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
         };
       })
       .filter(Boolean) as {
-      questionId: number;
-      qualificationId: number;
-      memberQuestionId: number;
-      memberId: number;
-      memberType: string;
-    }[];
+        questionId: number;
+        qualificationId: number;
+        memberQuestionId: number;
+        memberId: number;
+        memberType: string;
+      }[];
 
     if (selectedData.length === 0) return;
 
@@ -168,7 +168,7 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
       };
 
       const res = await dispatch(updateMappingReviewThunk(payload)).unwrap();
-      if(res?.status === 200) {
+      if (res?.status === 200) {
         toast({ description: res.message || "Mappings updated successfully." });
       }
       setMessage("✅ Successfully updated mappings!");
@@ -230,7 +230,9 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase">Qualification</th>
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase">Question</th>
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase">Question Review</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium uppercase">Question Review Update</th>
+                      {/* <th className="px-6 py-4 text-left text-xs font-medium uppercase">Question Review Update</th> */}
+                      <th className="px-6 py-4 text-left text-xs font-medium uppercase">New Mapped</th>
+
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase">Old Mapped</th>
                     </tr>
                   </thead>
@@ -247,7 +249,7 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
                           <td className="px-6 py-4">{item.qualificationName}</td>
                           <td className="px-6 py-4">{item.questionText}</td>
                           <td className="px-6 py-4 font-mono">{item.memberQuestionId}</td>
-                          <td className="px-6 py-4">
+                          {/* <td className="px-6 py-4">
                             <Input
                               type="text"
                               value={editedValues[item.questionId] ?? ""}
@@ -260,12 +262,37 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
                                   : "bg-white text-gray-900 border-gray-300 focus:ring-blue-500"
                               )}
                             />
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                          </td> */}
+                          {/* <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <span className={item.oldMemberQuestionId
                               ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100 inline-flex px-2 py-1 text-xs font-semibold rounded-full"
                               : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100 inline-flex px-2 py-1 text-xs font-semibold rounded-full"}>
                               {item.oldMemberQuestionId ? "Old Mapped" : "Not Mapped"}
+                            </span>
+                          </td> */}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span
+                              className={cn(
+                                "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                                item.memberQuestionId != null
+                                  ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
+                                  : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
+                              )}
+                            >
+                              {item.memberQuestionId != null ? "Mapped" : "Not Mapped"}
+                            </span>
+                          </td>
+
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span
+                              className={cn(
+                                "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                                item.oldMemberQuestionId != null
+                                  ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+                                  : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
+                              )}
+                            >
+                              {item.oldMemberQuestionId != null ? "Old Mapped" : "Not Mapped"}
                             </span>
                           </td>
                         </tr>
@@ -288,10 +315,10 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
               <Save className="w-4 h-4 mr-2" /> Question Mapping Approved ({selectedItems.size})
             </Button>
 
-            <Button onClick={handleUpdate} disabled={Object.keys(editedValues).length === 0 || updateLoading} className="bg-yellow-600 text-white hover:bg-yellow-700 w-full sm:w-auto flex items-center justify-center">
+            {/* <Button onClick={handleUpdate} disabled={Object.keys(editedValues).length === 0 || updateLoading} className="bg-yellow-600 text-white hover:bg-yellow-700 w-full sm:w-auto flex items-center justify-center">
               {updateLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Save className="w-4 h-4 mr-2" /> Update
-            </Button>
+            </Button> */}
 
             <Button onClick={onClose} variant="outline" className="w-full sm:w-auto">
               <X className="w-4 h-4 mr-2" /> Close

@@ -361,7 +361,7 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
                         {item.questionText}
                       </td>
                       <td className="px-6 py-4">{item.qualificationName}</td>
-                      <td className="px-6 py-4 text-center">
+                      {/* <td className="px-6 py-4 text-center">
                         <span
                           className={cn(
                             "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
@@ -384,7 +384,34 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
                         >
                           {isOldMapped ? "Old Mapped" : "Not Mapped"}
                         </span>
-                      </td>
+                      </td> */}
+
+
+                       <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span
+                              className={cn(
+                                "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                                item.memberQuestionId != null
+                                  ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
+                                  : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
+                              )}
+                            >
+                              {item.memberQuestionId != null ? "Mapped" : "Not Mapped"}
+                            </span>
+                          </td>
+
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            <span
+                              className={cn(
+                                "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                                item.oldMemberQuestionId != null
+                                  ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+                                  : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
+                              )}
+                            >
+                              {item.oldMemberQuestionId != null ? "Old Mapped" : "Not Mapped"}
+                            </span>
+                          </td>
                       <td className="px-6 py-4">
                         <input
                           type="text"

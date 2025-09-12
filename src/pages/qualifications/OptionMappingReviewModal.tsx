@@ -18,6 +18,7 @@ import {
 } from "@/redux/slices/testing/answerSlice";
 
 import { toast } from "@/components/ui/use-toast";
+import { getOptionQueryReviewMapping } from "@/service/answers/answer.Service";
 
 interface OptionMappingReviewModalProps {
   isOpen: boolean;
@@ -90,9 +91,9 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
   );
 
   // ✅ Input change handler
-  const handleInputChange = (answerId: number, value: string) => {
-    setEditedValues((prev) => ({ ...prev, [answerId]: value }));
-  };
+  // const handleInputChange = (answerId: number, value: string) => {
+  //   setEditedValues((prev) => ({ ...prev, [answerId]: value }));
+  // };
 
   // ✅ Toggle select single row
   const toggleSelect = (answerId: number) => {
@@ -144,44 +145,72 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
   };
 
   // ✅ Update
-  // ✅ Update
-  const handleUpdate = async () => {
-    if (!memberId) {
-      setMessage("❌ memberId is missing!");
-      return;
+  // const handleUpdate = async () => {
+  //   if (!memberId) {
+  //     setMessage("❌ memberId is missing!");
+  //     return;
+  //   }
+
+  //   const updatedOptions = Object.entries(editedValues)
+  //     .map(([answerId, value]) => {
+  //       const answerObj = Array.isArray(answers)
+  //         ? answers.find((a) => a.answerId === Number(answerId))
+  //         : null;
+  //       if (!answerObj) return null;
+
+  //       return {
+  //         id: answerObj.id,
+  //         answerId: answerObj.answerId,
+  //         questionId: answerObj.questionId,
+  //         qualificationId: answerObj.qualificationId,
+  //         memberAnswerId: value,
+  //         oldMemberAnswerId: answerObj.oldMemberAnswerId,
+  //       };
+  //     })
+  //     .filter(Boolean);
+
+  //   if (!updatedOptions.length) return;
+
+  //   const res = await dispatch(
+  //     updateAnswerMapping({
+  //       memberId,
+  //       questionId,
+  //       memberType: "customer",
+  //       optionData: updatedOptions,
+  //     })
+  //   ).unwrap();
+
+  //   if (res?.status === 200) {
+  //     toast({ description: `${res.message || "Update saved successfully!"}` });
+  //   }
+  // };
+
+  // Inside your component, update the successUpdate useEffect:
+useEffect(() => {
+  if (successUpdate) {
+    setMessage("✅ Update saved successfully!");
+    dispatch(resetUpdateState());
+    setEditedValues({});
+
+    // ✅ NEW: Call your API after successful update
+    if (memberId && questionId) {
+      getOptionQueryReviewMapping({ memberId, questionId })
+        .then((res) => {
+          console.log("Updated mapping data:", res);
+          // You can update state here if needed, e.g.,
+          // setAnswers(res.data)
+        })
+        .catch((err) => {
+          console.error("Failed to fetch updated mapping:", err);
+        });
     }
+  }
 
-    // Agar editedValues khali hai tab bhi call karna hai
-    const updatedOptions = Object.entries(editedValues).map(([answerId, value]) => {
-      const answerObj = Array.isArray(answers)
-        ? answers.find((a) => a.answerId === Number(answerId))
-        : null;
-
-      return {
-        id: answerObj?.id ?? null,
-        answerId: answerObj?.answerId ?? Number(answerId),
-        questionId: answerObj?.questionId ?? questionId,
-        qualificationId: answerObj?.qualificationId ?? null,
-        memberAnswerId: value,
-        oldMemberAnswerId: answerObj?.oldMemberAnswerId ?? null,
-      };
-    });
-
-    // 🔥 Always hit API
-    const res = await dispatch(
-      updateAnswerMapping({
-        memberId,
-        questionId,
-        memberType: "customer",
-        optionData: updatedOptions,
-      })
-    ).unwrap();
-
-    if (res?.status === 200) {
-      toast({ description: `${res.message || "Update saved successfully!"}` });
-    }
-  };
-
+  if (errorUpdate) {
+    setMessage(`❌ ${errorUpdate}`);
+    dispatch(resetUpdateState());
+  }
+}, [successUpdate, errorUpdate, dispatch, memberId, questionId]);
 
   if (!isOpen) return null;
 
@@ -253,9 +282,9 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase">
                         Option Review
                       </th>
-                      <th className="px-6 py-4 text-left text-xs font-medium uppercase">
+                      {/* <th className="px-6 py-4 text-left text-xs font-medium uppercase">
                         Option Review Update
-                      </th>
+                      </th> */}
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase">
                         New Mapped
                       </th>
@@ -295,16 +324,10 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
                         >
                           <td className="px-6 py-4">{idx + 1}</td>
                           {/* Answer ID instead of answerText */}
-                          <td className="px-6 py-4">Answer #{ans.answerId}</td>
+                          <td className="px-6 py-4">{ans.answerText}</td>
 
                           {/* Current Mapping */}
                           <td className="px-6 py-4">{ans.memberAnswerId ?? "Not Mapped"}</td>
-
-                          {/* Checkbox for selection */}
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <Input type="text" value={editedValues[ans.answerId] ?? ans.member_answer_id} onChange={(e) => handleInputChange(ans.answerId, e.target.value)} className="w-full" placeholder="Enter constant ID" />
-                          </td>
-
 
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <span
@@ -351,41 +374,6 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
           </div>
 
           {/* Footer */}
-          {/* <div
-            className={cn(
-              "sticky bottom-0 z-20 flex flex-col sm:flex-row items-center justify-end space-y-4 sm:space-y-0 sm:space-x-3 border-t p-4 transition-colors",
-              resolvedTheme === "dark"
-                ? "border-gray-700 bg-gray-900"
-                : "border-gray-50"
-            )}
-          >
-            <Button onClick={onClose} variant="outline" className="w-full sm:w-auto">
-              <X className="w-4 h-4 mr-2" /> Close
-            </Button>
-
-            <Button
-              onClick={handleUpdate}
-              disabled={Object.keys(editedValues).length === 0}
-              className="bg-yellow-600 text-white hover:bg-yellow-700 w-full sm:w-auto flex items-center justify-center"
-            >
-              <Save className="w-4 h-4 mr-2" /> Update
-            </Button>
-
-            <Button
-              onClick={handleSave}
-              disabled={Object.values(selected).every((v) => !v)}
-              className={cn(
-                "transition-all duration-300 w-full sm:w-auto flex items-center justify-center",
-                Object.values(selected).some((v) => v)
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-blue-200 text-white cursor-not-allowed"
-              )}
-            >
-              <Save className="w-4 h-4 mr-2" /> Mapping Approve
-            </Button>
-          </div> */}
-
-          {/* Footer */}
           <div
             className={cn(
               "sticky bottom-0 z-20 flex flex-col sm:flex-row items-center justify-end space-y-4 sm:space-y-0 sm:space-x-3 border-t p-4 transition-colors",
@@ -398,15 +386,14 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
               <X className="w-4 h-4 mr-2" /> Close
             </Button>
 
-            {/* 🔥 Update button - always enabled */}
-            <Button
+            {/* <Button
               onClick={handleUpdate}
+              disabled={Object.keys(editedValues).length === 0}
               className="bg-yellow-600 text-white hover:bg-yellow-700 w-full sm:w-auto flex items-center justify-center"
             >
               <Save className="w-4 h-4 mr-2" /> Update
-            </Button>
+            </Button> */}
 
-            {/* 🔥 Save button - only disabled if no checkbox selected */}
             <Button
               onClick={handleSave}
               disabled={Object.values(selected).every((v) => !v)}
@@ -420,7 +407,6 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
               <Save className="w-4 h-4 mr-2" /> Mapping Approve
             </Button>
           </div>
-
         </motion.div>
 
         <MessageBox

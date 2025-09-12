@@ -265,7 +265,7 @@ const handleUpdateQualification = async () => {
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">S.No</th>
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Qualification</th>
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Constant ID</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Qualifications Constant ID</th>
+                      {/* <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Qualifications Constant ID</th> */}
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Old Mapped</th>
                       <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">New Mapped</th>
                     </tr>
@@ -308,9 +308,8 @@ const handleUpdateQualification = async () => {
                           {item.constantId || 'Not Mapped'}
                         </td>
 
-                        <td className="px-6 py-4">
 
-                          <td className="px-6 py-4">
+                          {/* <td className="px-6 py-4">
                             <Input
                               type="text"
                               value={editedValues[item.qualificationId] ?? ""}
@@ -323,9 +322,7 @@ const handleUpdateQualification = async () => {
                                   : "bg-white text-gray-900 border-gray-300 focus:ring-blue-500"
                               )}
                             />
-                          </td>
-
-                        </td>
+                          </td> */}
 
                         {/* Old Mapped */}
                         <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -389,10 +386,10 @@ const handleUpdateQualification = async () => {
               Approved Selected ({selectedItems.size})
             </Button>
 
-            <Button onClick={handleUpdateQualification} disabled={Object.keys(editedValues).length === 0 || updateLoading} className="bg-yellow-600 text-white hover:bg-yellow-700 w-full sm:w-auto flex items-center justify-center">
+            {/* <Button onClick={handleUpdateQualification} disabled={Object.keys(editedValues).length === 0 || updateLoading} className="bg-yellow-600 text-white hover:bg-yellow-700 w-full sm:w-auto flex items-center justify-center">
               {updateLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Save className="w-4 h-4 mr-2" /> Update
-            </Button>
+            </Button> */}
 
             <Button onClick={onClose} variant="outline" className="w-full sm:w-auto">
               <X className="w-4 h-4 mr-2" />
