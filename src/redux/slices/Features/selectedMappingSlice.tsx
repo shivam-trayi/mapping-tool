@@ -1,4 +1,3 @@
-// src/redux/slices/testing/selectedMappingSlice.ts
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 interface SelectedMappingState {

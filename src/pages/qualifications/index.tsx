@@ -2,11 +2,11 @@ import React, { useEffect, useCallback, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet } from "react-router-dom";
 
-import { Navigation } from "./Navigation";
-import { DashboardHeader } from "../dashboard/DashboardHeader";
+// import { Navigation } from "./Navigation";
+// import { DashboardHeader } from "../dashboard/DashboardHeader";
 import { MessageBox } from "@/components/ui/MessageBox";
 import { useTheme } from "@/hooks/useTheme";
-import { fetchQualifications } from "@/redux/slices/testing/qualificationSlice";
+import { fetchQualifications } from "@/redux/slices/Features/qualificationSlice";
 import type { Qualification, Question, MappingEntry } from "../../types/qualicationTypes";
 import type { RootState } from "@/redux/store";
 

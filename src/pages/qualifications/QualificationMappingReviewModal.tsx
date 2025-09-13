@@ -10,7 +10,7 @@ import { MessageBox } from '@/components/ui/MessageBox';
 import type { Qualification } from '@/types/qualicationTypes';
 
 import type { AppDispatch } from '@/redux/store';
-import { saveQualMappingReviewData, updateQualificationConstantIdData } from '@/redux/slices/testing/saveQualMappingSlice';
+import { saveQualMappingReviewData, updateQualificationConstantIdData } from '@/redux/slices/Features/saveQualMappingSlice';
 import { toast } from "@/components/ui/use-toast";
 
 interface QualificationMappingItem {

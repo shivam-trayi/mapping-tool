@@ -67,7 +67,6 @@ const UpdateQuestionView: React.FC = () => {
 
   const handleUpdateQuestion = () => {
     setIsSaving(true);
-    console.log("Updated question:", updateQuestionForm);
     setTimeout(() => setIsSaving(false), 1000);
   };
 

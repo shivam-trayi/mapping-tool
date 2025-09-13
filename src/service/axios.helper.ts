@@ -6,11 +6,11 @@ import axios, {
   AxiosRequestConfig,
 } from "axios";
 
-const baseURL = import.meta.env.VITE_APP_API_URL || "http://localhost:5000/api/v1"; 
+const baseURL = import.meta.env.VITE_APP_API_URL || "http://localhost:5000/api/v1";
 const clientTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL, // ✅ ab yaha /api/v1 hai
+  baseURL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -23,7 +23,7 @@ axiosInstance.interceptors.request.use(
     config.headers["Authorization"] = token ? `Bearer ${token}` : "";
     config.headers["partner-id"] = "3";
     config.headers["client-time-zone"] = clientTimeZone;
-    config.headers["lang-key"] = "en"; // ye backend CORS me allow karna hoga
+    config.headers["lang-key"] = "en";
 
     return config;
   },

@@ -1,19 +1,15 @@
 import axiosInstance from "../axios.helper";
 import { QualificationsMappingData } from "@/types/qualicationTypes";
 
-// Payload type for saving qualification mappings
 export interface SaveQualMappingsPayload {
   bodyData: QualificationsMappingData[];
 }
-
-// Response type from API
 export interface SaveQualMappingsResponse {
   success: boolean;
   data: QualificationsMappingData[]; // replaced `any` with actual type
   message?: string;
 }
 
-// Fetch paginated qualifications
 export const getQualifications = async ({
   page,
   limit,

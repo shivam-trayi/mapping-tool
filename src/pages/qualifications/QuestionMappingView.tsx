@@ -5,17 +5,19 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ViewType } from "../../types/qualicationTypes";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchLanguages } from "@/redux/slices/testing/languageSlice";
+import { fetchLanguages } from "@/redux/slices/Features/languageSlice";
 import type { RootState, AppDispatch } from "@/redux/store";
-import { fetchClients } from "@/redux/slices/testing/clientSlice";
+import { fetchClients } from "@/redux/slices/Features/clientSlice";
 import {
   fetchQuestionMappings,
   fetchQuestionReviewMappings,
   saveQuestionReviewMapping,
-} from "@/redux/slices/testing/questionSlice";
+} from "@/redux/slices/Features/questionSlice";
 import MappingReviewModal from "./QuestionMappingReviewModal";
 import { useNavigate, useLocation } from "react-router-dom";
-import { setClient, setLang } from "@/redux/slices/testing/selectedMappingSlice";
+import { setClient, setLang } from "@/redux/slices/Features/selectedMappingSlice";
+import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "@/components/ui/use-toast";
 // import { setClient, setLang } from "@/redux/slices/testing/selectedMappingSlice";
 
 interface QuestionMappingViewProps {
@@ -86,8 +88,6 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
       const reviewResult = await dispatch(
         fetchQuestionReviewMappings({ memberType: "customer", memberId: client, langCode: lang })
       ).unwrap();
-      console.log("Review Result:", reviewResult);
-
       const mergedData: QuestionMappingItem[] = mappingsResult.map((item) => {
         const review = reviewResult.find((r) => r.questionId === item.questionId);
         return {
@@ -118,42 +118,57 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
   };
 
   // Save review
-  const handleSaveReview = async () => {
-    if (!selectedLang || !selectedClient) return;
-    // if (selectedClient == null || selectedLang == null) return;
+const handleSaveReview = async () => {
+  if (!selectedLang || !selectedClient) return;
 
+  const optionData = fetchedMappings
+    .filter((item) => item.memberQuestionId !== item.oldMemberQuestionId)
+    .map((item) => ({
+      memberQuestionId: item.memberQuestionId ?? "",
+      qualificationId: item.qualificationId,
+      masterQueryId: item.questionId,
+    }));
 
-    const optionData = fetchedMappings
-      .filter((item) => item.memberQuestionId !== item.oldMemberQuestionId)
-      .map((item) => ({
-        memberQuestionId: item.memberQuestionId ?? "",
-        qualificationId: item.qualificationId,
-        masterQueryId: item.questionId,
-      }));
+  if (optionData.length === 0) {
+    toast({ description: "⚠️ No changes to save!", variant: "warning" });
+    return;
+  }
 
-    if (optionData.length === 0) {
-      alert("No changes to save!");
-      return;
+  setIsSaving(true);
+  try {
+    const res = await dispatch(
+      saveQuestionReviewMapping({
+        memberType: "customer",
+        langCode: selectedLang,
+        memberId: selectedClient.toString(),
+        optionData,
+      })
+    ).unwrap();
+
+    // ✅ Success toast
+    if (res?.status === 200) {
+      toast({ description: res.message || "✅ Mappings updated successfully.", variant: "success" });
+    } else {
+      toast({ description: "❌ Failed to update mappings.", variant: "destructive" });
     }
 
-    setIsSaving(true);
-    try {
-      await dispatch(
-        saveQuestionReviewMapping({
-          memberType: "customer",
-          langCode: selectedLang,
-          memberId: selectedClient.toString(),
-          optionData,
-        })
-      ).unwrap();
+    await loadMappings(selectedLang, selectedClient);
+  } catch (err: any) {
+    console.error("Error saving review:", err);
 
-      await loadMappings(selectedLang, selectedClient);
-    } catch (err) {
-      console.error("Error saving review:", err);
-    } finally {
-      setIsSaving(false);
+    // ✅ Error toast
+    if (err && typeof err === "string") {
+      toast({ description: "❌ " + err, variant: "destructive" });
+    } else if (err?.message) {
+      toast({ description: "❌ " + err.message, variant: "destructive" });
+    } else {
+      toast({ description: "❌ Something went wrong while saving.", variant: "destructive" });
     }
-  };
+  } finally {
+    setIsSaving(false);
+  }
+};
+
 
   const handleOpenReviewModal = async () => {
     if (!selectedLang || !selectedClient) {
@@ -169,8 +184,6 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
           langCode: selectedLang,
         })
       ).unwrap();
-
-      console.log("Review Modal Data:", reviewResult);
       setReviewMappings(reviewResult);
       setShowMappingReviewModal(true);
     } catch (err) {
@@ -215,9 +228,9 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
           Question Mapping
         </h2>
         <div className="flex space-x-3">
-          <Button onClick={handleOpenReviewModal} className="rounded-xl shadow-sm">
+          {/* <Button onClick={handleOpenReviewModal} className="rounded-xl shadow-sm">
             Mapping Review
-          </Button>
+          </Button> */}
 
           <Button
             onClick={() => navigate("/dashboard/qualifications-mapping", { state: { fromChild: true } })}
@@ -311,11 +324,28 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
                   </td>
                 </tr>
               ) : loadingMappings ? (
-                <tr>
-                  <td colSpan={6} className="p-6 text-center text-gray-500">
-                    Loading...
-                  </td>
-                </tr>
+                [...Array(5)].map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-32" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-40" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-5 w-20 rounded-full" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-5 w-24 rounded-full" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-9 w-full rounded-md" />
+                    </td>
+                  </tr>
+                ))
               ) : fetchedMappings.length === 0 ? (
                 <tr>
                   <td colSpan={6} className="p-12 text-center">
@@ -387,31 +417,31 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
                       </td> */}
 
 
-                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <span
-                              className={cn(
-                                "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                                item.memberQuestionId != null
-                                  ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
-                                  : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
-                              )}
-                            >
-                              {item.memberQuestionId != null ? "Mapped" : "Not Mapped"}
-                            </span>
-                          </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span
+                          className={cn(
+                            "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                            item.memberQuestionId != null
+                              ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
+                              : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
+                          )}
+                        >
+                          {item.memberQuestionId != null ? "Mapped" : "Not Mapped"}
+                        </span>
+                      </td>
 
-                          <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <span
-                              className={cn(
-                                "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                                item.oldMemberQuestionId != null
-                                  ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
-                                  : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
-                              )}
-                            >
-                              {item.oldMemberQuestionId != null ? "Old Mapped" : "Not Mapped"}
-                            </span>
-                          </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span
+                          className={cn(
+                            "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                            item.oldMemberQuestionId != null
+                              ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+                              : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
+                          )}
+                        >
+                          {item.oldMemberQuestionId != null ? "Old Mapped" : "Not Mapped"}
+                        </span>
+                      </td>
                       <td className="px-6 py-4">
                         <input
                           type="text"

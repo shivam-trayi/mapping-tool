@@ -57,7 +57,7 @@ export const DashboardHeader: React.FC<HeaderProps> = ({
         {/* Right side - Actions */}
         <div className="flex items-center space-x-3">
           {/* Theme Toggle */}
-          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+          {/* <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
             <Button
               variant="ghost"
               size="icon"
@@ -86,7 +86,7 @@ export const DashboardHeader: React.FC<HeaderProps> = ({
                 </motion.div>
               </AnimatePresence>
             </Button>
-          </motion.div>
+          </motion.div> */}
 
           {/* User Info */}
           <div className="hidden md:flex items-center space-x-2">
@@ -104,7 +104,7 @@ export const DashboardHeader: React.FC<HeaderProps> = ({
           </Button>
 
           {/* Icons */}
-          <User
+          {/* <User
             className={cn(
               "w-6 h-6 transition-colors",
               resolvedTheme === "dark" ? "text-gray-400" : "text-gray-500"
@@ -115,7 +115,7 @@ export const DashboardHeader: React.FC<HeaderProps> = ({
               "w-6 h-6 transition-colors",
               resolvedTheme === "dark" ? "text-gray-400" : "text-gray-500"
             )}
-          />
+          /> */}
         </div>
       </div>
     </div>

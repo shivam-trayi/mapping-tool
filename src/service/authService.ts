@@ -23,7 +23,6 @@ export const authService = {
     name: string;
     email: string;
     password: string;
-    // country?: string;
   }): Promise<ApiResponse<{ token: string }>> => {
     const res = await fetch(`${API_BASE}auth/signup`, {
       method: "POST",

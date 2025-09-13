@@ -56,17 +56,17 @@ const router = createBrowserRouter([
         ),
         children: [
           { index: true, element: <Navigate to="list" /> }, // fallback
-          { path: "list", element: <ListView /> },// ye wala list view ka route hai
-          { path: "create", element: <CreateEditView /> },// ye wala create view ka route hai
-          { path: "edit", element: <EditView /> },// ye wala EditView ka route hai
+          { path: "list", element: <ListView /> },
+          { path: "create", element: <CreateEditView /> },
+          { path: "edit", element: <EditView /> },
           { path: "add-question", element: <AddQuestionView /> },
           { path: "update-question", element: <UpdateQuestionView /> },
-          { path: "demo-mapping", element: <DemoPriorityMappingView /> },// ye wala DemoPriorityMappingView ka route hai
-          { path: "qualifications-mapping", element: <QualificationsMappingView /> },// ye wala QualificationsMappingView ka route hai
-          { path: "question-mapping", element: <QuestionMappingView /> },// ye wala QuestionMappingView ka route hai
+          { path: "demo-mapping", element: <DemoPriorityMappingView /> },
+          { path: "qualifications-mapping", element: <QualificationsMappingView /> },
+          { path: "question-mapping", element: <QuestionMappingView /> },
           { path: "add-option", element: <AddOptionView /> },
           { path: "update-option", element: <UpdateOptionView /> },
-          { path: "question-options", element: <QuestionOptionsPage /> },// ye wala QuestionOptionsPage ka route hai
+          { path: "question-options", element: <QuestionOptionsPage /> },
         ],
       },
     ],

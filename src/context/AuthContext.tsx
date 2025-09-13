@@ -74,7 +74,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      toast({ title: "Login successful", description: response.message });
+      toast({ 
+        // title: "Login successfully",
+         description: response.message });
       navigate("/dashboard");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Login failed";
@@ -105,7 +107,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      toast({ title: "Signup successful", description: response.message });
+      toast({description: response.message });
       navigate("/dashboard");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Signup failed";
@@ -120,7 +122,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       const response = await authService.forgotPassword(email);
       toast({
-        title: "Request successful",
+        // title: "Request successful",
         description: response.message || "Check your email for reset link",
       });
     } catch (err: unknown) {
@@ -136,7 +138,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setIsLoading(true);
       const response = await authService.resetPassword(token, newPassword);
       toast({
-        title: "Password reset successful",
+        // title: "Password reset successfully",
         description: response.message,
       });
       navigate("/login");
@@ -155,7 +157,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(null);
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      toast({ title: "Logout successful", description: response.message });
+      toast({ description: response.message });
       navigate("/login");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Logout failed";

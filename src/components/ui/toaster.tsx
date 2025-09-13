@@ -27,7 +27,7 @@ export function Toaster() {
       })}
 
       {/* ✅ Top-Center */}
-      <ToastViewport className="fixed top-4 left-1/2 -translate-x-1/2 flex flex-col gap-2 w-auto z-[9999]" />
+      <ToastViewport  />
     </ToastProvider>
   )
 }

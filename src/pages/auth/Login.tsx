@@ -119,9 +119,6 @@ export default function Login() {
                   Remember me
                 </Label>
               </div>
-              {errors.remember && (
-                <p className="text-sm text-destructive font-medium">{errors.remember}</p>
-              )}
 
               <Link
                 to="/forgot-password"
@@ -135,7 +132,7 @@ export default function Login() {
             <Button
               type="submit"
               className="w-full gradient-primary text-white font-medium h-11"
-              disabled={isLoading}
+              disabled={isLoading || !formData.remember} // ✅ disabled until checkbox enabled
             >
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>

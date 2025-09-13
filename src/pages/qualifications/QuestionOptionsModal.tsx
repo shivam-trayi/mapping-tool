@@ -11,11 +11,12 @@ import { cn } from "@/lib/utils";
 import {
   getAllAnswersList,
   updateOptionsThunk,
-} from "@/redux/slices/testing/questionSlice";
+} from "@/redux/slices/Features/questionSlice";
 import OptionMappingReviewModal from "./OptionMappingReviewModal";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { getOptionQueryReviewMapping } from "@/service/answers/answer.Service";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface LocationState {
   question: string;
@@ -93,10 +94,6 @@ const QuestionOptionsPage: React.FC = () => {
         memberId: state.memberId,
         questionId: state.questionId,
       });
-
-      console.log("Review API response:", res);
-
-      // ✅ Only send data array
       setReviewData(res.data || []);
       setIsReviewOpen(true);
     } catch (err) {
@@ -137,7 +134,7 @@ const QuestionOptionsPage: React.FC = () => {
     }
   };
 
-  
+
   const handleUpdateOptions = async () => {
     if (!state) return;
 
@@ -203,12 +200,12 @@ const QuestionOptionsPage: React.FC = () => {
           Question Options
         </h2>
         <div className="flex space-x-3">
-          <Button
+          {/* <Button
             onClick={handleOpenReview}
             variant="default"
           >
             <Map className="w-4 h-4 mr-2" /> Options Mapping Review
-          </Button>
+          </Button> */}
           <Button onClick={() => navigate("/dashboard/question-mapping", { state: { isData: true } })} variant="default">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Button>
@@ -265,7 +262,7 @@ const QuestionOptionsPage: React.FC = () => {
                 </th>
               </tr>
             </thead>
-            <tbody className={cn("divide-y", "dark:divide-gray-700 divide-gray-200")}>
+            {/* <tbody className={cn("divide-y", "dark:divide-gray-700 divide-gray-200")}>
               {loading ? (
                 <tr>
                   <td colSpan={6} className="p-6 text-center text-gray-500">
@@ -346,7 +343,111 @@ const QuestionOptionsPage: React.FC = () => {
                   </tr>
                 ))
               )}
+            </tbody> */}
+            <tbody className={cn("divide-y", "dark:divide-gray-700 divide-gray-200")}>
+              {loading ? (
+                [...Array(5)].map((_, idx) => (
+                  <tr key={idx} className="animate-pulse">
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-4 rounded" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-6" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-32" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                    <td className="px-6 py-4">
+                      <Skeleton className="h-6 w-full rounded-md" />
+                    </td>
+                  </tr>
+                ))
+              ) : answers.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="p-12 text-center">
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                        <Search className="w-8 h-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                        No data found
+                      </h3>
+                      <p className="text-gray-500 dark:text-gray-400">
+                        No options available for this question.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                answers.map((ans: AnswerItem, idx: number) => (
+                  <tr
+                    key={ans.answerId}
+                    className={cn(
+                      selectedItems.has(ans.answerId)
+                        ? "bg-blue-50 dark:bg-blue-900/20"
+                        : "",
+                      "hover:bg-gray-50 dark:hover:bg-gray-700"
+                    )}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Checkbox
+                        checked={selectedItems.has(ans.answerId)}
+                        onCheckedChange={(checked) =>
+                          handleSelectItem(ans.answerId, checked as boolean)
+                        }
+                        className="border-gray-300"
+                      />
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">{idx + 1}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      {ans.answerText}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span
+                        className={cn(
+                          "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                          ans.member_answer_id != null
+                            ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
+                            : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
+                        )}
+                      >
+                        {ans.member_answer_id != null ? "Mapped" : "Not Mapped"}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span
+                        className={cn(
+                          "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                          ans.old_member_answer_id != null
+                            ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+                            : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
+                        )}
+                      >
+                        {ans.old_member_answer_id != null ? "Old Mapped" : "Not Mapped"}
+                      </span>
+                    </td>
+
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <Input
+                        type="text"
+                        value={optionInputs[ans.answerId] ?? ans.member_answer_id}
+                        onChange={(e) => handleInputChange(ans.answerId, e.target.value)}
+                        className="w-full"
+                        placeholder="Enter constant ID"
+                      />
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
+
           </table>
         </div>
 

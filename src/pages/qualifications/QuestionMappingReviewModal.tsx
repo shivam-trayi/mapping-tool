@@ -11,10 +11,11 @@ import type { AppDispatch } from "@/redux/store";
 import {
   insertMappingReviewThunk,
   updateMappingReviewThunk,
-} from "@/redux/slices/testing/createmMppingReviewSlice";
+} from "@/redux/slices/Features/createmMppingReviewSlice";
 import { QuestionMappingItem } from "@/service/questions/questions.service";
-import { fetchQuestionReviewMappings } from "@/redux/slices/testing/questionSlice";
+import { fetchQuestionReviewMappings } from "@/redux/slices/Features/questionSlice";
 import { toast } from "@/components/ui/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface MappingReviewModalProps {
   isOpen: boolean;
@@ -41,10 +42,11 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
   const [saveLoading, setSaveLoading] = React.useState(false);
   const [updateLoading, setUpdateLoading] = React.useState(false);
   const [editedValues, setEditedValues] = React.useState<Record<number, string>>({});
+  const [loading, setLoading] = React.useState(false);
 
-  // Fetch mappings from API
   const fetchMappings = async () => {
     try {
+      setLoading(true);
       const result = await dispatch(
         fetchQuestionReviewMappings({
           memberType: "customer",
@@ -52,12 +54,14 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
           langCode: selectedLang,
         })
       ).unwrap();
-
       setMappings(result);
     } catch (err) {
       console.error("Error fetching mappings:", err);
+    } finally {
+      setLoading(false);
     }
   };
+
 
   // Fetch when modal opens
   React.useEffect(() => {
@@ -237,19 +241,52 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredData.length ? (
+                    {loading ? (
+                      [...Array(5)].map((_, idx) => (
+                        <tr key={idx} className="animate-pulse">
+                          <td className="px-6 py-4">
+                            <Skeleton className="h-4 w-4 rounded" />
+                          </td>
+                          <td className="px-6 py-4">
+                            <Skeleton className="h-4 w-32" />
+                          </td>
+                          <td className="px-6 py-4">
+                            <Skeleton className="h-4 w-40" />
+                          </td>
+                          <td className="px-6 py-4">
+                            <Skeleton className="h-4 w-20" />
+                          </td>
+                          <td className="px-6 py-4">
+                            <Skeleton className="h-4 w-20" />
+                          </td>
+                          <td className="px-6 py-4">
+                            <Skeleton className="h-6 w-full rounded-md" />
+                          </td>
+                        </tr>
+                      ))
+                    ) : filteredData.length ? (
                       filteredData.map((item) => (
-                        <tr key={item.questionId} className={selectedItems.has(item.questionId) ? "bg-blue-50 dark:bg-blue-900/20" : ""}>
+                        <tr
+                          key={item.questionId}
+                          className={
+                            selectedItems.has(item.questionId)
+                              ? "bg-blue-50 dark:bg-blue-900/20"
+                              : ""
+                          }
+                        >
                           <td className="px-6 py-4">
                             <Checkbox
                               checked={selectedItems.has(item.questionId)}
-                              onCheckedChange={(checked) => handleSelectItem(item.questionId, !!checked)}
+                              onCheckedChange={(checked) =>
+                                handleSelectItem(item.questionId, !!checked)
+                              }
                             />
                           </td>
                           <td className="px-6 py-4">{item.qualificationName}</td>
                           <td className="px-6 py-4">{item.questionText}</td>
                           <td className="px-6 py-4 font-mono">{item.memberQuestionId}</td>
-                          {/* <td className="px-6 py-4">
+
+                     {/* <td className="px-6 py-4">
                             <Input
                               type="text"
                               value={editedValues[item.questionId] ?? ""}
@@ -270,6 +307,7 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
                               {item.oldMemberQuestionId ? "Old Mapped" : "Not Mapped"}
                             </span>
                           </td> */}
+
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <span
                               className={cn(
@@ -299,10 +337,13 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={6} className="p-12 text-center">No mapped data found</td>
+                        <td colSpan={6} className="p-12 text-center">
+                          No mapped data found
+                        </td>
                       </tr>
                     )}
                   </tbody>
+
                 </table>
               </div>
             </div>

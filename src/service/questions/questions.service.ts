@@ -117,15 +117,11 @@ export const getAllOptionText = async ({
   return response.data;
 };
 
-
-
 export const insertMappingReview = async (payload: MappingReviewPayload) => {
-  const response = await axiosInstance.post("/questions/createQuestionReviewMapping", payload); 
+  const response = await axiosInstance.post("/questions/createQuestionReviewMapping", payload);
   return response.data;
 };
 
-
-// ✅ New API: updateOptions
 export const updateOptions = async ({
   qualificationId,
   questionId,

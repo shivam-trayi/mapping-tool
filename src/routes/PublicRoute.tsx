@@ -9,7 +9,6 @@ export const PublicRoute: React.FC<PublicRouteProps> = ({ children }) => {
   const { user } = useAuth();
 
   if (user) {
-    // Don't force redirect on refresh; let the current URL render
     return <Navigate to="/dashboard" replace />;
   }
 

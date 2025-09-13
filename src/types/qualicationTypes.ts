@@ -33,11 +33,10 @@ export interface MappingEntry {
   externalId: string;
 }
 
-// Qualification Mapping Data (used for saving to API)
 export interface QualificationsMappingData {
   qualification_id: string;
   member_id: string;
-  member_type: 'customer' | 'supplier'; // REQUIRED
+  member_type: 'customer' | 'supplier';
   member_qualification_id?: string;
   created_by?: string;
   updated_by?: string;
@@ -79,18 +78,6 @@ export type ViewType =
   | 'addOption'
   | 'updateOption'
   | 'Option'
-
-
-//   export interface QualificationsMappingData {
-//   qualification_id: string;
-//   member_id: string;
-//   member_type: "customer" | "supplier";
-//   member_qualification_id?: string;
-//   created_by?: string;
-//   updated_by?: string;
-//   old_member_qualification_id?: string;
-//   constantId: string;
-// }
 
 export interface SaveQualMappingsPayload {
   bodyData: QualificationsMappingData[];

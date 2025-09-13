@@ -55,7 +55,7 @@ export interface FormErrors {
 
 // ------------------ Auth / User ------------------
 export interface User {
-  id: number;             // consistent: number for backend
+  id: number;            
   username: string;
   roleId: number;
 }
@@ -77,9 +77,9 @@ export interface AuthContextType {
 
 // ------------------ API ------------------
 export interface ApiResponse<T = unknown> {  // ✅ replace `any` with `unknown` to satisfy eslint
-  status: number;          // e.g., 200
-  data: T;                 // payload (object, array, etc.)
-  message: string;         // message from API
+  status: number;      
+  data: T;        
+  message: string;         
   errors: boolean;         // true/false
   success: boolean;        // true/false
   timestamp: string;       // ISO string

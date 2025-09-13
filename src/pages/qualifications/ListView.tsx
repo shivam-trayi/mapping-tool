@@ -56,10 +56,10 @@ const ListView: React.FC = () => {
           <Filter className="w-5 h-5 text-gray-400" />
         </div>
         <div className="flex space-x-3">
-          <Button onClick={() => navigate("/dashboard/demo-mapping")} variant="outline">
+          <Button  disabled onClick={() => navigate("/dashboard/demo-mapping")} variant="outline">
             Demo Priority Mapping
           </Button>
-          <Button
+          <Button 
             onClick={() => navigate("/dashboard/qualifications-mapping")}
             variant="outline"
           >
@@ -67,7 +67,7 @@ const ListView: React.FC = () => {
           </Button>
 
 
-          <Button onClick={() => navigate("/dashboard/create")} variant="default">
+          <Button disabled onClick={() => navigate("/dashboard/create")} variant="default">
             <Plus className="w-4 h-4 mr-2" /> Create Qualifications
           </Button>
         </div>
@@ -141,6 +141,7 @@ const ListView: React.FC = () => {
                     <Button
                       variant="ghost"
                       size="sm"
+                      disabled
                       onClick={() => navigate("/dashboard/edit")}
                     >
                       <Edit className="w-4 h-4" />
