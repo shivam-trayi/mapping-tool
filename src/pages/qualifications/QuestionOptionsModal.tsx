@@ -185,90 +185,84 @@ const QuestionOptionsPage: React.FC = () => {
   //   }
   // };
 
+// Handle individual input changes
+const handleInputChange = (answerId: number, value: string) => {
+  // Update the input value normally, including blanks
+  setOptionInputs((prev) => ({ ...prev, [answerId]: value }));
+};
 
-  const handleInputChange = (answerId: number, value: string) => {
-    const trimmedValue = value.trim();
+// Update options for all answers
+const handleUpdateOptions = async () => {
+  if (!state) return;
 
-    // Prevent blank value from being set
-    if (trimmedValue === "") {
+  // Validate blanks for selected items only
+  const invalidOptions = answers
+    .filter((ans: AnswerItem) => selectedItems.has(ans.answerId))
+    .filter((ans: AnswerItem) => {
+      const val = optionInputs[ans.answerId]?.trim() ?? ans.member_answer_id?.trim() ?? "";
+      return val === "";
+    });
+
+  if (invalidOptions.length > 0) {
+    toast({
+      description: "⚠️ Constant ID cannot be blank for selected options.",
+      variant: "destructive",
+      className: "max-w-sm w-full",
+    });
+    return;
+  }
+
+  // Prepare options: keep untouched values as-is, update only what user typed
+  const options = answers.map((ans: AnswerItem) => ({
+    answerId: ans.answerId,
+    constantId: optionInputs[ans.answerId]?.trim() ?? ans.member_answer_id ?? "",
+  }));
+
+  if (options.length === 0) return;
+
+  setIsSaving(true);
+
+  try {
+    const res = await dispatch(
+      updateOptionsThunk({
+        qualificationId: answers[0]?.qualificationId,
+        questionId: state.questionId,
+        memberId: state.memberId,
+        langCode: state.langCode,
+        options,
+      })
+    ).unwrap();
+
+    if (res.status === 200) {
       toast({
-        description: "⚠️ Constant ID cannot be blank",
-        variant: "destructive",
-        className: "max-w-sm w-full",
+        description: res.message || "✅ Options updated successfully!",
       });
-      return; // Do not update state
     }
 
-    // Only update state if non-blank
-    setOptionInputs((prev) => ({ ...prev, [answerId]: trimmedValue }));
-  };
+    // Refresh answers list
+    await dispatch(
+      getAllAnswersList({
+        memberType: "customer",
+        memberId: state.memberId,
+        marketId: state.marketId,
+        langCode: state.langCode,
+        questionId: state.questionId,
+      })
+    ).unwrap();
 
-  const handleUpdateOptions = async () => {
-    if (!state) return;
-
-    // 1️⃣ Prepare options, validate blank constantIds
-    const invalidOptions = answers
-      .filter((ans: AnswerItem) => selectedItems.has(ans.answerId))
-      .filter((ans: AnswerItem) => {
-        const val = optionInputs[ans.answerId]?.trim() ?? ans.member_answer_id?.trim() ?? "";
-        return val === "";
-      });
-
-    if (invalidOptions.length > 0) {
-      toast({
-        description: "⚠️ Constant ID cannot be blank for selected options.",
-        variant: "destructive",
-        className: "max-w-sm w-full",
-      });
-      return;
-    }
-
-    const options = answers
-      .filter((ans: AnswerItem) => selectedItems.has(ans.answerId))
-      .map((ans: AnswerItem) => ({
-        answerId: ans.answerId,
-        constantId: optionInputs[ans.answerId]?.trim() ?? ans.member_answer_id ?? "",
-      }));
-
-    if (options.length === 0) return;
-
-    setIsSaving(true);
-    try {
-      const res = await dispatch(
-        updateOptionsThunk({
-          qualificationId: answers[0]?.qualificationId,
-          questionId: state.questionId,
-          memberId: state.memberId,
-          langCode: state.langCode,
-          options,
-        })
-      ).unwrap();
-
-      if (res.status === 200) {
-        toast({ description: res.message || "✅ Options updated for review successfully!" });
-      }
-
-      await dispatch(
-        getAllAnswersList({
-          memberType: "customer",
-          memberId: state.memberId,
-          marketId: state.marketId,
-          langCode: state.langCode,
-          questionId: state.questionId,
-        })
-      ).unwrap();
-
-      // Reset selection
-      setSelectedItems(new Set());
-      setSelectAll(false);
-      setOptionInputs({});
-    } catch (err) {
-      console.error(err);
-      toast({ description: "❌ Failed to save options. Try again." });
-    } finally {
-      setIsSaving(false);
-    }
-  };
+    // Reset selection and input state
+    setSelectedItems(new Set());
+    setSelectAll(false);
+    setOptionInputs({});
+  } catch (err) {
+    console.error(err);
+    toast({
+      description: "❌ Failed to save options. Try again.",
+    });
+  } finally {
+    setIsSaving(false);
+  }
+};
 
 
   if (!state) return null;
@@ -348,88 +342,6 @@ const QuestionOptionsPage: React.FC = () => {
                 </th>
               </tr>
             </thead>
-            {/* <tbody className={cn("divide-y", "dark:divide-gray-700 divide-gray-200")}>
-              {loading ? (
-                <tr>
-                  <td colSpan={6} className="p-6 text-center text-gray-500">
-                    <div className="flex items-center justify-center space-x-2">
-                      <Loader2 className="animate-spin h-4 w-4" /> Loading...
-                    </div>
-                  </td>
-                </tr>
-              ) : answers.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="p-12 text-center">
-                    <div className="flex flex-col items-center space-y-3">
-                      <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                        <Search className="w-8 h-8 text-gray-400" />
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                        No data found
-                      </h3>
-                      <p className="text-gray-500 dark:text-gray-400">
-                        No options available for this question.
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                answers.map((ans: AnswerItem, idx: number) => (
-                  <tr
-                    key={ans.answerId}
-                    className={cn(
-                      selectedItems.has(ans.answerId)
-                        ? "bg-blue-50 dark:bg-blue-900/20"
-                        : "",
-                      "hover:bg-gray-50 dark:hover:bg-gray-700"
-                    )}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Checkbox
-                        checked={selectedItems.has(ans.answerId)}
-                        onCheckedChange={(checked) =>
-                          handleSelectItem(ans.answerId, checked as boolean)
-                        }
-                        className="border-gray-300"
-                      />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">{idx + 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      {ans.answerText}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span
-                        className={cn(
-                          "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                          ans.member_answer_id != null
-                            ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
-                            : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
-                        )}
-                      >
-                        {ans.member_answer_id != null ? "Mapped" : "Not Mapped"}
-                      </span>
-                    </td>
-
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span
-                        className={cn(
-                          "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                          ans.old_member_answer_id != null
-                            ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
-                            : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
-                        )}
-                      >
-                        {ans.old_member_answer_id != null ? "Old Mapped" : "Not Mapped"}
-                      </span>
-                    </td>
-
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Input type="text" value={optionInputs[ans.answerId] ?? ans.member_answer_id} onChange={(e) => handleInputChange(ans.answerId, e.target.value)} className="w-full" placeholder="Enter constant ID" />
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody> */}
             <tbody className={cn("divide-y", "dark:divide-gray-700 divide-gray-200")}>
               {loading ? (
                 [...Array(5)].map((_, idx) => (

@@ -76,11 +76,9 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 	}, [searchQuery]);
 
 	// Filtered qualifications based on search
-	const filteredQualifications = fetchedQualifications.filter((item) =>
-		item.qualificationName.toLowerCase().includes(searchQuery.toLowerCase())
-	);
-
-
+const filteredQualifications = fetchedQualifications.filter((item) =>
+	item.qualificationName.toLowerCase().includes(debouncedQuery.toLowerCase())
+);
 
 	// ✅ Fetch qualifications
 	const fetchMappings = async () => {
@@ -185,7 +183,7 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 	// };
 
 
-		const handleConstantIdChange = (id: string, value: string) => {
+	const handleConstantIdChange = (id: string, value: string) => {
 		// ✅ Always update input state, even if blank
 		setConstantIds((prev) => ({ ...prev, [id]: value }));
 	};
