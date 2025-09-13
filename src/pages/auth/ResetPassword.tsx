@@ -14,7 +14,6 @@ export default function ResetPassword() {
   const { toast } = useToast();
   const { resetPassword } = useAuth();
 
-  // Get token and optional redirect URL from query params
   const [searchParams] = useSearchParams();
   const token = searchParams.get('token') || '';
   const redirect = searchParams.get('redirect') || '/dashboard';
@@ -25,7 +24,6 @@ export default function ResetPassword() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Validate form fields
   const validateForm = (): boolean => {
     const newErrors: typeof errors = {};
     if (!password) newErrors.password = 'Password is required';
@@ -36,7 +34,6 @@ export default function ResetPassword() {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Handle form submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -51,9 +48,8 @@ export default function ResetPassword() {
         title: "Password Reset Successful",
         description: "You can now log in with your new password.",
       });
-      navigate(redirect); // Redirect after successful reset
+      navigate(redirect);
     } catch (err: unknown) {
-      // Narrow type to Error
       const errorMessage =
         err instanceof Error ? err.message : "Failed to reset password";
 
@@ -65,20 +61,18 @@ export default function ResetPassword() {
     }
   };
 
-
-
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/10 via-background to-accent/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">Reset Your Password</h1>
           <p className="text-muted-foreground">Enter your new password below</p>
         </div>
 
-        <Card className="p-8 shadow-elevated border-border/20 bg-background/95 backdrop-blur-sm">
+        <Card className="p-8 shadow-elevated border-border/20 bg-background/95 backdrop-blur-md rounded-2xl hover:shadow-2xl transition-shadow duration-300">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2 relative">
-              <Label htmlFor="password" className="text-sm font-medium">New Password</Label>
+              <Label htmlFor="password" className="text-sm font-medium">New Password <span className="text-destructive">*</span></Label>
               <div className="relative">
                 <Input
                   id="password"
@@ -86,22 +80,21 @@ export default function ResetPassword() {
                   placeholder="Enter new password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pr-10"
+                  className="pr-10 shadow-sm hover:shadow-md transition-shadow"
                 />
                 <button
                   type="button"
                   onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-foreground transition-colors"
                 >
                   {showNewPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
-
               </div>
               {errors.password && <p className="text-sm text-destructive font-medium mt-1">{errors.password}</p>}
             </div>
 
             <div className="space-y-2 relative">
-              <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-sm font-medium">Confirm Password <span className="text-destructive">*</span></Label>
               <div className="relative">
                 <Input
                   id="confirmPassword"
@@ -109,16 +102,15 @@ export default function ResetPassword() {
                   placeholder="Confirm new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pr-10"
+                  className="pr-10 shadow-sm hover:shadow-md transition-shadow"
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-foreground transition-colors"
                 >
                   {showConfirmPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
-
               </div>
               {errors.confirmPassword && (
                 <p className="text-sm text-destructive font-medium mt-1">{errors.confirmPassword}</p>
@@ -127,7 +119,7 @@ export default function ResetPassword() {
 
             <Button
               type="submit"
-              className="w-full gradient-primary text-white font-medium h-11"
+              className="w-full gradient-primary text-white font-medium h-11 rounded-lg shadow-md hover:shadow-lg hover:scale-[1.02] transition-transform"
             >
               Reset Password
             </Button>

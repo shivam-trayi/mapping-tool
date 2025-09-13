@@ -5,18 +5,17 @@ import { Input } from '@/components/ui/input';
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SignupForm, FormErrors } from '@/types/authTypes';
-import { countries } from '@/data/mock';
 import { useAuth } from '@/context/AuthContext';
 import { Eye, EyeOff } from 'lucide-react';
 import { validateSignupForm } from "@/validation/authValidation";
-
+import { toast } from '@/components/ui/use-toast';
 
 export default function Signup() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
 
   const { signup, isLoading } = useAuth();
   const [formData, setFormData] = useState<SignupForm>({
@@ -26,83 +25,29 @@ export default function Signup() {
     confirmPassword: '',
     agreeToTerms: false,
   });
-  const [errors, setErrors] = useState<FormErrors>({});
 
-  // const validateFormSignUp = (): boolean => {
-  //   const newErrors: FormErrors = {};
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
-  //   if (!formData.fullName.trim()) {
-  //     newErrors.fullName = 'Full name is required';
-  //   } else if (formData.fullName.trim().length < 2) {
-  //     newErrors.fullName = 'Full name must be at least 2 characters';
-  //   }
+    const newErrors = validateSignupForm(formData);
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
-  //   if (!formData.email) {
-  //     newErrors.email = 'Email is required';
-  //   } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-  //     newErrors.email = 'Please enter a valid email address';
-  //   }
-
-  //   if (!formData.password) {
-  //     newErrors.password = 'Password is required';
-  //   } else if (formData.password.length < 8) {
-  //     newErrors.password = 'Password must be at least 8 characters';
-  //   } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-  //     newErrors.password = 'Password must contain uppercase, lowercase, and number';
-  //   }
-
-  //   if (!formData.confirmPassword) {
-  //     newErrors.confirmPassword = 'Please confirm your password';
-  //   } else if (formData.password !== formData.confirmPassword) {
-  //     newErrors.confirmPassword = 'Passwords do not match';
-  //   }
-
-  //   if (!formData.agreeToTerms) {
-  //     newErrors.agreeToTerms = 'You must agree to the Terms & Privacy Policy';
-  //   }
-
-  //   setErrors(newErrors);
-  //   return Object.keys(newErrors).length === 0;
-  // };
-
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-
-  //   if (!validateFormSignUp()) return;
-
-  //   try {
-  //     await signup({
-  //       name: formData.fullName,
-  //       email: formData.email,
-  //       password: formData.password,
-  //     });
-  //     navigate('/dashboard');
-  //   } catch (error) {
-  //     // Error handling is done in the auth context
-  //   }
-  // };
-
-
-// Inside handleSubmit
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-
-  const newErrors = validateSignupForm(formData);
-  setErrors(newErrors);
-  if (Object.keys(newErrors).length > 0) return;
-
-  try {
-    await signup({
-      name: formData.fullName,
-      email: formData.email,
-      password: formData.password,
-    });
-    navigate('/dashboard');
-  } catch (error) {
-    // Error handling is done in the auth context
-  }
-};
-
+    try {
+      await signup({
+        name: formData.fullName,
+        email: formData.email,
+        password: formData.password,
+      });
+      navigate('/login');
+    } catch (error: any) {
+      toast({
+        description: error?.message || "❌ Signup failed. Please try again.",
+        variant: "destructive",
+        className: "max-w-sm w-full",
+      });
+    }
+  };
 
   const handleInputChange = (field: keyof SignupForm, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -112,21 +57,18 @@ const handleSubmit = async (e: React.FormEvent) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
-      {/* Background Elements */}
-      <div className="absolute inset-0 overflow-hidden -z-10">
-        <div className="absolute top-1/4 right-1/4 w-64 h-64 gradient-primary rounded-full opacity-10 blur-3xl"></div>
-        <div className="absolute bottom-1/4 left-1/4 w-96 h-96 gradient-accent rounded-full opacity-10 blur-3xl"></div>
-      </div>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-primary/10 via-background to-accent/10 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
+      {/* Overlay */}
+      <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/20 via-background to-accent/20 opacity-70"></div>
 
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-lg animate-fadeIn">
         {/* Header */}
         <div className="text-center mb-8">
           <Link
             to="/"
             className="inline-flex items-center space-x-2 font-bold text-2xl text-foreground hover:text-primary transition-colors mb-6"
           >
-            <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center shadow-md">
               <span className="text-white font-bold">GS</span>
             </div>
             <span>SuveyMappingTool</span>
@@ -140,25 +82,25 @@ const handleSubmit = async (e: React.FormEvent) => {
         </div>
 
         {/* Signup Form */}
-        <Card className="p-8 shadow-elevated border-border/20 bg-background/95 backdrop-blur-sm">
+        <Card className="p-8 shadow-xl border-border/20 bg-background/95 backdrop-blur-md rounded-2xl hover:shadow-2xl transition-shadow duration-300">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="fullName" className="text-sm font-medium">
-                Full Name
+                Full Name <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="fullName"
                 placeholder="John Doe"
                 value={formData.fullName}
                 onChange={(e) => handleInputChange('fullName', e.target.value)}
-                className="focus-ring"
+                className="shadow-sm hover:shadow-md"
               />
               {errors.fullName && <p className="text-sm text-destructive font-medium mt-1">{errors.fullName}</p>}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">
-                Email Address
+                Email Address <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="email"
@@ -166,16 +108,15 @@ const handleSubmit = async (e: React.FormEvent) => {
                 placeholder="test@gmail.com"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
-                className="focus-ring"
+                className="shadow-sm hover:shadow-md"
               />
               {errors.email && <p className="text-sm text-destructive font-medium mt-1">{errors.email}</p>}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Password */}
               <div className="space-y-2 relative">
                 <Label htmlFor="password" className="text-sm font-medium">
-                  Password
+                  Password <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <Input
@@ -184,7 +125,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                     placeholder="Create a strong password"
                     value={formData.password}
                     onChange={(e) => handleInputChange("password", e.target.value)}
-                    className="focus-ring pr-10"
+                    className="pr-10 shadow-sm hover:shadow-md"
                   />
                   <button
                     type="button"
@@ -201,10 +142,9 @@ const handleSubmit = async (e: React.FormEvent) => {
                 )}
               </div>
 
-              {/* Confirm Password */}
               <div className="space-y-2 relative">
                 <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                  Confirm Password
+                  Confirm Password <span className="text-destructive">*</span>
                 </Label>
                 <div className="relative">
                   <Input
@@ -213,7 +153,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                    className="focus-ring pr-10"
+                    className="pr-10 shadow-sm hover:shadow-md"
                   />
                   <button
                     type="button"
@@ -230,6 +170,7 @@ const handleSubmit = async (e: React.FormEvent) => {
                 )}
               </div>
             </div>
+
             <div className="space-y-4">
               <div className="flex items-start space-x-2">
                 <Checkbox
@@ -243,11 +184,11 @@ const handleSubmit = async (e: React.FormEvent) => {
                   className="text-sm text-muted-foreground leading-relaxed cursor-pointer"
                 >
                   I agree to the{' '}
-                  <Link to="#" className="text-primary hover:text-primary/80 transition-colors">
+                  <Link to="#" className="text-primary hover:text-primary/80 transition-colors font-medium">
                     Terms of Service
                   </Link>{' '}
                   and{' '}
-                  <Link to="#" className="text-primary hover:text-primary/80 transition-colors">
+                  <Link to="#" className="text-primary hover:text-primary/80 transition-colors font-medium">
                     Privacy Policy
                   </Link>
                 </Label>
@@ -258,9 +199,10 @@ const handleSubmit = async (e: React.FormEvent) => {
                 </p>
               )}
             </div>
+
             <Button
               type="submit"
-              className="w-full gradient-primary text-white font-medium h-11"
+              className="w-full gradient-primary text-white font-medium h-11 rounded-lg shadow-md hover:shadow-lg hover:scale-[1.02] transition-transform"
               disabled={isLoading || !formData.agreeToTerms}
             >
               {isLoading ? 'Creating Account...' : 'Create Account'}
@@ -280,7 +222,6 @@ const handleSubmit = async (e: React.FormEvent) => {
           </div>
         </Card>
 
-        {/* Back to Home */}
         <div className="text-center mt-6">
           <Link
             to="/"
@@ -292,4 +233,4 @@ const handleSubmit = async (e: React.FormEvent) => {
       </div>
     </div>
   );
-}
+} 

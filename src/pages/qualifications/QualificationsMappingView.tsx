@@ -339,7 +339,7 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 				</div>
 
 				{/* Table */}
-				<div className={cn("rounded-lg shadow border", resolvedTheme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200")}>
+				<div className={cn("rounded-2xl shadow-lg border flex flex-col overflow-hidden", resolvedTheme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200")}>
 					<div className="overflow-x-auto max-h-[60vh] overflow-y-auto">
 						<table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
 							<thead className={cn("sticky top-0 z-10", resolvedTheme === "dark" ? "bg-gray-700 text-gray-200" : "bg-gray-50 text-gray-500")}>

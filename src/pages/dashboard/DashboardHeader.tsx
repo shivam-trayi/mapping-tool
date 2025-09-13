@@ -32,13 +32,13 @@ export const DashboardHeader: React.FC<HeaderProps> = ({
   return (
     <div
       className={cn(
-        "border-b px-6 py-4 transition-colors",
+        "container mx-auto px-4 lg:px-6  max-w-[1550px]",
         resolvedTheme === "dark"
           ? "bg-gray-900 border-gray-700"
           : "bg-white border-gray-200"
       )}
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between h-16 lg:h-20">
         {/* Left side - Logo + Title */}
         <div className="flex items-center space-x-4">
           <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center font-bold text-white">

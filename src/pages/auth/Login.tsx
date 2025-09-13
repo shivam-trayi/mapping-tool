@@ -38,15 +38,15 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-primary/10 via-background to-accent/10 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
+      <div className="w-full max-w-md animate-fadeIn">
         {/* Header */}
         <div className="text-center mb-8">
           <Link
             to="/"
             className="inline-flex items-center space-x-2 font-bold text-2xl text-foreground hover:text-primary transition-colors mb-6"
           >
-            <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 gradient-primary rounded-lg flex items-center justify-center shadow-md">
               <span className="text-white font-bold">GS</span>
             </div>
             <span>SuveyMappingTool</span>
@@ -60,12 +60,12 @@ export default function Login() {
         </div>
 
         {/* Login Form */}
-        <Card className="p-8 shadow-elevated border-border/20 bg-background/95 backdrop-blur-sm">
+        <Card className="p-8 shadow-elevated border-border/20 bg-background/95 backdrop-blur-md rounded-2xl hover:shadow-2xl transition-shadow duration-300">
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">
-                Email Address
+                Email Address <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="email"
@@ -73,7 +73,7 @@ export default function Login() {
                 placeholder="test@gmail.com"
                 value={formData.email}
                 onChange={(e) => handleInputChange("email", e.target.value)}
-                className="focus-ring"
+                className="shadow-sm hover:shadow-md"
               />
               {errors.email && (
                 <p className="text-sm text-destructive font-medium mt-1">{errors.email}</p>
@@ -83,7 +83,7 @@ export default function Login() {
             {/* Password */}
             <div className="space-y-2 relative">
               <Label htmlFor="password" className="text-sm font-medium">
-                Password
+                Password <span className="text-destructive">*</span>
               </Label>
               <div className="relative">
                 <Input
@@ -92,7 +92,7 @@ export default function Login() {
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={(e) => handleInputChange("password", e.target.value)}
-                  className="focus-ring pr-10"
+                  className="pr-10 shadow-sm hover:shadow-md"
                 />
                 <button
                   type="button"
@@ -114,6 +114,7 @@ export default function Login() {
                   id="remember"
                   checked={formData.remember}
                   onCheckedChange={(checked) => handleInputChange("remember", checked as boolean)}
+                  className="mt-1"
                 />
                 <Label htmlFor="remember" className="text-sm text-muted-foreground cursor-pointer">
                   Remember me
@@ -131,8 +132,8 @@ export default function Login() {
             {/* Submit */}
             <Button
               type="submit"
-              className="w-full gradient-primary text-white font-medium h-11"
-              disabled={isLoading || !formData.remember} // ✅ disabled until checkbox enabled
+              className="w-full gradient-primary text-white font-medium h-11 rounded-lg shadow-md hover:shadow-lg hover:scale-[1.02] transition-transform"
+              disabled={isLoading || !formData.remember}
             >
               {isLoading ? "Signing in..." : "Sign In"}
             </Button>

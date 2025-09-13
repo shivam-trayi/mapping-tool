@@ -69,9 +69,9 @@ const QuestionOptionsPage: React.FC = () => {
     );
   }, [state, dispatch, navigate]);
 
-  const handleInputChange = (answerId: number, value: string) => {
-    setOptionInputs((prev) => ({ ...prev, [answerId]: value }));
-  };
+  // const handleInputChange = (answerId: number, value: string) => {
+  //   setOptionInputs((prev) => ({ ...prev, [answerId]: value }));
+  // };
 
   const handleSelectAll = (checked: boolean) => {
     setSelectAll(checked);
@@ -135,14 +135,99 @@ const QuestionOptionsPage: React.FC = () => {
   };
 
 
+  // const handleUpdateOptions = async () => {
+  //   if (!state) return;
+
+  //   const options = answers
+  //     .filter((ans: AnswerItem) => selectedItems.has(ans.answerId))
+  //     .map((ans: AnswerItem) => ({
+  //       answerId: ans.answerId,
+  //       constantId: optionInputs[ans.answerId] ?? ans.member_answer_id ?? "",
+  //     }));
+
+  //   if (options.length === 0) return;
+
+  //   setIsSaving(true);
+  //   try {
+  //     const res = await dispatch(
+  //       updateOptionsThunk({
+  //         qualificationId: answers[0]?.qualificationId,
+  //         questionId: state.questionId,
+  //         memberId: state.memberId,
+  //         langCode: state.langCode,
+  //         options,
+  //       })
+  //     ).unwrap();
+
+  //     if (res.status === 200) {
+  //       toast({ description: `${res.message || "Options update for review successfully!"}` });
+  //     }
+  //     // ✅ Refetch latest answers after update
+  //     await dispatch(
+  //       getAllAnswersList({
+  //         memberType: "customer",
+  //         memberId: state.memberId,
+  //         marketId: state.marketId,
+  //         langCode: state.langCode,
+  //         questionId: state.questionId,
+  //       })
+  //     ).unwrap();
+  //     // alert(`Saved ${options.length} option(s) for review`);
+  //     setSelectedItems(new Set());
+  //     setSelectAll(false);
+  //     setOptionInputs({});
+  //   } catch (err) {
+  //     console.error(err);
+  //     // alert("Failed to save options. Try again.");
+  //     toast({ description: 'Failed to save options. Try again.' });
+  //   } finally {
+  //     setIsSaving(false);
+  //   }
+  // };
+
+
+  const handleInputChange = (answerId: number, value: string) => {
+    const trimmedValue = value.trim();
+
+    // Prevent blank value from being set
+    if (trimmedValue === "") {
+      toast({
+        description: "⚠️ Constant ID cannot be blank",
+        variant: "destructive",
+        className: "max-w-sm w-full",
+      });
+      return; // Do not update state
+    }
+
+    // Only update state if non-blank
+    setOptionInputs((prev) => ({ ...prev, [answerId]: trimmedValue }));
+  };
+
   const handleUpdateOptions = async () => {
     if (!state) return;
+
+    // 1️⃣ Prepare options, validate blank constantIds
+    const invalidOptions = answers
+      .filter((ans: AnswerItem) => selectedItems.has(ans.answerId))
+      .filter((ans: AnswerItem) => {
+        const val = optionInputs[ans.answerId]?.trim() ?? ans.member_answer_id?.trim() ?? "";
+        return val === "";
+      });
+
+    if (invalidOptions.length > 0) {
+      toast({
+        description: "⚠️ Constant ID cannot be blank for selected options.",
+        variant: "destructive",
+        className: "max-w-sm w-full",
+      });
+      return;
+    }
 
     const options = answers
       .filter((ans: AnswerItem) => selectedItems.has(ans.answerId))
       .map((ans: AnswerItem) => ({
         answerId: ans.answerId,
-        constantId: optionInputs[ans.answerId] ?? ans.member_answer_id ?? "",
+        constantId: optionInputs[ans.answerId]?.trim() ?? ans.member_answer_id ?? "",
       }));
 
     if (options.length === 0) return;
@@ -160,9 +245,9 @@ const QuestionOptionsPage: React.FC = () => {
       ).unwrap();
 
       if (res.status === 200) {
-        toast({ description: `${res.message || "Options update for review successfully!"}` });
+        toast({ description: res.message || "✅ Options updated for review successfully!" });
       }
-      // ✅ Refetch latest answers after update
+
       await dispatch(
         getAllAnswersList({
           memberType: "customer",
@@ -172,18 +257,19 @@ const QuestionOptionsPage: React.FC = () => {
           questionId: state.questionId,
         })
       ).unwrap();
-      // alert(`Saved ${options.length} option(s) for review`);
+
+      // Reset selection
       setSelectedItems(new Set());
       setSelectAll(false);
       setOptionInputs({});
     } catch (err) {
       console.error(err);
-      // alert("Failed to save options. Try again.");
-      toast({ description: 'Failed to save options. Try again.' });
+      toast({ description: "❌ Failed to save options. Try again." });
     } finally {
       setIsSaving(false);
     }
   };
+
 
   if (!state) return null;
 
