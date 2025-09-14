@@ -280,12 +280,12 @@ const handleUpdateOptions = async () => {
           Question Options
         </h2>
         <div className="flex space-x-3">
-          {/* <Button
+          <Button
             onClick={handleOpenReview}
             variant="default"
           >
             <Map className="w-4 h-4 mr-2" /> Options Mapping Review
-          </Button> */}
+          </Button>
           <Button onClick={() => navigate("/dashboard/question-mapping", { state: { isData: true } })} variant="default">
             <ArrowLeft className="w-4 h-4 mr-2" /> Back
           </Button>
@@ -477,7 +477,7 @@ const handleUpdateOptions = async () => {
       {/* Review Modal */}
       <OptionMappingReviewModal
         isOpen={isReviewOpen}
-        onClose={handleCloseReview}   // ✅ yaha pe handleCloseReview
+        onClose={handleCloseReview} 
         answers={reviewData}
         memberId={state.memberId}
         questionId={state.questionId}

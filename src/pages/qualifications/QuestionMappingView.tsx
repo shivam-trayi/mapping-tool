@@ -228,9 +228,9 @@ const handleSaveReview = async () => {
           Question Mapping
         </h2>
         <div className="flex space-x-3">
-          {/* <Button onClick={handleOpenReviewModal} className="rounded-xl shadow-sm">
+          <Button onClick={handleOpenReviewModal} className="rounded-xl shadow-sm">
             Mapping Review
-          </Button> */}
+          </Button>
 
           <Button
             onClick={() => navigate("/dashboard/qualifications-mapping", { state: { fromChild: true } })}
