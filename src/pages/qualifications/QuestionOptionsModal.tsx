@@ -80,7 +80,6 @@ const QuestionOptionsPage: React.FC = () => {
 
         setReviewData(res.data || []);
       } catch (err) {
-        console.error("Failed to fetch initial data:", err);
         toast({ description: "Failed to load initial data" });
       }
     };
@@ -117,7 +116,6 @@ const QuestionOptionsPage: React.FC = () => {
       setReviewData(res.data || []);
       setIsReviewOpen(true);
     } catch (err) {
-      console.error("Failed to fetch review data:", err);
       toast({ description: "Failed to fetch review data" });
     }
   };
@@ -149,7 +147,6 @@ const QuestionOptionsPage: React.FC = () => {
 
       setReviewData(res.data || []);
     } catch (err) {
-      console.error("Failed to refresh data on modal close:", err);
       toast({ description: "Failed to refresh data" });
     }
   };

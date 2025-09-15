@@ -55,12 +55,13 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
         })
       ).unwrap();
       setMappings(result);
-    } catch (err) {
-      console.error("Error fetching mappings:", err);
+    } catch {
+      toast({ description: "❌ Failed to fetch mappings", variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
+
 
 
   // Fetch when modal opens

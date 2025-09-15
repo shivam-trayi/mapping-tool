@@ -114,7 +114,6 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
         });
       }
     } catch (err) {
-      console.error("Error saving mapping:", err);
       toast({
         description: "❌ Something went wrong!",
         variant: "destructive",

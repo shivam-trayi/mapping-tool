@@ -52,7 +52,6 @@ export async function getQualMappings(queryData: SaveQualMappingsPayload): Promi
     );
     return response.data;
   } catch (error) {
-    console.error("Failed to fetch qualification mappings:", error);
     throw new Error("Failed to fetch qualification mappings");
   }
 }

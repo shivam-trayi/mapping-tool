@@ -39,17 +39,13 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  // Local state
   const [fetchedMappings, setFetchedMappings] = useState<QuestionMappingItem[]>([]);
   const [loadingMappings, setLoadingMappings] = useState(false);
   const [showMappingReviewModal, setShowMappingReviewModal] = useState(false);
-
-
   const [isSaving, setIsSaving] = useState(false);
   // const [selectedLang, setSelectedLang] = useState<number | null>(null);
   // const [selectedClient, setSelectedClient] = useState<number | null>(null);
   const [reviewMappings, setReviewMappings] = useState<any[]>([]);
-
 
   const { items: languages, loading: langLoading, error: langError } = useSelector(
     (state: RootState) => state.languages
@@ -103,7 +99,6 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
 
       setFetchedMappings(mergedData);
     } catch (err) {
-      console.error("Error fetching mappings or reviews:", err);
       setFetchedMappings([]);
     } finally {
       setLoadingMappings(false);
@@ -147,19 +142,16 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
 
       if (res?.status === 200) {
         toast({ description: res.message || "✅ Mappings updated successfully.", variant: "success" });
-
-        // ✅ Update state locally without API refetch
         setFetchedMappings((prev) =>
           prev.map((item) => ({
             ...item,
-            oldMemberQuestionId: item.memberQuestionId, // reflect saved state
+            oldMemberQuestionId: item.memberQuestionId,
           }))
         );
       } else {
         toast({ description: "❌ Failed to update mappings.", variant: "destructive" });
       }
     } catch (err: any) {
-      console.error("Error saving review:", err);
       toast({
         description: err?.message || "❌ Something went wrong while saving.",
         variant: "destructive",
@@ -172,7 +164,10 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
 
   const handleOpenReviewModal = async () => {
     if (!selectedLang || !selectedClient) {
-      alert("Please select both Language and Customer first!");
+      toast({
+        description: "⚠️ Please select both Language and Customer first!",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -184,10 +179,15 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
           langCode: selectedLang,
         })
       ).unwrap();
+
       setReviewMappings(reviewResult);
       setShowMappingReviewModal(true);
     } catch (err) {
-      console.error("Error loading review mappings:", err);
+      toast({
+        description: "❌ Failed to load review mappings. Try again.",
+        variant: "destructive",
+      });
+
       setReviewMappings([]);
       setShowMappingReviewModal(true);
     }
@@ -237,8 +237,6 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
       <div className="flex items-center space-x-4 mb-6">
         <select
           onChange={(e) => dispatch(setLang(Number(e.target.value)))}
-          // onChange={(e) => setSelectedLang(Number(e.target.value))}
-
           value={selectedLang ?? ""}
           className={cn(
             "px-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all",
@@ -261,7 +259,6 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
 
         <select
           onChange={(e) => dispatch(setClient(Number(e.target.value)))}
-          // onChange={(e) => setSelectedClient(Number(e.target.value))}
           value={selectedClient ?? ""}
           className={cn(
             "px-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all",
@@ -355,10 +352,6 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
                 </tr>
               ) : (
                 fetchedMappings.map((item, idx) => {
-                  const isMapped = item.memberQuestionId != null && item.memberQuestionId !== "";
-                  const isOldMapped =
-                    item.oldMemberQuestionId != null && item.oldMemberQuestionId !== "";
-
                   return (
                     <tr
                       key={item.questionId}
@@ -382,32 +375,6 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
                         {item.questionText}
                       </td>
                       <td className="px-6 py-4">{item.qualificationName}</td>
-                      {/* <td className="px-6 py-4 text-center">
-                        <span
-                          className={cn(
-                            "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                            isMapped
-                              ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
-                              : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
-                          )}
-                        >
-                          {isMapped ? "Mapped" : "Not Mapped"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span
-                          className={cn(
-                            "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                            isOldMapped
-                              ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
-                              : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
-                          )}
-                        >
-                          {isOldMapped ? "Old Mapped" : "Not Mapped"}
-                        </span>
-                      </td> */}
-
-
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
                         <span
                           className={cn(
@@ -477,23 +444,9 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
           </Button>
         </div>
       </div>
-
-      {/* <MappingReviewModal
-        isOpen={showMappingReviewModal}
-        onClose={() => {
-          setShowMappingReviewModal(false);
-          if (selectedLang && selectedClient) {
-            loadMappings(selectedLang, selectedClient); // 🔄 Refresh main table
-          }
-        }}
-        mappings={reviewMappings}
-        resolvedTheme={resolvedTheme}
-        selectedLang={selectedLang}
-        selectedClient={selectedClient}
-      /> */}
       <MappingReviewModal
         isOpen={showMappingReviewModal}
-        onClose={() => setShowMappingReviewModal(false)} // no refetch
+        onClose={() => setShowMappingReviewModal(false)}
         mappings={reviewMappings}
         resolvedTheme={resolvedTheme}
         selectedLang={selectedLang}

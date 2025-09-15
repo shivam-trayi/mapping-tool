@@ -44,8 +44,8 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
   const [message, setMessage] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [localMappings, setLocalMappings] = React.useState<QualificationMappingItem[]>(mappings);
-  const [updateLoading, setUpdateLoading] = React.useState(false);
-  const [editedValues, setEditedValues] = React.useState<Record<number, string>>({});
+  // const [updateLoading, setUpdateLoading] = React.useState(false);
+  // const [editedValues, setEditedValues] = React.useState<Record<number, string>>({});
 
   const dispatch = useDispatch<AppDispatch>();
 
@@ -59,9 +59,9 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
     setSelectedItems(checked ? new Set(filteredData.map(item => item.id)) : new Set());
   };
 
-  const handleInputChange = (questionId: number, value: string) => {
-    setEditedValues((prev) => ({ ...prev, [questionId]: value }));
-  };
+  // const handleInputChange = (questionId: number, value: string) => {
+  //   setEditedValues((prev) => ({ ...prev, [questionId]: value }));
+  // };
 
   const handleSelectItem = (id: string, checked: boolean) => {
     const newSelected = new Set(selectedItems);
@@ -140,65 +140,69 @@ const QualificationMappingReviewModal: React.FC<QualificationMappingReviewModalP
 
 
   const handleSaveQualification = async () => {
-  const selectedData = Array.from(selectedItems)
-    .map(id => localMappings.find(d => d.id === id))
-    .filter(Boolean);
+    const selectedData = Array.from(selectedItems)
+      .map(id => localMappings.find(d => d.id === id))
+      .filter(Boolean);
 
-  if (selectedData.length === 0) return;
+    if (selectedData.length === 0) return;
 
-  setLoading(true);
-  try {
-    const response = await dispatch(saveQualMappingReviewData(selectedData)).unwrap();
+    setLoading(true);
+    try {
+      const response = await dispatch(saveQualMappingReviewData(selectedData)).unwrap();
 
-    // ✅ Access message, success, data safely
-    setMessage(response.message || "Saved successfully");
-    if(response.status === 200) {
-      toast({ description: response.message || "Qualification mappings saved successfully." });
-    }
-
-    const remaining = localMappings.filter(item => !selectedItems.has(item.id));
-    setLocalMappings(remaining);
-    setSelectedItems(new Set());
-    setSelectAll(false);
-  } catch (error) {
-    console.error(error);
-    setMessage("❌ Failed to save qualification mapping entries");
-  } finally {
-    setLoading(false);
-  }
-};
-
-const handleUpdateQualification = async () => {
-  if (Object.keys(editedValues).length === 0) return;
-
-  setUpdateLoading(true);
-  try {
-    const payload = localMappings.map((item) => {
-      if (editedValues[item.qualificationId]) {
-        return {
-          ...item,
-          constantId: editedValues[item.qualificationId],
-        };
+      setMessage(response.message || "Saved successfully");
+      if (response.status === 200) {
+        toast({ description: response.message || "Qualification mappings saved successfully." });
       }
-      return item;
-    });
 
-    const response = await dispatch(updateQualificationConstantIdData(payload)).unwrap();
-    if(response.status === 200) {
-      toast({ description: response.message || "Constant IDs updated successfully." });
+      const remaining = localMappings.filter(item => !selectedItems.has(item.id));
+      setLocalMappings(remaining);
+      setSelectedItems(new Set());
+      setSelectAll(false);
+    } catch (error: any) {
+      setMessage("❌ Failed to save qualification mapping entries");
+      toast({
+        description:
+          error?.message || "❌ Something went wrong while saving qualification mappings.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
     }
+  };
 
-    setMessage(response.message || "✅ Constant IDs updated successfully");
-    setLocalMappings(payload);
-    setEditedValues({});
-  } catch (error) {
-    console.error(error);
-    toast({ description: response.message || "Something went wrong" });
-    setMessage("❌ Failed to update constant IDs");
-  } finally {
-    setUpdateLoading(false);
-  }
-};
+
+  // const handleUpdateQualification = async () => {
+  //   if (Object.keys(editedValues).length === 0) return;
+
+  //   setUpdateLoading(true);
+  //   try {
+  //     const payload = localMappings.map((item) => {
+  //       if (editedValues[item.qualificationId]) {
+  //         return {
+  //           ...item,
+  //           constantId: editedValues[item.qualificationId],
+  //         };
+  //       }
+  //       return item;
+  //     });
+
+  //     const response = await dispatch(updateQualificationConstantIdData(payload)).unwrap();
+  //     if (response.status === 200) {
+  //       toast({ description: response.message || "Constant IDs updated successfully." });
+  //     }
+
+  //     setMessage(response.message || "✅ Constant IDs updated successfully");
+  //     setLocalMappings(payload);
+  //     setEditedValues({});
+  //   } catch (error) {
+  //     console.error(error);
+  //     toast({ description: response.message || "Something went wrong" });
+  //     setMessage("❌ Failed to update constant IDs");
+  //   } finally {
+  //     setUpdateLoading(false);
+  //   }
+  // };
 
 
   if (!isOpen) return null;
@@ -309,7 +313,7 @@ const handleUpdateQualification = async () => {
                         </td>
 
 
-                          {/* <td className="px-6 py-4">
+                        {/* <td className="px-6 py-4">
                             <Input
                               type="text"
                               value={editedValues[item.qualificationId] ?? ""}
