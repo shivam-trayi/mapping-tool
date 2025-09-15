@@ -1,24 +1,20 @@
 // src/pages/qualifications/OptionMappingReviewModal.tsx
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Save, Search } from "lucide-react";
+import { X, Save, Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MessageBox } from "@/components/ui/MessageBox";
 import { cn } from "@/lib/utils";
-import { useAppDispatch, useAppSelector } from "@/redux/store";
+import { useAppDispatch } from "@/redux/store";
 import { Checkbox } from "@/components/ui/checkbox";
 
 // ✅ Import slice actions
 import {
   insertAnswerMapping,
-  resetInsertState,
-  updateAnswerMapping,
-  resetUpdateState,
 } from "@/redux/slices/Features/answerSlice";
 
 import { toast } from "@/components/ui/use-toast";
-import { getOptionQueryReviewMapping } from "@/service/answers/answer.Service";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface OptionMappingReviewModalProps {
@@ -39,45 +35,15 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
   resolvedTheme,
 }) => {
   const dispatch = useAppDispatch();
-  const { successInsert, errorInsert, successUpdate, errorUpdate } =
-    useAppSelector((state) => state.answers);
 
-  const [editedValues, setEditedValues] = useState<Record<number, string>>({});
   const [selected, setSelected] = useState<Record<number, boolean>>({});
   const [selectAll, setSelectAll] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [message, setMessage] = useState("");
-    // ✅ Add loading state here
   const [loading, setLoading] = useState(false);
+  const [saveLoading, setSaveLoading] = React.useState(false);
+  const selectedCount = Object.values(selected).filter(Boolean).length;
 
-  // ✅ Handle Insert success/error
-  useEffect(() => {
-    if (successInsert) {
-      setMessage("✅ Mapping saved successfully!");
-      dispatch(resetInsertState());
-      setSelected({});
-      setSelectAll(false);
-    }
-    if (errorInsert) {
-      setMessage(`❌ ${errorInsert}`);
-      dispatch(resetInsertState());
-    }
-  }, [successInsert, errorInsert, dispatch]);
-
-  // ✅ Handle Update success/error
-  useEffect(() => {
-    if (successUpdate) {
-      setMessage("✅ Update saved successfully!");
-      dispatch(resetUpdateState());
-      setEditedValues({});
-    }
-    if (errorUpdate) {
-      setMessage(`❌ ${errorUpdate}`);
-      dispatch(resetUpdateState());
-    }
-  }, [successUpdate, errorUpdate, dispatch]);
-
-  // ✅ Ensure answers is always an array
   const filteredData = useMemo(
     () =>
       Array.isArray(answers)
@@ -89,12 +55,6 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
         : [],
     [answers, searchTerm]
   );
-
-  // ✅ Input change handler
-  // const handleInputChange = (answerId: number, value: string) => {
-  //   setEditedValues((prev) => ({ ...prev, [answerId]: value }));
-  // };
-
   // ✅ Toggle select single row
   const toggleSelect = (answerId: number) => {
     const newSelected = { ...selected, [answerId]: !selected[answerId] };
@@ -112,170 +72,61 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
     setSelectAll(checked);
   };
 
-  // ✅ Save (Insert)
-  // const handleSave = async () => {
-  //   const selectedData = filteredData.filter((ans) => selected[ans.answerId]);
-  //   if (!selectedData.length) return;
 
-  //   if (!memberId) {
-  //     setMessage("❌ memberId is missing!");
-  //     return;
-  //   }
 
-  //   const payload = {
-  //     memberId,
-  //     memberType: "customer",
-  //     questionId,
-  //     optionData: selectedData.map((ans) => ({
-  //       id: ans.id,
-  //       answerId: ans.answerId,
-  //       questionId: ans.questionId,
-  //       qualificationId: ans.qualificationId,
-  //       memberAnswerId: ans.memberAnswerId,
-  //       oldMemberAnswerId: ans.oldMemberAnswerId,
-  //     })),
-  //   };
-
-  //   const res = await dispatch(insertAnswerMapping(payload)).unwrap();
-  //   if (res?.status === 200) {
-  //     toast({
-  //       description: `${res.message || "Mapping saved successfully!"}`,
-  //     });
-  //   }
-  // };
   const handleSave = async () => {
-  const selectedData = filteredData.filter((ans) => selected[ans.answerId]);
-  if (!selectedData.length) return;
+    const selectedData = filteredData.filter((ans) => selected[ans.answerId]);
+    if (!selectedData.length) return;
 
-  if (!memberId) {
-    setMessage("❌ memberId is missing!");
-    return;
-  }
+    if (!memberId) {
+      setMessage("❌ memberId is missing!");
+      return;
+    }
 
-  const payload = {
-    memberId,
-    memberType: "customer",
-    questionId,
-    optionData: selectedData.map((ans) => ({
-      id: ans.id,
-      answerId: ans.answerId,
-      questionId: ans.questionId,
-      qualificationId: ans.qualificationId,
-      memberAnswerId: ans.memberAnswerId,
-      oldMemberAnswerId: ans.oldMemberAnswerId,
-    })),
+    const payload = {
+      memberId,
+      memberType: "customer",
+      questionId,
+      optionData: selectedData.map((ans) => ({
+        id: ans.id,
+        answerId: ans.answerId,
+        questionId: ans.questionId,
+        qualificationId: ans.qualificationId,
+        memberAnswerId: ans.memberAnswerId,
+        oldMemberAnswerId: ans.oldMemberAnswerId,
+      })),
+    };
+
+    setLoading(true);
+    setSaveLoading(true);
+
+    try {
+      const res = await dispatch(insertAnswerMapping(payload)).unwrap();
+
+      if (res?.status === 200 && res.data?.affectedRows > 0) {
+        toast({
+          description: res.message || "✅ Mapping saved successfully!",
+        });
+      } else {
+        toast({
+          description: res.message || "❌ Something went wrong!",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      console.error("Error saving mapping:", err);
+      toast({
+        description: "❌ Something went wrong!",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+      setSaveLoading(false);
+    }
   };
 
-  // ✅ Wrap dispatch in loading state
-  setLoading(true);
-  try {
-    const res = await dispatch(insertAnswerMapping(payload)).unwrap();
-    if (res?.status === 200) {
-      toast({
-        description: `${res.message || "Mapping saved successfully!"}`,
-      });
-    }
-  } finally {
-    setLoading(false);
-  }
-};
 
 
-  // ✅ Update
-  // const handleUpdate = async () => {
-  //   if (!memberId) {
-  //     setMessage("❌ memberId is missing!");
-  //     return;
-  //   }
-
-  //   const updatedOptions = Object.entries(editedValues)
-  //     .map(([answerId, value]) => {
-  //       const answerObj = Array.isArray(answers)
-  //         ? answers.find((a) => a.answerId === Number(answerId))
-  //         : null;
-  //       if (!answerObj) return null;
-
-  //       return {
-  //         id: answerObj.id,
-  //         answerId: answerObj.answerId,
-  //         questionId: answerObj.questionId,
-  //         qualificationId: answerObj.qualificationId,
-  //         memberAnswerId: value,
-  //         oldMemberAnswerId: answerObj.oldMemberAnswerId,
-  //       };
-  //     })
-  //     .filter(Boolean);
-
-  //   if (!updatedOptions.length) return;
-
-  //   const res = await dispatch(
-  //     updateAnswerMapping({
-  //       memberId,
-  //       questionId,
-  //       memberType: "customer",
-  //       optionData: updatedOptions,
-  //     })
-  //   ).unwrap();
-
-  //   if (res?.status === 200) {
-  //     toast({ description: `${res.message || "Update saved successfully!"}` });
-  //   }
-  // };
-
-  // Inside your component, update the successUpdate useEffect:
-// useEffect(() => {
-//   if (successUpdate) {
-//     setMessage("✅ Update saved successfully!");
-//     dispatch(resetUpdateState());
-//     setEditedValues({});
-
-//     // ✅ NEW: Call your API after successful update
-//     if (memberId && questionId) {
-//       getOptionQueryReviewMapping({ memberId, questionId })
-//         .then((res) => {
-//           console.log("Updated mapping data:", res);
-//           // You can update state here if needed, e.g.,
-//           // setAnswers(res.data)
-//         })
-//         .catch((err) => {
-//           console.error("Failed to fetch updated mapping:", err);
-//         });
-//     }
-//   }
-
-//   if (errorUpdate) {
-//     setMessage(`❌ ${errorUpdate}`);
-//     dispatch(resetUpdateState());
-//   }
-// }, [successUpdate, errorUpdate, dispatch, memberId, questionId]);
-
-
-useEffect(() => {
-  if (successUpdate) {
-    setMessage("✅ Update saved successfully!");
-    dispatch(resetUpdateState());
-    setEditedValues({});
-    if (memberId && questionId) {
-      getOptionQueryReviewMapping({ memberId, questionId })
-        .then((res) => {
-          toast({
-            description: `${res.message || "Mapping updated successfully!"}`,
-          });
-        })
-        .catch(() => {
-          toast({
-            description: "❌ Failed to fetch updated mapping!",
-            variant: "destructive",
-          });
-        });
-    }
-  }
-
-  if (errorUpdate) {
-    setMessage(`❌ ${errorUpdate}`);
-    dispatch(resetUpdateState());
-  }
-}, [successUpdate, errorUpdate, dispatch, memberId, questionId]);
 
   if (!isOpen) return null;
 
@@ -367,11 +218,43 @@ useEffect(() => {
                       </th>
                     </tr>
                   </thead>
-                  {/* <tbody>
-                    {filteredData.length === 0 ? (
+                  <tbody>
+                    {/* ✅ Show skeleton while loading */}
+                    {loading ? (
+                      [...Array(5)].map((_, idx) => (
+                        <tr key={idx} className="animate-pulse">
+                          <td className="px-6 py-4">
+                            <Skeleton className="h-4 w-6 rounded" />
+                          </td>
+                          <td className="px-6 py-4">
+                            <Skeleton className="h-4 w-32" />
+                          </td>
+                          <td className="px-6 py-4">
+                            <Skeleton className="h-4 w-24" />
+                          </td>
+                          <td className="px-6 py-4">
+                            <Skeleton className="h-4 w-20" />
+                          </td>
+                          <td className="px-6 py-4">
+                            <Skeleton className="h-4 w-20" />
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <Skeleton className="h-5 w-5 rounded" />
+                          </td>
+                        </tr>
+                      ))
+                    ) : filteredData.length === 0 ? (
                       <tr>
                         <td colSpan={7} className="p-12 text-center">
-                          No data found
+                          <div className="flex flex-col items-center space-y-3">
+                            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                              <Search className="w-8 h-8 text-gray-400" />
+                            </div>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No data found</h3>
+                            <p className="text-gray-500 dark:text-gray-400">
+                              All option are approved / Mapped
+                            </p>
+                          </div>
                         </td>
                       </tr>
                     ) : (
@@ -389,7 +272,6 @@ useEffect(() => {
                         >
                           <td className="px-6 py-4">{idx + 1}</td>
                           <td className="px-6 py-4">{ans.answerText}</td>
-
                           <td className="px-6 py-4">{ans.memberAnswerId ?? "Not Mapped"}</td>
 
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
@@ -418,8 +300,6 @@ useEffect(() => {
                             </span>
                           </td>
 
-
-
                           <td className="px-6 py-4 text-center">
                             <Checkbox
                               checked={!!selected[ans.answerId]}
@@ -429,92 +309,7 @@ useEffect(() => {
                         </motion.tr>
                       ))
                     )}
-                  </tbody> */}
-
-                  <tbody>
-  {/* ✅ Show skeleton while loading */}
-  {loading ? (
-    [...Array(5)].map((_, idx) => (
-      <tr key={idx} className="animate-pulse">
-        <td className="px-6 py-4">
-          <Skeleton className="h-4 w-6 rounded" />
-        </td>
-        <td className="px-6 py-4">
-          <Skeleton className="h-4 w-32" />
-        </td>
-        <td className="px-6 py-4">
-          <Skeleton className="h-4 w-24" />
-        </td>
-        <td className="px-6 py-4">
-          <Skeleton className="h-4 w-20" />
-        </td>
-        <td className="px-6 py-4">
-          <Skeleton className="h-4 w-20" />
-        </td>
-        <td className="px-6 py-4 text-center">
-          <Skeleton className="h-5 w-5 rounded" />
-        </td>
-      </tr>
-    ))
-  ) : filteredData.length === 0 ? (
-    <tr>
-      <td colSpan={7} className="p-12 text-center">
-        No data found
-      </td>
-    </tr>
-  ) : (
-    filteredData.map((ans, idx) => (
-      <motion.tr
-        key={ans.id}
-        initial={{ opacity: 0, y: -5 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, y: 5 }}
-        transition={{ duration: 0.2 }}
-        className={cn(
-          idx % 2 === 0 ? "bg-white" : "bg-gray-50",
-          selected[ans.answerId] && "bg-blue-50 dark:bg-blue-900/20"
-        )}
-      >
-        <td className="px-6 py-4">{idx + 1}</td>
-        <td className="px-6 py-4">{ans.answerText}</td>
-        <td className="px-6 py-4">{ans.memberAnswerId ?? "Not Mapped"}</td>
-
-        <td className="px-6 py-4 whitespace-nowrap text-sm">
-          <span
-            className={cn(
-              "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-              ans.memberAnswerId != null
-                ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
-                : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
-            )}
-          >
-            {ans.memberAnswerId != null ? "Mapped" : "Not Mapped"}
-          </span>
-        </td>
-
-        <td className="px-6 py-4 whitespace-nowrap text-sm">
-          <span
-            className={cn(
-              "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-              ans.oldMemberAnswerId != null
-                ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
-                : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
-            )}
-          >
-            {ans.oldMemberAnswerId != null ? "Old Mapped" : "Not Mapped"}
-          </span>
-        </td>
-
-        <td className="px-6 py-4 text-center">
-          <Checkbox
-            checked={!!selected[ans.answerId]}
-            onCheckedChange={() => toggleSelect(ans.answerId)}
-          />
-        </td>
-      </motion.tr>
-    ))
-  )}
-</tbody>
+                  </tbody>
 
 
                 </table>
@@ -534,27 +329,15 @@ useEffect(() => {
             <Button onClick={onClose} variant="outline" className="w-full sm:w-auto">
               <X className="w-4 h-4 mr-2" /> Close
             </Button>
-
-            {/* <Button
-              onClick={handleUpdate}
-              disabled={Object.keys(editedValues).length === 0}
-              className="bg-yellow-600 text-white hover:bg-yellow-700 w-full sm:w-auto flex items-center justify-center"
-            >
-              <Save className="w-4 h-4 mr-2" /> Update
-            </Button> */}
-
             <Button
               onClick={handleSave}
-              disabled={Object.values(selected).every((v) => !v)}
-              className={cn(
-                "transition-all duration-300 w-full sm:w-auto flex items-center justify-center",
-                Object.values(selected).some((v) => v)
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-blue-200 text-white cursor-not-allowed"
-              )}
+              disabled={selectedCount === 0 || saveLoading}
+              className="bg-blue-600 text-white hover:bg-blue-700 w-full sm:w-auto flex items-center justify-center"
             >
-              <Save className="w-4 h-4 mr-2" /> Mapping Approve
+              {saveLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Save className="w-4 h-4 mr-2" /> Options Mapping Approve ({selectedCount})
             </Button>
+
           </div>
         </motion.div>
 

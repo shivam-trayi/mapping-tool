@@ -118,56 +118,56 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
   };
 
   // Save review
-const handleSaveReview = async () => {
-  if (!selectedLang || !selectedClient) return;
+  const handleSaveReview = async () => {
+    if (!selectedLang || !selectedClient) return;
 
-  const optionData = fetchedMappings
-    .filter((item) => item.memberQuestionId !== item.oldMemberQuestionId)
-    .map((item) => ({
-      memberQuestionId: item.memberQuestionId ?? "",
-      qualificationId: item.qualificationId,
-      masterQueryId: item.questionId,
-    }));
+    const optionData = fetchedMappings
+      .filter((item) => item.memberQuestionId !== item.oldMemberQuestionId)
+      .map((item) => ({
+        memberQuestionId: item.memberQuestionId ?? "",
+        qualificationId: item.qualificationId,
+        masterQueryId: item.questionId,
+      }));
 
-  if (optionData.length === 0) {
-    toast({ description: "⚠️ No changes to save!", variant: "warning" });
-    return;
-  }
-
-  setIsSaving(true);
-  try {
-    const res = await dispatch(
-      saveQuestionReviewMapping({
-        memberType: "customer",
-        langCode: selectedLang,
-        memberId: selectedClient.toString(),
-        optionData,
-      })
-    ).unwrap();
-
-    // ✅ Success toast
-    if (res?.status === 200) {
-      toast({ description: res.message || "✅ Mappings updated successfully.", variant: "success" });
-    } else {
-      toast({ description: "❌ Failed to update mappings.", variant: "destructive" });
+    if (optionData.length === 0) {
+      toast({ description: "⚠️ No changes to save!", variant: "default" });
+      return;
     }
 
-    await loadMappings(selectedLang, selectedClient);
-  } catch (err: any) {
-    console.error("Error saving review:", err);
+    setIsSaving(true);
+    try {
+      const res = await dispatch(
+        saveQuestionReviewMapping({
+          memberType: "customer",
+          langCode: selectedLang,
+          memberId: selectedClient.toString(),
+          optionData,
+        })
+      ).unwrap();
 
-    // ✅ Error toast
-    if (err && typeof err === "string") {
-      toast({ description: "❌ " + err, variant: "destructive" });
-    } else if (err?.message) {
-      toast({ description: "❌ " + err.message, variant: "destructive" });
-    } else {
-      toast({ description: "❌ Something went wrong while saving.", variant: "destructive" });
+      if (res?.status === 200) {
+        toast({ description: res.message || "✅ Mappings updated successfully.", variant: "success" });
+
+        // ✅ Update state locally without API refetch
+        setFetchedMappings((prev) =>
+          prev.map((item) => ({
+            ...item,
+            oldMemberQuestionId: item.memberQuestionId, // reflect saved state
+          }))
+        );
+      } else {
+        toast({ description: "❌ Failed to update mappings.", variant: "destructive" });
+      }
+    } catch (err: any) {
+      console.error("Error saving review:", err);
+      toast({
+        description: err?.message || "❌ Something went wrong while saving.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
     }
-  } finally {
-    setIsSaving(false);
-  }
-};
+  };
 
 
   const handleOpenReviewModal = async () => {
@@ -192,15 +192,6 @@ const handleSaveReview = async () => {
       setShowMappingReviewModal(true);
     }
   };
-
-
-  // useEffect(() => {
-  //   if (selectedLang && selectedClient) {
-  //     loadMappings(selectedLang, selectedClient);
-  //   } else {
-  //     setFetchedMappings([]);
-  //   }
-  // }, [selectedLang, selectedClient]);
 
   const location = useLocation();
 
@@ -487,7 +478,7 @@ const handleSaveReview = async () => {
         </div>
       </div>
 
-      <MappingReviewModal
+      {/* <MappingReviewModal
         isOpen={showMappingReviewModal}
         onClose={() => {
           setShowMappingReviewModal(false);
@@ -499,7 +490,16 @@ const handleSaveReview = async () => {
         resolvedTheme={resolvedTheme}
         selectedLang={selectedLang}
         selectedClient={selectedClient}
+      /> */}
+      <MappingReviewModal
+        isOpen={showMappingReviewModal}
+        onClose={() => setShowMappingReviewModal(false)} // no refetch
+        mappings={reviewMappings}
+        resolvedTheme={resolvedTheme}
+        selectedLang={selectedLang}
+        selectedClient={selectedClient}
       />
+
 
     </motion.div>
   );

@@ -13,7 +13,7 @@ export interface InsertAnswerMappingReviewPayload {
 
 export const insertAnswerMappingReviewApi = async (payload: any) => {
   const { data } = await axiosInstance.post(
-    "/questions/createOptionQueryMapping",
+    "/questions/insertOptionQueryMapping",
     payload
   );
   return data;

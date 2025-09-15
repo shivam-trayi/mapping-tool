@@ -52,22 +52,42 @@ const QuestionOptionsPage: React.FC = () => {
   );
 
   // Fetch answers on page load
+  // Fetch answers + review data on page load
   useEffect(() => {
     if (!state) {
       navigate(-1);
       return;
     }
 
-    dispatch(
-      getAllAnswersList({
-        memberType: "customer",
-        memberId: state.memberId,
-        marketId: state.marketId,
-        langCode: state.langCode,
-        questionId: state.questionId,
-      })
-    );
+    const fetchData = async () => {
+      try {
+        // ✅ Fetch answers list
+        await dispatch(
+          getAllAnswersList({
+            memberType: "customer",
+            memberId: state.memberId,
+            marketId: state.marketId,
+            langCode: state.langCode,
+            questionId: state.questionId,
+          })
+        ).unwrap();
+
+        // ✅ Fetch review mapping data
+        const res = await getOptionQueryReviewMapping({
+          memberId: state.memberId,
+          questionId: state.questionId,
+        });
+
+        setReviewData(res.data || []);
+      } catch (err) {
+        console.error("Failed to fetch initial data:", err);
+        toast({ description: "Failed to load initial data" });
+      }
+    };
+
+    fetchData();
   }, [state, dispatch, navigate]);
+
 
   // const handleInputChange = (answerId: number, value: string) => {
   //   setOptionInputs((prev) => ({ ...prev, [answerId]: value }));
@@ -134,135 +154,67 @@ const QuestionOptionsPage: React.FC = () => {
     }
   };
 
+  const handleInputChange = (answerId: number, value: string) => {
+    setOptionInputs((prev) => ({ ...prev, [answerId]: value }));
+  };
 
-  // const handleUpdateOptions = async () => {
-  //   if (!state) return;
+  const handleUpdateOptions = async () => {
+    if (!state) return;
+    const options = answers
+      .filter((ans: AnswerItem) => selectedItems.has(ans.answerId))
+      .map((ans: AnswerItem) => {
+        const newValue = optionInputs[ans.answerId]?.trim();
+        const oldValue = ans.member_answer_id?.trim() ?? "";
 
-  //   const options = answers
-  //     .filter((ans: AnswerItem) => selectedItems.has(ans.answerId))
-  //     .map((ans: AnswerItem) => ({
-  //       answerId: ans.answerId,
-  //       constantId: optionInputs[ans.answerId] ?? ans.member_answer_id ?? "",
-  //     }));
-
-  //   if (options.length === 0) return;
-
-  //   setIsSaving(true);
-  //   try {
-  //     const res = await dispatch(
-  //       updateOptionsThunk({
-  //         qualificationId: answers[0]?.qualificationId,
-  //         questionId: state.questionId,
-  //         memberId: state.memberId,
-  //         langCode: state.langCode,
-  //         options,
-  //       })
-  //     ).unwrap();
-
-  //     if (res.status === 200) {
-  //       toast({ description: `${res.message || "Options update for review successfully!"}` });
-  //     }
-  //     // ✅ Refetch latest answers after update
-  //     await dispatch(
-  //       getAllAnswersList({
-  //         memberType: "customer",
-  //         memberId: state.memberId,
-  //         marketId: state.marketId,
-  //         langCode: state.langCode,
-  //         questionId: state.questionId,
-  //       })
-  //     ).unwrap();
-  //     // alert(`Saved ${options.length} option(s) for review`);
-  //     setSelectedItems(new Set());
-  //     setSelectAll(false);
-  //     setOptionInputs({});
-  //   } catch (err) {
-  //     console.error(err);
-  //     // alert("Failed to save options. Try again.");
-  //     toast({ description: 'Failed to save options. Try again.' });
-  //   } finally {
-  //     setIsSaving(false);
-  //   }
-  // };
-
-// Handle individual input changes
-const handleInputChange = (answerId: number, value: string) => {
-  // Update the input value normally, including blanks
-  setOptionInputs((prev) => ({ ...prev, [answerId]: value }));
-};
-
-// Update options for all answers
-const handleUpdateOptions = async () => {
-  if (!state) return;
-
-  // Validate blanks for selected items only
-  const invalidOptions = answers
-    .filter((ans: AnswerItem) => selectedItems.has(ans.answerId))
-    .filter((ans: AnswerItem) => {
-      const val = optionInputs[ans.answerId]?.trim() ?? ans.member_answer_id?.trim() ?? "";
-      return val === "";
-    });
-
-  if (invalidOptions.length > 0) {
-    toast({
-      description: "⚠️ Constant ID cannot be blank for selected options.",
-      variant: "destructive",
-      className: "max-w-sm w-full",
-    });
-    return;
-  }
-
-  // Prepare options: keep untouched values as-is, update only what user typed
-  const options = answers.map((ans: AnswerItem) => ({
-    answerId: ans.answerId,
-    constantId: optionInputs[ans.answerId]?.trim() ?? ans.member_answer_id ?? "",
-  }));
-
-  if (options.length === 0) return;
-
-  setIsSaving(true);
-
-  try {
-    const res = await dispatch(
-      updateOptionsThunk({
-        qualificationId: answers[0]?.qualificationId,
-        questionId: state.questionId,
-        memberId: state.memberId,
-        langCode: state.langCode,
-        options,
+        return {
+          answerId: ans.answerId,
+          constantId: newValue !== undefined ? newValue : oldValue,
+        };
       })
-    ).unwrap();
+      .filter((opt) => opt.constantId !== "");
 
-    if (res.status === 200) {
+    if (options.length === 0) {
       toast({
-        description: res.message || "✅ Options updated successfully!",
+        description: "⚠️ No changes to update.",
+        variant: "destructive",
       });
+      return;
     }
 
-    // Refresh answers list
-    await dispatch(
-      getAllAnswersList({
-        memberType: "customer",
-        memberId: state.memberId,
-        marketId: state.marketId,
-        langCode: state.langCode,
-        questionId: state.questionId,
-      })
-    ).unwrap();
+    setIsSaving(true);
+    try {
+      const res = await dispatch(
+        updateOptionsThunk({
+          qualificationId: answers[0]?.qualificationId,
+          questionId: state.questionId,
+          memberId: state.memberId,
+          langCode: state.langCode,
+          options,
+        })
+      ).unwrap();
 
-    // Reset selection and input state
-    setSelectedItems(new Set());
-    setSelectAll(false);
-    setOptionInputs({});
-  } catch (err) {
-    console.error(err);
-    toast({
-      description: "❌ Failed to save options. Try again.",
-    });
-  } finally {
-    setIsSaving(false);
-  }
-};
+      if (res.status === 200) {
+        toast({
+          description: res.message || "✅ Options updated successfully!",
+        });
+      } else {
+        toast({
+          description: res.message || "❌ Something went wrong. Try again.",
+          variant: "destructive",
+        });
+      }
+      setSelectedItems(new Set());
+      setSelectAll(false);
+      setOptionInputs({});
+    } catch (err: any) {
+      toast({
+        description: err?.message || "❌ Failed to save options. Try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
 
   if (!state) return null;
@@ -435,7 +387,7 @@ const handleUpdateOptions = async () => {
                     <td className="px-6 py-4 whitespace-nowrap">
                       <Input
                         type="text"
-                        value={optionInputs[ans.answerId] ?? ans.member_answer_id}
+                        value={optionInputs[ans.answerId] ?? ans.memberAnswerId}
                         onChange={(e) => handleInputChange(ans.answerId, e.target.value)}
                         className="w-full"
                         placeholder="Enter constant ID"
@@ -477,7 +429,7 @@ const handleUpdateOptions = async () => {
       {/* Review Modal */}
       <OptionMappingReviewModal
         isOpen={isReviewOpen}
-        onClose={handleCloseReview} 
+        onClose={handleCloseReview}
         answers={reviewData}
         memberId={state.memberId}
         questionId={state.questionId}

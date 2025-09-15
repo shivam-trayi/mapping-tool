@@ -40,8 +40,8 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
   const [searchTerm, setSearchTerm] = React.useState("");
   const [message, setMessage] = React.useState("");
   const [saveLoading, setSaveLoading] = React.useState(false);
-  const [updateLoading, setUpdateLoading] = React.useState(false);
-  const [editedValues, setEditedValues] = React.useState<Record<number, string>>({});
+  // const [updateLoading, setUpdateLoading] = React.useState(false);
+  // const [editedValues, setEditedValues] = React.useState<Record<number, string>>({});
   const [loading, setLoading] = React.useState(false);
 
   const fetchMappings = async () => {
@@ -70,9 +70,9 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
     }
   }, [isOpen, selectedClient, selectedLang]);
 
-  const handleInputChange = (questionId: number, value: string) => {
-    setEditedValues((prev) => ({ ...prev, [questionId]: value }));
-  };
+  // const handleInputChange = (questionId: number, value: string) => {
+  //   setEditedValues((prev) => ({ ...prev, [questionId]: value }));
+  // };
 
   const mappedData = React.useMemo(
     () => mappings.filter((item) => item.memberQuestionId != null),
@@ -98,7 +98,7 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
     setSelectAll(newSelected.size === filteredData.length && filteredData.length > 0);
   };
 
-  const handleSave = async () => {
+  const questionHandleSave = async () => {
     const selectedData = Array.from(selectedItems)
       .map((id) => mappedData.find((d) => d.questionId === id))
       .filter(Boolean);
@@ -132,58 +132,58 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
     }
   };
 
-  const handleUpdate = async () => {
-    const selectedData = Object.entries(editedValues)
-      .map(([questionIdStr, memberQuestionIdStr]) => {
-        const questionId = Number(questionIdStr);
-        const memberQuestionId = Number(memberQuestionIdStr);
-        if (isNaN(memberQuestionId)) return null;
-        const item = mappings.find((d) => d.questionId === questionId);
-        if (!item) return null;
+  // const handleUpdate = async () => {
+  //   const selectedData = Object.entries(editedValues)
+  //     .map(([questionIdStr, memberQuestionIdStr]) => {
+  //       const questionId = Number(questionIdStr);
+  //       const memberQuestionId = Number(memberQuestionIdStr);
+  //       if (isNaN(memberQuestionId)) return null;
+  //       const item = mappings.find((d) => d.questionId === questionId);
+  //       if (!item) return null;
 
-        return {
-          questionId: item.questionId,
-          qualificationId: item.qualificationId,
-          memberQuestionId,
-          memberId: item.memberId,
-          memberType: item.memberType,
-        };
-      })
-      .filter(Boolean) as {
-        questionId: number;
-        qualificationId: number;
-        memberQuestionId: number;
-        memberId: number;
-        memberType: string;
-      }[];
+  //       return {
+  //         questionId: item.questionId,
+  //         qualificationId: item.qualificationId,
+  //         memberQuestionId,
+  //         memberId: item.memberId,
+  //         memberType: item.memberType,
+  //       };
+  //     })
+  //     .filter(Boolean) as {
+  //       questionId: number;
+  //       qualificationId: number;
+  //       memberQuestionId: number;
+  //       memberId: number;
+  //       memberType: string;
+  //     }[];
 
-    if (selectedData.length === 0) return;
+  //   if (selectedData.length === 0) return;
 
-    setUpdateLoading(true);
-    try {
-      const payload = {
-        memberId: selectedData[0].memberId,
-        memberType: selectedData[0].memberType,
-        optionData: selectedData.map(({ questionId, qualificationId, memberQuestionId }) => ({
-          questionId,
-          qualificationId,
-          memberQuestionId,
-        })),
-      };
+  //   setUpdateLoading(true);
+  //   try {
+  //     const payload = {
+  //       memberId: selectedData[0].memberId,
+  //       memberType: selectedData[0].memberType,
+  //       optionData: selectedData.map(({ questionId, qualificationId, memberQuestionId }) => ({
+  //         questionId,
+  //         qualificationId,
+  //         memberQuestionId,
+  //       })),
+  //     };
 
-      const res = await dispatch(updateMappingReviewThunk(payload)).unwrap();
-      if (res?.status === 200) {
-        toast({ description: res.message || "Mappings updated successfully." });
-      }
-      setMessage("✅ Successfully updated mappings!");
-      setEditedValues({});
-      await fetchMappings(); // refresh after update
-    } catch (err: any) {
-      setMessage(`❌ ${err.message || "Update failed"}`);
-    } finally {
-      setUpdateLoading(false);
-    }
-  };
+  //     const res = await dispatch(updateMappingReviewThunk(payload)).unwrap();
+  //     if (res?.status === 200) {
+  //       toast({ description: res.message || "Mappings updated successfully." });
+  //     }
+  //     setMessage("✅ Successfully updated mappings!");
+  //     setEditedValues({});
+  //     await fetchMappings(); // refresh after update
+  //   } catch (err: any) {
+  //     setMessage(`❌ ${err.message || "Update failed"}`);
+  //   } finally {
+  //     setUpdateLoading(false);
+  //   }
+  // };
 
   if (!isOpen) return null;
 
@@ -285,29 +285,6 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
                           <td className="px-6 py-4">{item.qualificationName}</td>
                           <td className="px-6 py-4">{item.questionText}</td>
                           <td className="px-6 py-4 font-mono">{item.memberQuestionId}</td>
-
-                     {/* <td className="px-6 py-4">
-                            <Input
-                              type="text"
-                              value={editedValues[item.questionId] ?? ""}
-                              onChange={(e) => handleInputChange(item.questionId, e.target.value)}
-                              placeholder="Enter value"
-                              className={cn(
-                                "px-2 py-1 border rounded-lg w-full text-sm focus:outline-none focus:ring-2 transition-all",
-                                resolvedTheme === "dark"
-                                  ? "bg-gray-900 text-gray-100 border-gray-700 focus:ring-blue-500"
-                                  : "bg-white text-gray-900 border-gray-300 focus:ring-blue-500"
-                              )}
-                            />
-                          </td> */}
-                          {/* <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <span className={item.oldMemberQuestionId
-                              ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100 inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                              : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100 inline-flex px-2 py-1 text-xs font-semibold rounded-full"}>
-                              {item.oldMemberQuestionId ? "Old Mapped" : "Not Mapped"}
-                            </span>
-                          </td> */}
-
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <span
                               className={cn(
@@ -338,7 +315,15 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
                     ) : (
                       <tr>
                         <td colSpan={6} className="p-12 text-center">
-                          No mapped data found
+                          <div className="flex flex-col items-center space-y-3">
+                            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                              <Search className="w-8 h-8 text-gray-400" />
+                            </div>
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No data found</h3>
+                            <p className="text-gray-500 dark:text-gray-400">
+                              All  Question Mapping / Approved
+                            </p>
+                          </div>
                         </td>
                       </tr>
                     )}
@@ -351,7 +336,7 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
 
           {/* Footer */}
           <div className={cn("sticky bottom-0 z-20 flex flex-col sm:flex-row items-center justify-end space-y-4 sm:space-y-0 sm:space-x-3 border-t p-4", resolvedTheme === "dark" ? "border-gray-700 bg-gray-900" : "border-gray-50")}>
-            <Button onClick={handleSave} disabled={selectedItems.size === 0 || saveLoading} className="bg-blue-600 text-white hover:bg-blue-700 w-full sm:w-auto flex items-center justify-center">
+            <Button onClick={questionHandleSave} disabled={selectedItems.size === 0 || saveLoading} className="bg-blue-600 text-white hover:bg-blue-700 w-full sm:w-auto flex items-center justify-center">
               {saveLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               <Save className="w-4 h-4 mr-2" /> Question Mapping Approved ({selectedItems.size})
             </Button>
