@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label";
 import { LoginForm, FormErrors } from "@/types/authTypes";
 import { useAuth } from "@/context/AuthContext";
 import { validateLoginForm } from "@/validation/authValidation";
+import logo from '@/assets/logo.png'
+
 
 export default function Login() {
   const navigate = useNavigate();
@@ -50,6 +52,11 @@ export default function Login() {
               <span className="text-white font-bold">GS</span>
             </div>
             <span>SuveyMappingTool</span>
+            {/* <img
+              src={logo}
+              alt="SuveyMappingTool Logo"
+              className=" rounded-lg"
+            /> */}
           </Link>
           <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">
             Welcome Back, Mapping-Tool!

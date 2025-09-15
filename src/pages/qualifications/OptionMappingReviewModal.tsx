@@ -1,5 +1,5 @@
 // src/pages/qualifications/OptionMappingReviewModal.tsx
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Save, Search, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -8,34 +8,50 @@ import { MessageBox } from "@/components/ui/MessageBox";
 import { cn } from "@/lib/utils";
 import { useAppDispatch } from "@/redux/store";
 import { Checkbox } from "@/components/ui/checkbox";
-
-// ✅ Import slice actions
-import {
-  insertAnswerMapping,
-} from "@/redux/slices/Features/answerSlice";
-
 import { toast } from "@/components/ui/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
+
+// ✅ Import slice actions
+import { insertAnswerMapping } from "@/redux/slices/Features/answerSlice";
+
+// ✅ Import API service
+import { getOptionQueryReviewMapping } from "@/service/answers/answer.Service";
 
 interface OptionMappingReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  answers: any[];
   memberId: string | number;
   questionId: string | number;
   resolvedTheme: string;
 }
 
+// ✅ Helper to normalize API response
+const normalizeAnswerResponse = (res: any) => {
+  if (Array.isArray(res?.data?.data)) return res.data.data;
+  if (Array.isArray(res?.data)) return res.data;
+  return [];
+};
+
 const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
   isOpen,
   onClose,
-  answers,
   memberId,
   questionId,
   resolvedTheme,
 }) => {
   const dispatch = useAppDispatch();
 
+  interface Answer {
+    id: number;
+    answerId: number;
+    answerText: string;
+    questionId: number;
+    qualificationId: number;
+    memberAnswerId?: number | null;
+    oldMemberAnswerId?: number | null;
+  }
+
+  const [answers, setAnswers] = useState<Answer[]>([]);
   const [selected, setSelected] = useState<Record<number, boolean>>({});
   const [selectAll, setSelectAll] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -44,6 +60,40 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
   const [saveLoading, setSaveLoading] = React.useState(false);
   const selectedCount = Object.values(selected).filter(Boolean).length;
 
+  // ✅ API call for fetching review mapping
+  useEffect(() => {
+    if (!isOpen || !memberId || !questionId) return;
+
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        const res = await getOptionQueryReviewMapping({
+          memberId: Number(memberId),
+          questionId: Number(questionId),
+        });
+
+        console.log("🔍 API Raw Response:", res);
+
+        const finalData = normalizeAnswerResponse(res);
+        console.log("✅ Final Answer Data:", finalData);
+
+        setAnswers(finalData);
+      } catch (err) {
+        console.error("❌ Fetch error:", err);
+        toast({
+          description: "❌ Failed to fetch option mappings",
+          variant: "destructive",
+        });
+        setAnswers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [isOpen, memberId, questionId]);
+
+  // ✅ Filtered data with search
   const filteredData = useMemo(
     () =>
       Array.isArray(answers)
@@ -55,6 +105,7 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
         : [],
     [answers, searchTerm]
   );
+
   // ✅ Toggle select single row
   const toggleSelect = (answerId: number) => {
     const newSelected = { ...selected, [answerId]: !selected[answerId] };
@@ -72,8 +123,43 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
     setSelectAll(checked);
   };
 
+  // 🔹 Helper function
+  const fetchAnswers = async () => {
+    setLoading(true); // 🔹 Start loader
+    try {
+      const res = await getOptionQueryReviewMapping({
+        memberId: Number(memberId),
+        questionId: Number(questionId),
+      });
+
+      const finalData = normalizeAnswerResponse(res);
+      console.log("📌 Latest Answers:", finalData);
+      setAnswers(finalData);
+
+      // 🔹 Reset selection on new data fetch
+      setSelected({});
+      setSelectAll(false);
+    } catch (err) {
+      console.error("❌ Failed to fetch answers:", err);
+      setAnswers([]);
+      toast({
+        description: "❌ Failed to fetch option mappings",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false); // 🔹 Stop loader
+    }
+  };
 
 
+  // 🔹 useEffect for first load
+  useEffect(() => {
+    if (memberId && questionId) {
+      fetchAnswers();
+    }
+  }, [memberId, questionId]);
+
+  // 🔹 Save handler
   const handleSave = async () => {
     const selectedData = filteredData.filter((ans) => selected[ans.answerId]);
     if (!selectedData.length) return;
@@ -84,9 +170,9 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
     }
 
     const payload = {
-      memberId,
+      memberId: Number(memberId),
       memberType: "customer",
-      questionId,
+      questionId: Number(questionId),
       optionData: selectedData.map((ans) => ({
         id: ans.id,
         answerId: ans.answerId,
@@ -97,7 +183,7 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
       })),
     };
 
-    setLoading(true);
+
     setSaveLoading(true);
 
     try {
@@ -107,6 +193,13 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
         toast({
           description: res.message || "✅ Mapping saved successfully!",
         });
+
+        // 🔹 Refresh answers immediately after update
+        await fetchAnswers();
+
+        // 🔹 Reset selection
+        setSelected({});
+        setSelectAll(false); // Select all ko bhi reset
       } else {
         toast({
           description: res.message || "❌ Something went wrong!",
@@ -119,16 +212,13 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
       setSaveLoading(false);
     }
+
   };
 
 
-
-
   if (!isOpen) return null;
-
   return (
     <AnimatePresence>
       <motion.div
