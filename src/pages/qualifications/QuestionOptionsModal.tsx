@@ -29,8 +29,8 @@ interface LocationState {
 interface AnswerItem {
   answerId: number;
   answerText: string;
-  member_answer_id?: string;
-  old_member_answer_id?: string;
+  memberAnswerId?: string;
+  oldMemberAnswerId?: string;
   qualificationId?: number;
 }
 
@@ -51,8 +51,6 @@ const QuestionOptionsPage: React.FC = () => {
     (state: RootState) => state.questionMappings
   );
 
-  // Fetch answers on page load
-  // Fetch answers + review data on page load
   useEffect(() => {
     if (!state) {
       navigate(-1);
@@ -121,14 +119,14 @@ const QuestionOptionsPage: React.FC = () => {
   };
 
 
-  // QuestionOptionsPage.tsx ke andar
+
   const handleCloseReview = async () => {
     setIsReviewOpen(false);
 
     if (!state) return;
 
     try {
-      // ✅ Refetch answers for table
+
       await dispatch(
         getAllAnswersList({
           memberType: "customer",
@@ -139,7 +137,6 @@ const QuestionOptionsPage: React.FC = () => {
         })
       ).unwrap();
 
-      // ✅ Refetch review data for next time modal opens
       const res = await getOptionQueryReviewMapping({
         memberId: state.memberId,
         questionId: state.questionId,
@@ -157,18 +154,26 @@ const QuestionOptionsPage: React.FC = () => {
 
   const handleUpdateOptions = async () => {
     if (!state) return;
+
     const options = answers
       .filter((ans: AnswerItem) => selectedItems.has(ans.answerId))
       .map((ans: AnswerItem) => {
-        const newValue = optionInputs[ans.answerId]?.trim();
-        const oldValue = ans.member_answer_id?.trim() ?? "";
+        const value = optionInputs[ans.answerId]?.trim() || "";
 
         return {
           answerId: ans.answerId,
-          constantId: newValue !== undefined ? newValue : oldValue,
+          constantId: value,
         };
       })
       .filter((opt) => opt.constantId !== "");
+
+    console.log("➡️ Payload going to API:", {
+      qualificationId: answers[0]?.qualificationId,
+      questionId: state.questionId,
+      memberId: state.memberId,
+      langCode: state.langCode,
+      options,
+    });
 
     if (options.length === 0) {
       toast({
@@ -194,12 +199,33 @@ const QuestionOptionsPage: React.FC = () => {
         toast({
           description: res.message || "✅ Options updated successfully!",
         });
+        try {
+          const latest = await getOptionQueryReviewMapping({
+            questionId: state.questionId,
+            memberId: state.memberId,
+          });
+
+          toast({
+            description: "🔄 Latest data fetched successfully!",
+          });
+
+          console.log("📌 Refreshed data:", latest);
+        } catch (err: unknown) {
+          toast({
+            description:
+              err && typeof err === "object" && "message" in err
+                ? (err as { message?: string }).message
+                : "❌ Failed to fetch latest data after update.",
+            variant: "destructive",
+          });
+        }
       } else {
         toast({
           description: res.message || "❌ Something went wrong. Try again.",
           variant: "destructive",
         });
       }
+
       setSelectedItems(new Set());
       setSelectAll(false);
       setOptionInputs({});
@@ -212,6 +238,8 @@ const QuestionOptionsPage: React.FC = () => {
       setIsSaving(false);
     }
   };
+
+
 
 
   if (!state) return null;
@@ -359,12 +387,12 @@ const QuestionOptionsPage: React.FC = () => {
                       <span
                         className={cn(
                           "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                          ans.member_answer_id != null
+                          ans.memberAnswerId != null
                             ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
                             : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
                         )}
                       >
-                        {ans.member_answer_id != null ? "Mapped" : "Not Mapped"}
+                        {ans.memberAnswerId != null ? "Mapped" : "Not Mapped"}
                       </span>
                     </td>
 
@@ -372,12 +400,12 @@ const QuestionOptionsPage: React.FC = () => {
                       <span
                         className={cn(
                           "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                          ans.old_member_answer_id != null
+                          ans.oldMemberAnswerId != null
                             ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
                             : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
                         )}
                       >
-                        {ans.old_member_answer_id != null ? "Old Mapped" : "Not Mapped"}
+                        {ans.oldMemberAnswerId != null ? "Old Mapped" : "Not Mapped"}
                       </span>
                     </td>
 
