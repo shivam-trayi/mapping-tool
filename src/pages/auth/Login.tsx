@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { LoginForm, FormErrors } from "@/types/authTypes";
 import { useAuth } from "@/context/AuthContext";
 import { validateLoginForm } from "@/validation/authValidation";
-import logo from '@/assets/logo.png'
+// import logo from '@/assets/logo.png'
 
 
 export default function Login() {

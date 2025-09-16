@@ -1,24 +1,20 @@
-import React from 'react';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { Qualification, ViewType } from '../../types/qualicationTypes';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
-interface DemoPriorityMappingViewProps {
-  setCurrentView: (view: ViewType) => void;
-  qualifications?: Qualification[]; // Make it optional
-  isLoadingTable: boolean;
-  resolvedTheme: 'light' | 'dark';
-}
-
-const DemoPriorityMappingView: React.FC<DemoPriorityMappingViewProps> = ({
-  setCurrentView,
-  qualifications = [], // Default to empty array
-  isLoadingTable,
-  resolvedTheme
-}) => {
+const DemoPriorityMappingView: React.FC = () => {
   const navigate = useNavigate();
+
+  const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
+  const [isLoadingTable, setIsLoadingTable] = useState(false);
+  const [qualifications, setQualifications] = useState<
+    { id: number; name: string }[]
+  >([
+    { id: 1, name: "Gender" },
+    { id: 2, name: "Age" },
+  ]);
 
   return (
     <motion.div
@@ -42,8 +38,8 @@ const DemoPriorityMappingView: React.FC<DemoPriorityMappingViewProps> = ({
       {/* Filters */}
       <div
         className={cn(
-          'flex items-center space-x-4 mb-6 transition-colors',
-          resolvedTheme === 'dark' ? 'text-gray-100' : 'text-gray-900'
+          "flex items-center space-x-4 mb-6 transition-colors",
+          resolvedTheme === "dark" ? "text-gray-100" : "text-gray-900"
         )}
       >
         <input
@@ -62,15 +58,17 @@ const DemoPriorityMappingView: React.FC<DemoPriorityMappingViewProps> = ({
       {/* Table */}
       <div
         className={cn(
-          'rounded-lg shadow overflow-hidden transition-colors',
-          resolvedTheme === 'dark' ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-200'
+          "rounded-lg shadow overflow-hidden transition-colors",
+          resolvedTheme === "dark"
+            ? "bg-gray-800 border border-gray-700"
+            : "bg-white border border-gray-200"
         )}
       >
         <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
           <thead
             className={cn(
-              'transition-colors',
-              resolvedTheme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'
+              "transition-colors",
+              resolvedTheme === "dark" ? "bg-gray-700" : "bg-gray-50"
             )}
           >
             <tr>
@@ -91,8 +89,8 @@ const DemoPriorityMappingView: React.FC<DemoPriorityMappingViewProps> = ({
 
           <tbody
             className={cn(
-              'divide-y transition-colors',
-              resolvedTheme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'
+              "divide-y transition-colors",
+              resolvedTheme === "dark" ? "divide-gray-700" : "divide-gray-200"
             )}
           >
             {isLoadingTable ? (
@@ -106,13 +104,21 @@ const DemoPriorityMappingView: React.FC<DemoPriorityMappingViewProps> = ({
                 <tr
                   key={q.id}
                   className={cn(
-                    'transition-colors',
-                    resolvedTheme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
+                    "transition-colors",
+                    resolvedTheme === "dark"
+                      ? "hover:bg-gray-700"
+                      : "hover:bg-gray-50"
                   )}
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{idx + 1}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{q.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">Not Mapped</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {idx + 1}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {q.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    Not Mapped
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <input
                       type="text"

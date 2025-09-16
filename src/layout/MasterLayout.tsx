@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import Header from "@/components/Header";
 import { DashboardHeader } from "@/pages/dashboard/DashboardHeader";
 import { useTheme } from "@/hooks/useTheme";
+import { cn } from "@/lib/utils";
 
 const MasterLayout: React.FC = () => {
   const location = useLocation();
@@ -18,15 +19,21 @@ const MasterLayout: React.FC = () => {
       <TooltipProvider>
         <Toaster />
         <div className="flex flex-col min-h-screen">
-          {/* 🔹 Public pages ke liye normal Header */}
-          {/* {!isDashboardRoute && <Header />} */}
+          {!isDashboardRoute && <Header />}
 
-          {/* 🔹 Dashboard ke liye DashboardHeader */}
           {isDashboardRoute && (
-            <DashboardHeader resolvedTheme={resolvedTheme} toggleTheme={toggleTheme} />
+            <DashboardHeader
+              resolvedTheme={resolvedTheme}
+              toggleTheme={toggleTheme}
+            />
           )}
 
-          <main className="flex-grow">
+          <main
+            className={cn(
+              "flex-grow",
+              isDashboardRoute ? "mt-24" : "pt-20"
+            )}
+          >
             <Outlet />
           </main>
         </div>

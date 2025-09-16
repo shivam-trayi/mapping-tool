@@ -16,13 +16,14 @@ import { insertAnswerMapping } from "@/redux/slices/Features/answerSlice";
 
 // ✅ Import API service
 import { getOptionQueryReviewMapping } from "@/service/answers/answer.Service";
+import { useTheme } from "@/hooks/useTheme";
 
 interface OptionMappingReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   memberId: string | number;
   questionId: string | number;
-  resolvedTheme: string;
+  // resolvedTheme: "light" | "dark";
 }
 
 // ✅ Helper to normalize API response
@@ -37,7 +38,7 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
   onClose,
   memberId,
   questionId,
-  resolvedTheme,
+  // resolvedTheme,
 }) => {
   const dispatch = useAppDispatch();
 
@@ -59,6 +60,8 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [saveLoading, setSaveLoading] = React.useState(false);
   const selectedCount = Object.values(selected).filter(Boolean).length;
+  const { resolvedTheme } = useTheme();
+
 
   // ✅ API call for fetching review mapping
   useEffect(() => {
@@ -270,12 +273,14 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
             {/* Table */}
             <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200 dark:border-gray-700">
               <div className="max-h-[50vh] overflow-y-auto">
-                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 border-b border-gray-200 dark:border-gray-700">
                   <thead
                     className={cn(
-                      resolvedTheme === "dark" ? "bg-gray-800" : "bg-gray-50"
+                      resolvedTheme === "dark" ? "bg-gray-800" : "bg-gray-50",
+                      "sticky top-0 z-10"
                     )}
                   >
+
                     <tr>
                       <th className="px-6 py-4">S.No</th>
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase">
@@ -304,7 +309,7 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
                       </th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {/* ✅ Show skeleton while loading */}
                     {loading ? (
                       [...Array(5)].map((_, idx) => (
@@ -351,12 +356,9 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 5 }}
                           transition={{ duration: 0.2 }}
-                          className={cn(
-                            idx % 2 === 0 ? "bg-white" : "bg-gray-50",
-                            selected[ans.answerId] && "bg-blue-50 dark:bg-blue-900/20"
-                          )}
+
                         >
-                          <td className="px-6 py-4">{idx + 1}</td>
+                          <td >{idx + 1}</td>
                           <td className="px-6 py-4">{ans.answerText}</td>
                           <td className="px-6 py-4">{ans.memberAnswerId ?? "Not Mapped"}</td>
 

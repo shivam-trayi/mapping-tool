@@ -6,7 +6,6 @@ import { PublicRoute } from "./PublicRoute";
 import { Loadable } from "./Loadable";
 
 import ForgotPassword from "@/pages/auth/ForgotPassword";
-import QualificationsDashboard from "@/pages/qualifications";
 import QuestionOptionsPage from "../pages/qualifications/QuestionOptionsModal";
 
 const Login = Loadable(lazy(() => import("../pages/auth/Login")));
@@ -14,7 +13,7 @@ const Signup = Loadable(lazy(() => import("../pages/auth/Signup")));
 const ResetPassword = Loadable(lazy(() => import("../pages/auth/ResetPassword")));
 const NotFound = Loadable(lazy(() => import("../pages/NotFound")));
 
-// Dashboard children
+// Dashboard pages
 const ListView = Loadable(lazy(() => import("../pages/qualifications/ListView")));
 const CreateEditView = Loadable(lazy(() => import("../pages/qualifications/CreateEditView")));
 const EditView = Loadable(lazy(() => import("../pages/qualifications/EditView")));
@@ -46,29 +45,19 @@ const router = createBrowserRouter([
       { path: "forgot-password", element: <PublicRoute><ForgotPassword /></PublicRoute> },
       { path: "reset-password", element: <PublicRoute><ResetPassword /></PublicRoute> },
 
-      // Protected routes
-      {
-        path: "dashboard",
-        element: (
-          <ProtectedRoute>
-            <QualificationsDashboard />
-          </ProtectedRoute>
-        ),
-        children: [
-          { index: true, element: <Navigate to="list" /> }, // fallback
-          { path: "list", element: <ListView /> },
-          { path: "create", element: <CreateEditView /> },
-          { path: "edit", element: <EditView /> },
-          { path: "add-question", element: <AddQuestionView /> },
-          { path: "update-question", element: <UpdateQuestionView /> },
-          { path: "demo-mapping", element: <DemoPriorityMappingView /> },
-          { path: "qualifications-mapping", element: <QualificationsMappingView /> },
-          { path: "question-mapping", element: <QuestionMappingView /> },
-          { path: "add-option", element: <AddOptionView /> },
-          { path: "update-option", element: <UpdateOptionView /> },
-          { path: "question-options", element: <QuestionOptionsPage /> },
-        ],
-      },
+      // Dashboard routes (no children, no ProtectedRoute wrapping MasterLayout)
+      { path: "dashboard", element: <Navigate to="/dashboard/list" /> },
+      { path: "dashboard/list", element: <ListView /> },
+      { path: "dashboard/create", element: <CreateEditView /> },
+      { path: "dashboard/edit", element: <EditView /> },
+      { path: "dashboard/add-question", element: <AddQuestionView /> },
+      { path: "dashboard/update-question", element: <UpdateQuestionView /> },
+      { path: "dashboard/demo-mapping", element: <DemoPriorityMappingView /> },
+      { path: "dashboard/qualifications-mapping", element: <QualificationsMappingView /> },
+      { path: "dashboard/question-mapping", element: <QuestionMappingView /> },
+      { path: "dashboard/add-option", element: <AddOptionView /> },
+      { path: "dashboard/update-option", element: <UpdateOptionView /> },
+      { path: "dashboard/question-options", element: <QuestionOptionsPage /> },
     ],
   },
   { path: "*", element: <NotFound /> },

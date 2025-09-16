@@ -254,39 +254,31 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
                       <th className="px-6 py-4 text-left text-xs font-medium uppercase">Old Mapped</th>
                     </tr>
                   </thead>
-                  <tbody>
+                  <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                     {loading ? (
                       [...Array(5)].map((_, idx) => (
                         <tr key={idx} className="animate-pulse">
-                          <td className="px-6 py-4">
-                            <Skeleton className="h-4 w-4 rounded" />
-                          </td>
-                          <td className="px-6 py-4">
-                            <Skeleton className="h-4 w-32" />
-                          </td>
-                          <td className="px-6 py-4">
-                            <Skeleton className="h-4 w-40" />
-                          </td>
-                          <td className="px-6 py-4">
-                            <Skeleton className="h-4 w-20" />
-                          </td>
-                          <td className="px-6 py-4">
-                            <Skeleton className="h-4 w-20" />
-                          </td>
-                          <td className="px-6 py-4">
-                            <Skeleton className="h-6 w-full rounded-md" />
-                          </td>
+                          <td className="px-6 py-4"><Skeleton className="h-4 w-4 rounded" /></td>
+                          <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
+                          <td className="px-6 py-4"><Skeleton className="h-4 w-40" /></td>
+                          <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
+                          <td className="px-6 py-4"><Skeleton className="h-4 w-20" /></td>
+                          <td className="px-6 py-4"><Skeleton className="h-6 w-full rounded-md" /></td>
                         </tr>
                       ))
                     ) : filteredData.length ? (
                       filteredData.map((item) => (
                         <tr
                           key={item.questionId}
-                          className={
+                          className={cn(
+                            "transition-colors",
                             selectedItems.has(item.questionId)
                               ? "bg-blue-50 dark:bg-blue-900/20"
-                              : ""
-                          }
+                              : resolvedTheme === "dark"
+                                ? "hover:bg-gray-700/50"
+                                : "hover:bg-gray-100",
+                            "border-b border-gray-200 dark:border-gray-700"
+                          )}
                         >
                           <td className="px-6 py-4">
                             <Checkbox
@@ -311,7 +303,6 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
                               {item.memberQuestionId != null ? "Mapped" : "Not Mapped"}
                             </span>
                           </td>
-
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <span
                               className={cn(
@@ -335,14 +326,13 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
                             </div>
                             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">No data found</h3>
                             <p className="text-gray-500 dark:text-gray-400">
-                              All  Question Mapping / Approved
+                              All Question Mapping / Approved
                             </p>
                           </div>
                         </td>
                       </tr>
                     )}
                   </tbody>
-
                 </table>
               </div>
             </div>

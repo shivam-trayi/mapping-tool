@@ -246,224 +246,226 @@ const QuestionOptionsPage: React.FC = () => {
   if (!state) return null;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="p-6"
-    >
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-          Question Options
-        </h2>
-        <div className="flex space-x-3">
-          <Button
-            onClick={handleOpenReview}
-            variant="default"
-          >
-            <Map className="w-4 h-4 mr-2" /> Options Mapping Review
-          </Button>
-          <Button onClick={() => navigate("/dashboard/question-mapping", { state: { isData: true } })} variant="default">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back
-          </Button>
-        </div>
-      </div>
+    <div className="max-w-8xl mx-auto">
 
-      <div className="mb-6 p-4 rounded-xl bg-white dark:bg-gray-800 shadow-md">
-        <h6 className="text-lg font-medium mb-4 text-gray-900 dark:text-gray-100">
-          {state.question}
-        </h6>
-      </div>
-      {/* Table */}
-      <div
-        className={cn(
-          "rounded-xl shadow border overflow-hidden",
-          "dark:border-gray-700 dark:bg-gray-800 bg-white border-gray-200"
-        )}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="p-6"
       >
-        <div className="max-h-[60vh] overflow-y-auto">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead
-              className={cn(
-                "sticky top-0 z-10",
-                "bg-gray-50 text-gray-500 dark:bg-gray-700 dark:text-gray-200"
-              )}
+        {/* Header */}
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+            Question Options
+          </h2>
+          <div className="flex space-x-3">
+            <Button
+              onClick={handleOpenReview}
+              variant="default"
             >
-              <tr>
-                <th className="px-6 py-3 text-left">
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      checked={selectAll}
-                      onCheckedChange={handleSelectAll}
-                      className="border-gray-300"
-                    />
-                    <span className="text-xs font-medium uppercase tracking-wider">
-                      Select All
-                    </span>
-                  </div>
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                  S.No
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                  Options
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                  New Mapped
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                  Old Mapped
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                  Constant Id
-                </th>
-              </tr>
-            </thead>
-            <tbody className={cn("divide-y", "dark:divide-gray-700 divide-gray-200")}>
-              {loading ? (
-                [...Array(5)].map((_, idx) => (
-                  <tr key={idx} className="animate-pulse">
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-4 w-4 rounded" />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-4 w-6" />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-4 w-32" />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-4 w-20" />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-4 w-20" />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-6 w-full rounded-md" />
-                    </td>
-                  </tr>
-                ))
-              ) : answers.length === 0 ? (
+              <Map className="w-4 h-4 mr-2" /> Options Mapping Review
+            </Button>
+            <Button onClick={() => navigate("/dashboard/question-mapping", { state: { isData: true } })} variant="default">
+              <ArrowLeft className="w-4 h-4 mr-2" /> Back
+            </Button>
+          </div>
+        </div>
+
+        <div className="mb-6 p-4 rounded-xl bg-white dark:bg-gray-800 shadow-md">
+          <h6 className="text-lg font-medium mb-4 text-gray-900 dark:text-gray-100">
+            {state.question}
+          </h6>
+        </div>
+        {/* Table */}
+        <div
+          className={cn(
+            "rounded-xl shadow border overflow-hidden",
+            "dark:border-gray-700 dark:bg-gray-800 bg-white border-gray-200"
+          )}
+        >
+          <div className="max-h-[60vh] overflow-y-auto">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <thead
+                className={cn(
+                  "sticky top-0 z-10",
+                  "bg-gray-50 text-gray-500 dark:bg-gray-700 dark:text-gray-200"
+                )}
+              >
                 <tr>
-                  <td colSpan={6} className="p-12 text-center">
-                    <div className="flex flex-col items-center space-y-3">
-                      <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                        <Search className="w-8 h-8 text-gray-400" />
-                      </div>
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                        No data found
-                      </h3>
-                      <p className="text-gray-500 dark:text-gray-400">
-                        No options available for this question.
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                answers.map((ans: AnswerItem, idx: number) => (
-                  <tr
-                    key={ans.answerId}
-                    className={cn(
-                      selectedItems.has(ans.answerId)
-                        ? "bg-blue-50 dark:bg-blue-900/20"
-                        : "",
-                      "hover:bg-gray-50 dark:hover:bg-gray-700"
-                    )}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap">
+                  <th className="px-6 py-3 text-left">
+                    <div className="flex items-center space-x-2">
                       <Checkbox
-                        checked={selectedItems.has(ans.answerId)}
-                        onCheckedChange={(checked) =>
-                          handleSelectItem(ans.answerId, checked as boolean)
-                        }
+                        checked={selectAll}
+                        onCheckedChange={handleSelectAll}
                         className="border-gray-300"
                       />
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">{idx + 1}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      {ans.answerText}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span
-                        className={cn(
-                          "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                          ans.memberAnswerId != null
-                            ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
-                            : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
-                        )}
-                      >
-                        {ans.memberAnswerId != null ? "Mapped" : "Not Mapped"}
+                      <span className="text-xs font-medium uppercase tracking-wider">
+                        Select All
                       </span>
-                    </td>
-
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span
-                        className={cn(
-                          "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                          ans.oldMemberAnswerId != null
-                            ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
-                            : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
-                        )}
-                      >
-                        {ans.oldMemberAnswerId != null ? "Old Mapped" : "Not Mapped"}
-                      </span>
-                    </td>
-
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <Input
-                        type="text"
-                        value={optionInputs[ans.answerId] ?? ans.memberAnswerId}
-                        onChange={(e) => handleInputChange(ans.answerId, e.target.value)}
-                        className="w-full"
-                        placeholder="Enter constant ID"
-                      />
+                    </div>
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    S.No
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Options
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    New Mapped
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Old Mapped
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
+                    Constant Id
+                  </th>
+                </tr>
+              </thead>
+              <tbody className={cn("divide-y", "dark:divide-gray-700 divide-gray-200")}>
+                {loading ? (
+                  [...Array(5)].map((_, idx) => (
+                    <tr key={idx} className="animate-pulse">
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-4 w-4 rounded" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-4 w-6" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-4 w-32" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-4 w-20" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <Skeleton className="h-6 w-full rounded-md" />
+                      </td>
+                    </tr>
+                  ))
+                ) : answers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-12 text-center">
+                      <div className="flex flex-col items-center space-y-3">
+                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                          <Search className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                          No data found
+                        </h3>
+                        <p className="text-gray-500 dark:text-gray-400">
+                          No options available for this question.
+                        </p>
+                      </div>
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
+                ) : (
+                  answers.map((ans: AnswerItem, idx: number) => (
+                    <tr
+                      key={ans.answerId}
+                      className={cn(
+                        selectedItems.has(ans.answerId)
+                          ? "bg-blue-50 dark:bg-blue-900/20"
+                          : "",
+                        "hover:bg-gray-50 dark:hover:bg-gray-700"
+                      )}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Checkbox
+                          checked={selectedItems.has(ans.answerId)}
+                          onCheckedChange={(checked) =>
+                            handleSelectItem(ans.answerId, checked as boolean)
+                          }
+                          className="border-gray-300"
+                        />
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{idx + 1}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        {ans.answerText}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span
+                          className={cn(
+                            "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                            ans.memberAnswerId != null
+                              ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
+                              : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
+                          )}
+                        >
+                          {ans.memberAnswerId != null ? "Mapped" : "Not Mapped"}
+                        </span>
+                      </td>
 
-          </table>
-        </div>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span
+                          className={cn(
+                            "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                            ans.oldMemberAnswerId != null
+                              ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+                              : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
+                          )}
+                        >
+                          {ans.oldMemberAnswerId != null ? "Old Mapped" : "Not Mapped"}
+                        </span>
+                      </td>
 
-        {/* Footer */}
-        <div className="p-4 border-t flex items-center justify-between sticky bottom-0 z-20 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-          <div className="text-sm text-gray-600 dark:text-gray-400">
-            {selectedItems.size > 0
-              ? `${selectedItems.size} option(s) selected`
-              : "No options selected"}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Input
+                          type="text"
+                          value={optionInputs[ans.answerId] ?? ans.memberAnswerId}
+                          onChange={(e) => handleInputChange(ans.answerId, e.target.value)}
+                          className="w-full"
+                          placeholder="Enter constant ID"
+                        />
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+
+            </table>
           </div>
-          <Button
-            onClick={handleUpdateOptions}
-            disabled={selectedItems.size === 0 || isSaving}
-            className="gradient-primary text-white hover:shadow-glow transition-all duration-300"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" /> Options Save for Review ({selectedItems.size})
-              </>
-            )}
-          </Button>
+
+          {/* Footer */}
+          <div className="p-4 border-t flex items-center justify-between sticky bottom-0 z-20 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              {selectedItems.size > 0
+                ? `${selectedItems.size} option(s) selected`
+                : "No options selected"}
+            </div>
+            <Button
+              onClick={handleUpdateOptions}
+              disabled={selectedItems.size === 0 || isSaving}
+              className="gradient-primary text-white hover:shadow-glow transition-all duration-300"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" /> Options Save for Review ({selectedItems.size})
+                </>
+              )}
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* Review Modal */}
-      <OptionMappingReviewModal
-        isOpen={isReviewOpen}
-        onClose={handleCloseReview}
-        answers={reviewData}
-        memberId={state.memberId}
-        questionId={state.questionId}
-        resolvedTheme={undefined}
-      />
+        {/* Review Modal */}
+        <OptionMappingReviewModal
+          isOpen={isReviewOpen}
+          onClose={handleCloseReview}
+          answers={reviewData}
+          memberId={state.memberId}
+          questionId={state.questionId}
+        />
 
 
-    </motion.div>
+      </motion.div>
+    </div>
   );
 };
 

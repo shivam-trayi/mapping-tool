@@ -1,9 +1,9 @@
+// src/pages/qualifications/QuestionMappingView.tsx
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, Loader2, Save, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ViewType } from "../../types/qualicationTypes";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchLanguages } from "@/redux/slices/Features/languageSlice";
 import type { RootState, AppDispatch } from "@/redux/store";
@@ -18,12 +18,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { setClient, setLang } from "@/redux/slices/Features/selectedMappingSlice";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "@/components/ui/use-toast";
-// import { setClient, setLang } from "@/redux/slices/testing/selectedMappingSlice";
-
-interface QuestionMappingViewProps {
-  setCurrentView: (view: ViewType) => void;
-  resolvedTheme: "light" | "dark";
-}
+import { useTheme } from "@/hooks/useTheme"; // ✅ theme hook
 
 interface QuestionMappingItem {
   questionId: number;
@@ -35,9 +30,10 @@ interface QuestionMappingItem {
   memberId: number;
 }
 
-const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme }) => {
+const QuestionMappingView: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
+  const { resolvedTheme } = useTheme(); // ✅ dynamic theme
 
   const [fetchedMappings, setFetchedMappings] = useState<QuestionMappingItem[]>([]);
   const [loadingMappings, setLoadingMappings] = useState(false);
@@ -82,6 +78,7 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
       const reviewResult = await dispatch(
         fetchQuestionReviewMappings({ memberType: "customer", memberId: client, langCode: lang })
       ).unwrap();
+
       const mergedData: QuestionMappingItem[] = mappingsResult.map((item) => {
         const review = reviewResult.find((r) => r.questionId === item.questionId);
         return {
@@ -111,70 +108,13 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
   };
 
   // Save review
-  // const handleSaveReview = async () => {
-  //   if (!selectedLang || !selectedClient) return;
-
-  //   const optionData = fetchedMappings
-  //     .filter((item) => item.memberQuestionId !== item.oldMemberQuestionId)
-  //     .map((item) => ({
-  //       memberQuestionId: item.memberQuestionId ?? "",
-  //       qualificationId: item.qualificationId,
-  //       masterQueryId: item.questionId,
-  //     }));
-
-  //   if (optionData.length === 0) {
-  //     toast({ description: "⚠️ No changes to save!", variant: "default" });
-  //     return;
-  //   }
-
-  //   setIsSaving(true);
-  //   try {
-  //     const res = await dispatch(
-  //       saveQuestionReviewMapping({
-  //         memberType: "customer",
-  //         langCode: selectedLang,
-  //         memberId: selectedClient.toString(),
-  //         optionData,
-  //       })
-  //     ).unwrap();
-
-  //     if (res?.status === 200) {
-  //       toast({ description: res.message || "✅ Mappings updated successfully.", variant: "success" });
-  //       setFetchedMappings((prev) =>
-  //         prev.map((item) => ({
-  //           ...item,
-  //           oldMemberQuestionId: item.memberQuestionId,
-  //         }))
-  //       );
-  //     } else {
-  //       toast({ description: "❌ Failed to update mappings.", variant: "destructive" });
-  //     }
-  //   } catch (err: any) {
-  //     toast({
-  //       description: err?.message || "❌ Something went wrong while saving.",
-  //       variant: "destructive",
-  //     });
-  //   } finally {
-  //     setIsSaving(false);
-  //   }
-  // };
-
-  // Save review
   const handleSaveReview = async () => {
-    // ✅ Validation before saving
     if (!selectedLang) {
-      toast({
-        description: "⚠️ Please select a language!",
-        variant: "warning",
-      });
+      toast({ description: "⚠️ Please select a language!", variant: "warning" });
       return;
     }
-
     if (!selectedClient) {
-      toast({
-        description: "⚠️ Please select a client!",
-        variant: "warning",
-      });
+      toast({ description: "⚠️ Please select a client!", variant: "warning" });
       return;
     }
 
@@ -187,10 +127,7 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
       }));
 
     if (optionData.length === 0) {
-      toast({
-        description: "⚠️ No changes found before saving!",
-        variant: "warning",
-      });
+      toast({ description: "⚠️ No changes found before saving!", variant: "warning" });
       return;
     }
 
@@ -206,28 +143,16 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
       ).unwrap();
 
       if (res?.status === 200) {
-        toast({
-          description: res.message || "✅ Mappings updated successfully.",
-          variant: "success",
-        });
+        toast({ description: res.message || "✅ Mappings updated successfully.", variant: "success" });
         setFetchedMappings((prev) =>
-          prev.map((item) => ({
-            ...item,
-            oldMemberQuestionId: item.memberQuestionId,
-          }))
+          prev.map((item) => ({ ...item, oldMemberQuestionId: item.memberQuestionId }))
         );
       } else {
-        toast({
-          description: "❌ Failed to update mappings.",
-          variant: "destructive",
-        });
+        toast({ description: "❌ Failed to update mappings.", variant: "destructive" });
       }
     } catch (err: unknown) {
       toast({
-        description:
-          err instanceof Error
-            ? err.message
-            : "❌ Something went wrong while saving.",
+        description: err instanceof Error ? err.message : "❌ Something went wrong while saving.",
         variant: "destructive",
       });
     } finally {
@@ -235,33 +160,20 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
     }
   };
 
-
   const handleOpenReviewModal = async () => {
     if (!selectedLang || !selectedClient) {
-      toast({
-        description: "⚠️ Please select both Language and Customer first!",
-        variant: "destructive",
-      });
+      toast({ description: "⚠️ Please select both Language and Customer first!", variant: "destructive" });
       return;
     }
 
     try {
       const reviewResult = await dispatch(
-        fetchQuestionReviewMappings({
-          memberType: "customer",
-          memberId: selectedClient,
-          langCode: selectedLang,
-        })
+        fetchQuestionReviewMappings({ memberType: "customer", memberId: selectedClient, langCode: selectedLang })
       ).unwrap();
-
       setReviewMappings(reviewResult);
       setShowMappingReviewModal(true);
     } catch (err) {
-      toast({
-        description: "❌ Failed to load review mappings. Try again.",
-        variant: "destructive",
-      });
-
+      toast({ description: "❌ Failed to load review mappings. Try again.", variant: "destructive" });
       setReviewMappings([]);
       setShowMappingReviewModal(true);
     }
@@ -279,158 +191,132 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
   }, [location.pathname, dispatch]);
 
   return (
-    <motion.div
-      key="question-mapping-view"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-      className="p-6"
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
-          Question Mapping
-        </h2>
-        <div className="flex space-x-3">
-          <Button onClick={handleOpenReviewModal} className="rounded-xl shadow-sm">
-            Mapping Review
-          </Button>
+    <div className="max-w-8xl mx-auto">
+      <motion.div
+        key="question-mapping-view"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3 }}
+        className="p-6"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+            Question Mapping
+          </h2>
+          <div className="flex space-x-3">
+            <Button onClick={handleOpenReviewModal} className="rounded-xl shadow-sm">
+              Mapping Review
+            </Button>
 
-          <Button
-            onClick={() => navigate("/dashboard/qualifications-mapping", { state: { fromChild: true } })}
-            variant="outline"
-            className="rounded-xl"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" /> Back
-          </Button>
+            <Button
+              onClick={() => navigate("/dashboard/qualifications-mapping", { state: { fromChild: true } })}
+              variant="outline"
+              className="rounded-xl"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" /> Back
+            </Button>
+          </div>
         </div>
-      </div>
 
-      {/* Dropdowns */}
-      <div className="flex items-center space-x-4 mb-6">
-        <select
-          onChange={(e) => dispatch(setLang(Number(e.target.value)))}
-          value={selectedLang ?? ""}
-          className={cn(
-            "px-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all",
-            resolvedTheme === "dark"
-              ? "bg-gray-900 text-gray-100 border-gray-700 focus:ring-blue-500"
-              : "bg-white text-gray-900 border-gray-300 focus:ring-blue-500"
-          )}
-        >
-          <option value="">Select Language</option>
-          {langLoading && <option>Loading...</option>}
-          {langError && <option disabled>{langError}</option>}
-          {!langLoading &&
-            !langError &&
-            languages.map((lang) => (
-              <option key={lang.id} value={lang.id}>
-                {lang.name}
-              </option>
+        {/* Dropdowns */}
+        <div className="flex items-center space-x-4 mb-6">
+          <select
+            onChange={(e) => dispatch(setLang(Number(e.target.value)))}
+            value={selectedLang ?? ""}
+            className={cn(
+              "px-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all",
+              resolvedTheme === "dark"
+                ? "bg-gray-900 text-gray-100 border-gray-700 focus:ring-blue-500"
+                : "bg-white text-gray-900 border-gray-300 focus:ring-blue-500"
+            )}
+          >
+            <option value="">Select Language</option>
+            {langLoading && <option>Loading...</option>}
+            {langError && <option disabled>{langError}</option>}
+            {!langLoading && !langError && languages.map((lang) => (
+              <option key={lang.id} value={lang.id}>{lang.name}</option>
             ))}
-        </select>
+          </select>
 
-        <select
-          onChange={(e) => dispatch(setClient(Number(e.target.value)))}
-          value={selectedClient ?? ""}
-          className={cn(
-            "px-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all",
-            resolvedTheme === "dark"
-              ? "bg-gray-900 text-gray-100 border-gray-700 focus:ring-blue-500"
-              : "bg-white text-gray-900 border-gray-300 focus:ring-blue-500"
-          )}
-        >
-          <option value="">Select Customer/Supplier</option>
-          {clientLoading && <option>Loading...</option>}
-          {clientError && <option disabled>{clientError}</option>}
-          {!clientLoading &&
-            !clientError &&
-            clients.map((client) => (
-              <option key={client.id} value={client.id}>
-                {client.name}
-              </option>
+          <select
+            onChange={(e) => dispatch(setClient(Number(e.target.value)))}
+            value={selectedClient ?? ""}
+            className={cn(
+              "px-4 py-2 border rounded-xl text-sm focus:outline-none focus:ring-2 transition-all",
+              resolvedTheme === "dark"
+                ? "bg-gray-900 text-gray-100 border-gray-700 focus:ring-blue-500"
+                : "bg-white text-gray-900 border-gray-300 focus:ring-blue-500"
+            )}
+          >
+            <option value="">Select Customer/Supplier</option>
+            {clientLoading && <option>Loading...</option>}
+            {clientError && <option disabled>{clientError}</option>}
+            {!clientLoading && !clientError && clients.map((client) => (
+              <option key={client.id} value={client.id}>{client.name}</option>
             ))}
-        </select>
-      </div>
+          </select>
+        </div>
 
-      {/* Table */}
-      <div
-        className={cn(
+        {/* Table */}
+        <div className={cn(
           "rounded-2xl shadow-lg border flex flex-col overflow-hidden",
           resolvedTheme === "dark" ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
-        )}
-      >
-        <div className="overflow-y-auto max-h-[500px]">
-          <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-            <thead
-              className={cn(
+        )}>
+          <div className="overflow-y-auto max-h-[500px]">
+            <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+              <thead className={cn(
                 "text-xs uppercase font-medium tracking-wide sticky top-0 z-10",
                 resolvedTheme === "dark" ? "bg-gray-700 text-gray-200" : "bg-gray-50 text-gray-600"
-              )}
-            >
-              <tr>
-                <th className="px-6 py-3 text-left">S.No</th>
-                <th className="px-6 py-3 text-left">Question</th>
-                <th className="px-6 py-3 text-left">Qualification</th>
-                <th className="px-6 py-3 text-left">Mapped</th>
-                <th className="px-6 py-3 text-left">Old Mapped</th>
-                <th className="px-6 py-3 text-left">Enter Constant Id</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {!selectedLang || !selectedClient ? (
+              )}>
                 <tr>
-                  <td colSpan={6} className="p-6 text-center text-gray-500">
-                    Please select both Language and Customer to load data.
-                  </td>
+                  <th className="px-6 py-3 text-left">S.No</th>
+                  <th className="px-6 py-3 text-left">Question</th>
+                  <th className="px-6 py-3 text-left">Qualification</th>
+                  <th className="px-6 py-3 text-left">Mapped</th>
+                  <th className="px-6 py-3 text-left">Old Mapped</th>
+                  <th className="px-6 py-3 text-left">Enter Constant Id</th>
                 </tr>
-              ) : loadingMappings ? (
-                [...Array(5)].map((_, idx) => (
-                  <tr key={idx} className="animate-pulse">
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-4 w-4 rounded" />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-4 w-32" />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-4 w-40" />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-5 w-20 rounded-full" />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-5 w-24 rounded-full" />
-                    </td>
-                    <td className="px-6 py-4">
-                      <Skeleton className="h-9 w-full rounded-md" />
+              </thead>
+
+              <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                {!selectedLang || !selectedClient ? (
+                  <tr>
+                    <td colSpan={6} className="p-6 text-center text-gray-500">
+                      Please select both Language and Customer to load data.
                     </td>
                   </tr>
-                ))
-              ) : fetchedMappings.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="p-12 text-center">
-                    <div className="flex flex-col items-center space-y-3">
-                      <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                        <Search className="w-8 h-8 text-gray-400" />
+                ) : loadingMappings ? (
+                  [...Array(5)].map((_, idx) => (
+                    <tr key={idx} className="animate-pulse">
+                      <td className="px-6 py-4"><Skeleton className="h-4 w-4 rounded" /></td>
+                      <td className="px-6 py-4"><Skeleton className="h-4 w-32" /></td>
+                      <td className="px-6 py-4"><Skeleton className="h-4 w-40" /></td>
+                      <td className="px-6 py-4"><Skeleton className="h-5 w-20 rounded-full" /></td>
+                      <td className="px-6 py-4"><Skeleton className="h-5 w-24 rounded-full" /></td>
+                      <td className="px-6 py-4"><Skeleton className="h-9 w-full rounded-md" /></td>
+                    </tr>
+                  ))
+                ) : fetchedMappings.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-12 text-center">
+                      <div className="flex flex-col items-center space-y-3">
+                        <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                          <Search className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
+                          No data found
+                        </h3>
+                        <p className="text-gray-500 dark:text-gray-400">
+                          No qualification and questions mapping data available.
+                        </p>
                       </div>
-                      <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">
-                        No data found
-                      </h3>
-                      <p className="text-gray-500 dark:text-gray-400">
-                        No qualification and questions mapping data available.
-                      </p>
-                    </div>
-                  </td>
-                </tr>
-              ) : (
-                fetchedMappings.map((item, idx) => {
-                  return (
-                    <tr
-                      key={item.questionId}
-                      className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                    >
+                    </td>
+                  </tr>
+                ) : (
+                  fetchedMappings.map((item, idx) => (
+                    <tr key={item.questionId} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                       <td className="px-6 py-4">{idx + 1}</td>
                       <td
                         className="text-blue-600 dark:text-blue-400 cursor-pointer underline"
@@ -450,27 +336,22 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
                       </td>
                       <td className="px-6 py-4">{item.qualificationName}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span
-                          className={cn(
-                            "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                            item.memberQuestionId != null
-                              ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
-                              : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
-                          )}
-                        >
+                        <span className={cn(
+                          "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                          item.memberQuestionId != null
+                            ? "bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100"
+                            : "bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100"
+                        )}>
                           {item.memberQuestionId != null ? "Mapped" : "Not Mapped"}
                         </span>
                       </td>
-
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <span
-                          className={cn(
-                            "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
-                            item.oldMemberQuestionId != null
-                              ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
-                              : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
-                          )}
-                        >
+                        <span className={cn(
+                          "inline-flex px-2 py-1 text-xs font-semibold rounded-full",
+                          item.oldMemberQuestionId != null
+                            ? "bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-100"
+                            : "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-100"
+                        )}>
                           {item.oldMemberQuestionId != null ? "Old Mapped" : "Not Mapped"}
                         </span>
                       </td>
@@ -488,47 +369,44 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
                         />
                       </td>
                     </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
 
-        {/* Footer */}
-        <div
-          className={cn(
+          {/* Footer */}
+          <div className={cn(
             "p-4 border-t flex items-center justify-end transition-colors sticky bottom-0 z-20",
             resolvedTheme === "dark" ? "border-gray-700 bg-gray-800" : "border-gray-200 bg-gray-50"
-          )}
-        >
-          <Button
-            onClick={handleSaveReview}
-            className="gradient-primary text-white hover:shadow-glow transition-all duration-300"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
-              </>
-            ) : (
-              <>
-                <Save className="w-4 h-4 mr-2" /> Question Save for Review
-              </>
-            )}
-          </Button>
+          )}>
+            <Button
+              onClick={handleSaveReview}
+              className="gradient-primary text-white hover:shadow-glow transition-all duration-300"
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4 mr-2" /> Question Save for Review
+                </>
+              )}
+            </Button>
+          </div>
         </div>
-      </div>
-      <MappingReviewModal
-        isOpen={showMappingReviewModal}
-        onClose={() => setShowMappingReviewModal(false)}
-        mappings={reviewMappings}
-        resolvedTheme={resolvedTheme}
-        selectedLang={selectedLang}
-        selectedClient={selectedClient}
-      />
 
-
-    </motion.div>
+        <MappingReviewModal
+          isOpen={showMappingReviewModal}
+          onClose={() => setShowMappingReviewModal(false)}
+          mappings={reviewMappings}
+          resolvedTheme={resolvedTheme}
+          selectedLang={selectedLang}
+          selectedClient={selectedClient}
+        />
+      </motion.div>
+    </div>
   );
 };
 
