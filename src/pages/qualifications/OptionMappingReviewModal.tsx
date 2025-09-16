@@ -192,14 +192,11 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
       if (res?.status === 200 && res.data?.affectedRows > 0) {
         toast({
           description: res.message || "✅ Mapping saved successfully!",
+          variant: "success",
         });
-
-        // 🔹 Refresh answers immediately after update
         await fetchAnswers();
-
-        // 🔹 Reset selection
         setSelected({});
-        setSelectAll(false); // Select all ko bhi reset
+        setSelectAll(false);
       } else {
         toast({
           description: res.message || "❌ Something went wrong!",

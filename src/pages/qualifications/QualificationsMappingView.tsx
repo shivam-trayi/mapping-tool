@@ -76,9 +76,9 @@ const QualificationsMappingView: React.FC<QualificationsMappingViewProps> = ({
 	}, [searchQuery]);
 
 	// Filtered qualifications based on search
-const filteredQualifications = fetchedQualifications.filter((item) =>
-	item.qualificationName.toLowerCase().includes(debouncedQuery.toLowerCase())
-);
+	const filteredQualifications = fetchedQualifications.filter((item) =>
+		item.qualificationName.toLowerCase().includes(debouncedQuery.toLowerCase())
+	);
 
 	// ✅ Fetch qualifications
 	const fetchMappings = async () => {
@@ -193,8 +193,7 @@ const filteredQualifications = fetchedQualifications.filter((item) =>
 		if (!selectedCustomer) {
 			toast({
 				description: "⚠️ Please select a Customer/Supplier first.",
-				variant: "destructive",
-				className: "max-w-sm w-full",
+				variant: "warning",
 			});
 			return;
 		}
@@ -203,8 +202,7 @@ const filteredQualifications = fetchedQualifications.filter((item) =>
 		if (selectedItems.size === 0) {
 			toast({
 				description: "⚠️ Please select at least one qualification to save.",
-				variant: "destructive",
-				className: "max-w-sm w-full",
+				variant: "warning",
 			});
 			return;
 		}
@@ -218,8 +216,7 @@ const filteredQualifications = fetchedQualifications.filter((item) =>
 		if (invalidIds.length > 0) {
 			toast({
 				description: "⚠️ Constant ID cannot be blank for selected qualifications.",
-				variant: "destructive",
-				className: "max-w-sm w-full",
+				variant: "warning",
 			});
 			return;
 		}
@@ -257,7 +254,7 @@ const filteredQualifications = fetchedQualifications.filter((item) =>
 
 			toast({
 				description: res.message || "✅ Saved for review successfully.",
-				variant: "default",
+				variant: "success",
 				className: "max-w-sm w-full",
 			});
 

@@ -120,13 +120,26 @@ const MappingReviewModal: React.FC<MappingReviewModalProps> = ({
 
       const res = await dispatch(insertMappingReviewThunk(payload)).unwrap();
       if (res?.status === 200) {
-        toast({ description: res.message || "Mappings inserted successfully." });
+        toast({
+          description: res.message || "✅ Mappings inserted successfully!",
+          variant: "success",
+        });
+        setMessage("✅ Successfully inserted mappings!");
+        setSelectedItems(new Set());
+        setSelectAll(false);
+        await fetchMappings();
+      } else {
+        toast({
+          description: res.message || "⚠️ No changes were made!",
+          variant: "warning",
+        });
+        setMessage("⚠️ No changes to insert.");
       }
-      setMessage("✅ Successfully inserted mappings!");
-      setSelectedItems(new Set());
-      setSelectAll(false);
-      await fetchMappings(); // refresh after save
     } catch (err: any) {
+      toast({
+        description: `❌ ${err.message || "Insert failed"}`,
+        variant: "destructive",
+      });
       setMessage(`❌ ${err.message || "Insert failed"}`);
     } finally {
       setSaveLoading(false);

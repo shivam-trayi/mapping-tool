@@ -74,17 +74,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      toast({ 
-        // title: "Login successfully",
-         description: response.message });
+      toast({
+        description: response.message || "✅ Login successfully",
+        variant: "success",
+      });
+
       navigate("/dashboard");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Login failed";
-      toast({ title: "Login failed", description: message });
+      const message = err instanceof Error ? err.message : "❌ Login failed";
+      toast({
+        description: message,
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
   };
+
 
   const signup = async (data: {
     name: string;
@@ -107,7 +113,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
 
-      toast({description: response.message });
+      toast({ description: response.message });
       navigate("/dashboard");
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Signup failed";
@@ -154,14 +160,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setIsLoading(true);
       const response = await authService.logout();
+
+      // Clear user and localStorage
       setUser(null);
       localStorage.removeItem("token");
       localStorage.removeItem("user");
-      toast({ description: response.message });
+
+      // Success toast
+      toast({
+        description: response.message || "✅ Logged out successfully",
+        variant: "success",
+        className: "max-w-sm w-full",
+      });
+
       navigate("/login");
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Logout failed";
-      toast({ title: "Logout failed", description: message });
+      const message = err instanceof Error ? err.message : "❌ Logout failed";
+
+      // Error toast
+      toast({
+        description: message,
+        variant: "destructive", // red error styling
+        className: "max-w-sm w-full",
+      });
     } finally {
       setIsLoading(false);
     }

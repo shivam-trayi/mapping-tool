@@ -178,7 +178,7 @@ const QuestionOptionsPage: React.FC = () => {
     if (options.length === 0) {
       toast({
         description: "⚠️ No changes to update.",
-        variant: "destructive",
+        variant: "warning",
       });
       return;
     }
@@ -198,6 +198,7 @@ const QuestionOptionsPage: React.FC = () => {
       if (res.status === 200) {
         toast({
           description: res.message || "✅ Options updated successfully!",
+          variant: "success",
         });
         try {
           const latest = await getOptionQueryReviewMapping({

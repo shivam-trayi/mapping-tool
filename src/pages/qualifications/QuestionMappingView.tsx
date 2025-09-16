@@ -43,8 +43,6 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
   const [loadingMappings, setLoadingMappings] = useState(false);
   const [showMappingReviewModal, setShowMappingReviewModal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  // const [selectedLang, setSelectedLang] = useState<number | null>(null);
-  // const [selectedClient, setSelectedClient] = useState<number | null>(null);
   const [reviewMappings, setReviewMappings] = useState<any[]>([]);
 
   const { items: languages, loading: langLoading, error: langError } = useSelector(
@@ -113,8 +111,72 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
   };
 
   // Save review
+  // const handleSaveReview = async () => {
+  //   if (!selectedLang || !selectedClient) return;
+
+  //   const optionData = fetchedMappings
+  //     .filter((item) => item.memberQuestionId !== item.oldMemberQuestionId)
+  //     .map((item) => ({
+  //       memberQuestionId: item.memberQuestionId ?? "",
+  //       qualificationId: item.qualificationId,
+  //       masterQueryId: item.questionId,
+  //     }));
+
+  //   if (optionData.length === 0) {
+  //     toast({ description: "⚠️ No changes to save!", variant: "default" });
+  //     return;
+  //   }
+
+  //   setIsSaving(true);
+  //   try {
+  //     const res = await dispatch(
+  //       saveQuestionReviewMapping({
+  //         memberType: "customer",
+  //         langCode: selectedLang,
+  //         memberId: selectedClient.toString(),
+  //         optionData,
+  //       })
+  //     ).unwrap();
+
+  //     if (res?.status === 200) {
+  //       toast({ description: res.message || "✅ Mappings updated successfully.", variant: "success" });
+  //       setFetchedMappings((prev) =>
+  //         prev.map((item) => ({
+  //           ...item,
+  //           oldMemberQuestionId: item.memberQuestionId,
+  //         }))
+  //       );
+  //     } else {
+  //       toast({ description: "❌ Failed to update mappings.", variant: "destructive" });
+  //     }
+  //   } catch (err: any) {
+  //     toast({
+  //       description: err?.message || "❌ Something went wrong while saving.",
+  //       variant: "destructive",
+  //     });
+  //   } finally {
+  //     setIsSaving(false);
+  //   }
+  // };
+
+  // Save review
   const handleSaveReview = async () => {
-    if (!selectedLang || !selectedClient) return;
+    // ✅ Validation before saving
+    if (!selectedLang) {
+      toast({
+        description: "⚠️ Please select a language!",
+        variant: "warning",
+      });
+      return;
+    }
+
+    if (!selectedClient) {
+      toast({
+        description: "⚠️ Please select a client!",
+        variant: "warning",
+      });
+      return;
+    }
 
     const optionData = fetchedMappings
       .filter((item) => item.memberQuestionId !== item.oldMemberQuestionId)
@@ -125,7 +187,10 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
       }));
 
     if (optionData.length === 0) {
-      toast({ description: "⚠️ No changes to save!", variant: "default" });
+      toast({
+        description: "⚠️ No changes found before saving!",
+        variant: "warning",
+      });
       return;
     }
 
@@ -141,7 +206,10 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
       ).unwrap();
 
       if (res?.status === 200) {
-        toast({ description: res.message || "✅ Mappings updated successfully.", variant: "success" });
+        toast({
+          description: res.message || "✅ Mappings updated successfully.",
+          variant: "success",
+        });
         setFetchedMappings((prev) =>
           prev.map((item) => ({
             ...item,
@@ -149,11 +217,17 @@ const QuestionMappingView: React.FC<QuestionMappingViewProps> = ({ resolvedTheme
           }))
         );
       } else {
-        toast({ description: "❌ Failed to update mappings.", variant: "destructive" });
+        toast({
+          description: "❌ Failed to update mappings.",
+          variant: "destructive",
+        });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast({
-        description: err?.message || "❌ Something went wrong while saving.",
+        description:
+          err instanceof Error
+            ? err.message
+            : "❌ Something went wrong while saving.",
         variant: "destructive",
       });
     } finally {
