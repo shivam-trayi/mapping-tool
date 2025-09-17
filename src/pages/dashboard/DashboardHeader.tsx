@@ -94,23 +94,25 @@ export const DashboardHeader: React.FC<HeaderProps> = ({
             </motion.div>
 
             {/* User Info */}
-            <div className="hidden md:flex items-center space-x-2">
-              <Avatar className="h-8 w-8">
+            <div className="hidden md:flex items-center space-x-3 px-3 py-1.5 rounded-xl transition-colors duration-200 hover:bg-muted/50">
+              <Avatar className="h-10 w-10 border border-border shadow-sm">
                 <AvatarImage src="" alt={user?.username || "User"} />
-                <AvatarFallback className="bg-primary text-primary-foreground text-sm">
+                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/80 text-primary-foreground text-sm font-semibold">
                   {getInitials(user?.username)}
                 </AvatarFallback>
               </Avatar>
-              <span
-                className={cn(
-                  "font-medium hidden sm:block",
-                  resolvedTheme === "dark" ? "text-gray-200" : "text-gray-800"
-                )}
-              >
-                {user?.username || "User"}
-              </span>
-            </div>
 
+              <div className="flex flex-col">
+                <span
+                  className={cn(
+                    "font-semibold text-sm sm:text-base tracking-tight capitalize",
+                    resolvedTheme === "dark" ? "text-gray-100" : "text-gray-900"
+                  )}
+                >
+                  {user?.username || "User"}
+                </span>
+              </div>
+            </div>
             {/* Logout */}
             <Button
               variant="outline"

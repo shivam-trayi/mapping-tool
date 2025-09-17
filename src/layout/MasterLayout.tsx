@@ -19,7 +19,7 @@ const MasterLayout: React.FC = () => {
       <TooltipProvider>
         <Toaster />
         <div className="flex flex-col min-h-screen">
-          {!isDashboardRoute && <Header />}
+          {/* {!isDashboardRoute && <Header />} */}
 
           {isDashboardRoute && (
             <DashboardHeader
@@ -31,7 +31,7 @@ const MasterLayout: React.FC = () => {
           <main
             className={cn(
               "flex-grow",
-              isDashboardRoute ? "mt-24" : "pt-20"
+              isDashboardRoute ? "mt-24" : ""
             )}
           >
             <Outlet />

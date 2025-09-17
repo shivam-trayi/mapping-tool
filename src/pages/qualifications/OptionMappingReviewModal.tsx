@@ -358,7 +358,7 @@ const OptionMappingReviewModal: React.FC<OptionMappingReviewModalProps> = ({
                           transition={{ duration: 0.2 }}
 
                         >
-                          <td >{idx + 1}</td>
+                          <td className="px-6 py-4">{idx + 1}</td>
                           <td className="px-6 py-4">{ans.answerText}</td>
                           <td className="px-6 py-4">{ans.memberAnswerId ?? "Not Mapped"}</td>
 
